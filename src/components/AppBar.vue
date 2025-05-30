@@ -40,7 +40,7 @@ function clickNav() {
     </template>
     <v-app-bar-title>SGU Algo Contest Workshop</v-app-bar-title>
     <template v-slot:append>
-      <LanguageSwitcher />
+      <!-- <LanguageSwitcher /> -->
       <ThemeSwitcher />
     </template>
   </v-app-bar>

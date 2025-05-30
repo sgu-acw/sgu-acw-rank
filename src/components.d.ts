@@ -15,5 +15,6 @@ declare module 'vue' {
     Ranks: typeof import('./components/Ranks.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    ThemeSwitcher: typeof import('./components/ThemeSwitcher.vue')['default']
   }
 }
