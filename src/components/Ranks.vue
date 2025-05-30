@@ -1,14 +1,15 @@
 <template>
   <v-container class="fill-height d-flex align-center justify-center">
     <v-col>
-      <!-- <br/>
-      <div class="mb-8 text-center">
-        <v-text class="text-h3 mb-4 text-center elevation-2">
-          SGU CodeForces Rank
-        </v-text>
-      </div>
-      <br/> -->
       <v-card min-width="800px">
+        <v-card-title class="d-flex align-center">
+          <span class="text-h5">SGU CodeForces Rank</span>
+          <v-spacer></v-spacer>
+          <v-btn color="primary" @click="exportToXLSX" prepend-icon="mdi-file-excel">
+            Export to XLSX
+          </v-btn>
+        </v-card-title>
+        <v-divider></v-divider>
         <v-data-table
           v-model:sort-by="sortBy"
           v-model:expanded="expanded"
@@ -84,8 +85,9 @@
 </template>
 
 <script lang="ts" setup>
-import { defineComponent, ref, onMounted } from "vue";
+import { ref, onMounted } from "vue";
 import axios from "axios";
+import * as XLSX from 'xlsx';
 interface Account {
   handle: string;
   rating: number;
@@ -243,4 +245,33 @@ const onItemsPerPageChange = (newItemsPerPage: number) => {
 onMounted(() => {
   fetchUsers({ page: page.value, itemsPerPage: itemsPerPage.value });
 });
+
+const exportToXLSX = () => {
+  if (!userItems.value || userItems.value.length === 0) {
+    // Optionally, you could show a notification to the user
+    console.warn("No data to export.");
+    return;
+  }
+
+  const dataToExport = userItems.value.map(user => ({
+    'Name': user.name,
+    'Handle (Primary)': user.handle,
+    'Rating (Highest)': user.rating || 'N/A',
+    // If you want to include all handles in a single cell:
+    // 'All Handles': user.handles.map(h => `${h.handle} (Rating: ${h.rating || 'N/A'})`).join('; ')
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "SGU CF Ranks");
+
+  // Set column widths for better readability
+  worksheet['!cols'] = [
+    { wch: 25 }, // Name
+    { wch: 25 }, // Handle (Primary)
+    { wch: 15 }, // Rating (Highest)
+  ];
+
+  XLSX.writeFile(workbook, "sgu_codeforces_ranks.xlsx");
+};
 </script>
