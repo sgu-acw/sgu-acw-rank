@@ -18,7 +18,6 @@
           :loading="loading"
           item-value="name"
           loading-text="Fetching data from Codeforces API..."
-          @update:page="fetchUsers"
           @update:items-per-page="onItemsPerPageChange"
           items-per-page="0"
           class="elevation-1"
@@ -26,11 +25,7 @@
           show-expand
         >
           <template v-slot:item.avatar="{ item }">
-            <v-avatar
-              size="35"
-              class="my-1"
-              
-            >
+            <v-avatar size="35" class="my-1">
               <v-img
                 :src="item.avatar || 'https://via.placeholder.com/40'"
                 :alt="item.name"
@@ -66,16 +61,16 @@
             <td :colspan="columns.length">
               <v-list density="compact">
                 <v-list-item
-                  v-for="(account, index) in item.handles"
+                  v-for="(cfProfile, index) in item.handles"
                   :key="index"
-                  :title="`└ ` + account.handle"
+                  :title="`└ ` + cfProfile.handle"
                 >
                   <template v-slot:append>
                     <v-chip
-                      :border="`${getColor(account.rating)} thin opacity-25`"
-                      :color="getColor(account.rating)"
+                      :border="`${getColor(cfProfile.rating)} thin opacity-25`"
+                      :color="getColor(cfProfile.rating)"
                       size="small"
-                      >{{ account.rating || "N/A" }}</v-chip
+                      >{{ cfProfile.rating || "N/A" }}</v-chip
                     >
                   </template>
                 </v-list-item>
@@ -103,7 +98,7 @@ interface User {
   handle: string;
   name: string;
   avatar: string; // Optional avatar property
-  rating?: number;
+  rating: number;
   [key: string]: any; // Allow other properties
 }
 
@@ -144,7 +139,7 @@ const headers = ref([
   {
     title: "Avatar",
     key: "avatar",
-    value: (item) => item.avatar || "https://via.placeholder.com/40",
+    value: (item: User) => item.avatar || "https://via.placeholder.com/40",
     sortable: false,
   },
 
@@ -155,7 +150,7 @@ const headers = ref([
 ]);
 const page = ref(1);
 const itemsPerPage = ref(10);
-function getColor(rating) {
+function getColor(rating: number) {
   const rat_mapping: Record<number, string> = {
     4000: "white",
     3000: "black",
@@ -200,8 +195,8 @@ const fetchUsers = async ({
 
     if (response.data.status === "OK") {
       const tmpDict: Record<string, User> = {};
-      response.data.result.forEach((account: User) => {
-        const user = users.value[account.handle.toLowerCase()];
+      response.data.result.forEach((cfProfile: User) => {
+        const user = users.value[cfProfile.handle.toLowerCase()];
         tmpDict.hasOwnProperty(user.name) ||
           (tmpDict[user.name] = {
             handles: [],
@@ -212,13 +207,13 @@ const fetchUsers = async ({
           });
         tmpDict[user.name].handles.push({
           handle: user.handle,
-          rating: account.rating,
-          avatar: account.avatar,
+          rating: cfProfile.rating,
+          avatar: cfProfile.avatar || "",
         });
-        if (account.rating > tmpDict[user.name].rating) {
-          tmpDict[user.name].rating = account.rating;
-          tmpDict[user.name].handle = account.handle;
-          tmpDict[user.name].avatar = account.avatar;
+        if (cfProfile.rating > tmpDict[user.name].rating) {
+          tmpDict[user.name].rating = cfProfile.rating;
+          tmpDict[user.name].handle = cfProfile.handle;
+          tmpDict[user.name].avatar = cfProfile.avatar;
         }
       });
       totalUsers.value = response.data.result.length; // For simulation: Total number is equal to fetched count
