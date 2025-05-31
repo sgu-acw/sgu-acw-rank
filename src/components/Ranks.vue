@@ -5,7 +5,11 @@
         <v-card-title class="d-flex align-center">
           <span class="text-h5">SGU CodeForces Rank</span>
           <v-spacer></v-spacer>
-          <v-btn color="primary" @click="exportToXLSX" prepend-icon="mdi-file-excel">
+          <v-btn
+            color="primary"
+            @click="exportToXLSX"
+            prepend-icon="mdi-file-excel"
+          >
             Export to XLSX
           </v-btn>
         </v-card-title>
@@ -87,7 +91,8 @@
 <script lang="ts" setup>
 import { ref, onMounted } from "vue";
 import axios from "axios";
-import * as XLSX from 'xlsx';
+import * as XLSX from "xlsx";
+import type { Submission } from "@/CFAPI";
 interface Account {
   handle: string;
   rating: number;
@@ -101,6 +106,8 @@ interface User {
   name: string;
   avatar: string; // Optional avatar property
   rating: number;
+  todaySolve: number;
+  allSolve: number;
   [key: string]: any; // Allow other properties
 }
 
@@ -110,6 +117,7 @@ interface Info {
   name: string;
   [key: string]: any; // Allow other properties
 }
+
 const sortBy = ref<Array<{ key: string; order: "asc" | "desc" }>>([
   { key: "rating", order: "desc" },
 ]);
@@ -149,6 +157,8 @@ const headers = ref([
   { title: "Handle", key: "handle" },
   // { title: 'Last Name', key: 'lastName' },
   { title: "Rating", key: "rating" },
+  { title: "Today Solve", key: "todaySolve" },
+  { title: "All Solve", key: "allSolve" },
 ]);
 const page = ref(1);
 const itemsPerPage = ref(10);
@@ -181,6 +191,8 @@ const fetchUsers = async ({
   itemsPerPage: number;
 }) => {
   page.value = newPage;
+  // Define the maximum number of concurrent requests
+  const CONCURRENT_LIMIT = 2;
   itemsPerPage.value = newItemsPerPage;
   loading.value = true;
 
@@ -206,18 +218,135 @@ const fetchUsers = async ({
             name: user.name,
             avatar: user.avatar,
             rating: 0,
+            todaySolve: 0,
+            allSolve: 0,
           });
         tmpDict[user.name].handles.push({
           handle: user.handle,
           rating: cfProfile.rating,
           avatar: cfProfile.avatar || "",
         });
+
         if (cfProfile.rating > tmpDict[user.name].rating) {
           tmpDict[user.name].rating = cfProfile.rating;
           tmpDict[user.name].handle = cfProfile.handle;
           tmpDict[user.name].avatar = cfProfile.avatar;
         }
       });
+
+      // Initialize todaySolve and allSolve for all users in tmpDict
+      for (const userName in tmpDict) {
+        tmpDict[userName].todaySolve = 0;
+        tmpDict[userName].allSolve = 0;
+      }
+
+      // Create a list of all handles to fetch statuses for, along with their associated userName
+      const allHandlesToFetch: { userName: string; cfHandle: string }[] = [];
+      for (const userName in tmpDict) {
+        for (const cfProfile of tmpDict[userName].handles) {
+          allHandlesToFetch.push({ userName, cfHandle: cfProfile.handle });
+        }
+      }
+
+      // Process status requests in batches to limit concurrency
+      const statusResults = [];
+      for (let i = 0; i < allHandlesToFetch.length; i += CONCURRENT_LIMIT) {
+        const batch = allHandlesToFetch.slice(i, i + CONCURRENT_LIMIT);
+        const batchPromises = batch.map(async ({ userName, cfHandle }) => {
+          try {
+            const statusResponse = await axios.get(
+              `https://codeforces.com/api/user.status?handle=${cfHandle}&from=1&count=100000`
+            );
+            if (statusResponse.data.status === "OK") {
+              const submissions: Submission[] = statusResponse.data.result;
+
+              const today = new Date();
+              today.setHours(0, 0, 0, 0);
+
+              const todaySolvedProblems = new Set<string>();
+              submissions.forEach(
+                (submission: {
+                  creationTimeSeconds: number; problem: { name: string; }; verdict?: string; }) => {
+                  const submissionTime = new Date(submission.creationTimeSeconds * 1000);
+                  if (submission.verdict && submissionTime >= today && submission.verdict === "OK") {
+                    todaySolvedProblems.add(submission.problem.name);
+                  }
+                }
+              );
+
+              const allSolvedProblems = new Set<string>();
+              submissions.forEach(
+                (submission: {
+                  problem: { name: string; }; verdict?: string; }) => {
+                  if (submission.verdict && submission.verdict === "OK") {
+                    allSolvedProblems.add(submission.problem.name);
+                  }
+                }
+              );
+
+              return {
+                userName,
+                cfHandle,
+                todaySolvedProblems,
+                allSolvedProblems,
+                error: null,
+              };
+            } else {
+              console.error(
+                `Error fetching user status for ${cfHandle}:`,
+                statusResponse.data.comment
+              );
+              return {
+                userName,
+                cfHandle,
+                error: statusResponse.data.comment,
+                todaySolvedProblems: new Set<string>(),
+                allSolvedProblems: new Set<string>(),
+              };
+            }
+          } catch (error) {
+            console.error(
+              `Error during API call for user status ${cfHandle}:`,
+              error
+            );
+
+            return {
+              userName,
+              cfHandle,
+              error,
+              todaySolvedProblems: new Set<string>(),
+              allSolvedProblems: new Set<string>(),
+            };
+          }
+        });
+        const resultsFromBatch = await Promise.all(batchPromises);
+        statusResults.push(...resultsFromBatch);
+      }
+
+      // Aggregate results into tmpDict by collecting unique problem names per user
+      const userAggregatedTodaySolvedProblems: Record<string, Set<string>> = {};
+      const userAggregatedAllSolvedProblems: Record<string, Set<string>> = {};
+
+      for (const result of statusResults) {
+        if (!result.error) {
+          if (!userAggregatedTodaySolvedProblems[result.userName]) {
+            userAggregatedTodaySolvedProblems[result.userName] =
+              new Set<string>();
+          }
+          result.todaySolvedProblems.forEach((problemName) =>
+            userAggregatedTodaySolvedProblems[result.userName].add(problemName)
+          );
+
+          if (!userAggregatedAllSolvedProblems[result.userName]) {
+            userAggregatedAllSolvedProblems[result.userName] =
+              new Set<string>();
+          }
+          result.allSolvedProblems.forEach((problemName) =>
+            userAggregatedAllSolvedProblems[result.userName].add(problemName)
+          );
+        }
+      }
+
       totalUsers.value = response.data.result.length; // For simulation: Total number is equal to fetched count
       userItems.value = Object.values(tmpDict);
       // userItems.value.forEach((element) => {
@@ -225,6 +354,16 @@ const fetchUsers = async ({
       //     expanded.value.push(element.name);
       //   }
       // });
+
+      // Update tmpDict with the counts from the aggregated sets
+      for (const userName in tmpDict) {
+        tmpDict[userName].todaySolve =
+          userAggregatedTodaySolvedProblems[userName]?.size || 0;
+        tmpDict[userName].allSolve =
+          userAggregatedAllSolvedProblems[userName]?.size || 0;
+      }
+
+      userItems.value = Object.values(tmpDict);
     } else {
       console.error("Error fetching users:", response.data.comment);
       // Handle errors appropriately (e.g., show an error message to the user)
@@ -253,10 +392,10 @@ const exportToXLSX = () => {
     return;
   }
 
-  const dataToExport = userItems.value.map(user => ({
-    'Name': user.name,
-    'Handle (Primary)': user.handle,
-    'Rating (Highest)': user.rating || 'N/A',
+  const dataToExport = userItems.value.map((user) => ({
+    Name: user.name,
+    "Handle (Primary)": user.handle,
+    "Rating (Highest)": user.rating || "N/A",
     // If you want to include all handles in a single cell:
     // 'All Handles': user.handles.map(h => `${h.handle} (Rating: ${h.rating || 'N/A'})`).join('; ')
   }));
@@ -266,7 +405,7 @@ const exportToXLSX = () => {
   XLSX.utils.book_append_sheet(workbook, worksheet, "SGU CF Ranks");
 
   // Set column widths for better readability
-  worksheet['!cols'] = [
+  worksheet["!cols"] = [
     { wch: 25 }, // Name
     { wch: 25 }, // Handle (Primary)
     { wch: 15 }, // Rating (Highest)
