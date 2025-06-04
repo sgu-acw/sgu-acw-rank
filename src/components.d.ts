@@ -10,6 +10,8 @@ declare module 'vue' {
   export interface GlobalComponents {
     AppBar: typeof import('./components/AppBar.vue')['default']
     AppFooter: typeof import('./components/AppFooter.vue')['default']
+    Blog: typeof import('./components/Blog.vue')['default']
+    BlogPage: typeof import('./components/BlogPage.vue')['default']
     HelloWorld: typeof import('./components/HelloWorld.vue')['default']
     Home: typeof import('./components/Home.vue')['default']
     Ranks: typeof import('./components/Ranks.vue')['default']

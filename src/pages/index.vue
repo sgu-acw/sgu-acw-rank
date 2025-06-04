@@ -1,5 +1,7 @@
 <template>
-  <Home />
+
+    <Blog />
+
 </template>
 
 <script lang="ts" setup>

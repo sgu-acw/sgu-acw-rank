@@ -89,10 +89,19 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, type PropType } from "vue";
 import axios from "axios";
 import * as XLSX from "xlsx";
-import type { Submission } from "@/CFAPI";
+import type { Submission } from "@/interface/CFAPI";
+const props = defineProps({
+  users: {
+    type: Object as PropType<Record<string, Info>>,
+    required: true,
+  },
+});
+
+const users = ref(props.users);
+
 interface Account {
   handle: string;
   rating: number;
@@ -122,26 +131,7 @@ const sortBy = ref<Array<{ key: string; order: "asc" | "desc" }>>([
   { key: "rating", order: "desc" },
 ]);
 const expanded = ref<string[]>([]);
-const users = ref<Record<string, Info>>({
-  chronobox: { handle: "chronobox", name: "冯诺维" },
-  "cheatgpt_1145.14": { handle: "CheatGPT_1145.14", name: "冯诺维" },
-  codexzx: { handle: "codexzx", name: "谢泽栩" },
-  xzxze: { handle: "xzxze", name: "谢泽栩" },
-  hsn8086: { handle: "hsn8086", name: "朱子睿" },
-  "small-hsn": { handle: "small-hsn", name: "朱子睿" },
-  sunren356: { handle: "sunren356", name: "李镔彬" },
-  xmlhs: { handle: "xmlhs", name: "黄家宝" },
-  cjd666: { handle: "cjd666", name: "陈俊东" },
-  blackbreead: { handle: "Blackbreead", name: "叶福都" },
-  whitebread: { handle: "WhiteBread", name: "叶福都" },
-  woodghost: { handle: "woodghost", name: "钱玟如" },
-  "do-now": { handle: "do-now", name: "柯安鸿" },
-  c47kiki: { handle: "C47KIKI", name: "陈思琪" },
-  ling_yu175: { handle: "Ling_Yu175", name: "马嘉亮" },
-  vlad66: { handle: "vlad66", name: "王鹏凯" },
-  wesssxx: { handle: "Wesssxx", name: "吴仁光" },
-  wang1113: { handle: "wang1113", name: "汪金力" },
-});
+
 const userItems = ref<User[]>([]);
 const loading = ref(false);
 const totalUsers = ref(0);
@@ -247,7 +237,6 @@ const fetchUsers = async ({
           allHandlesToFetch.push({ userName, cfHandle: cfProfile.handle });
         }
       }
-
       // Process status requests in batches to limit concurrency
       const statusResults = [];
       for (let i = 0; i < allHandlesToFetch.length; i += CONCURRENT_LIMIT) {
@@ -261,14 +250,25 @@ const fetchUsers = async ({
               const submissions: Submission[] = statusResponse.data.result;
 
               const today = new Date();
-              today.setHours(0, 0, 0, 0);
+              today.setHours(0, 0, 0, 0); // Start of today
+              const tomorrow = new Date(today);
+              tomorrow.setDate(today.getDate() + 1); // Start of tomorrow
 
               const todaySolvedProblems = new Set<string>();
               submissions.forEach(
                 (submission: {
-                  creationTimeSeconds: number; problem: { name: string; }; verdict?: string; }) => {
-                  const submissionTime = new Date(submission.creationTimeSeconds * 1000);
-                  if (submission.verdict && submissionTime >= today && submission.verdict === "OK") {
+                  creationTimeSeconds: number;
+                  problem: { name: string };
+                  verdict?: string;
+                }) => {
+                  const submissionTime = new Date(
+                    submission.creationTimeSeconds * 1000
+                  );
+                  if (
+                    submission.verdict === "OK" &&
+                    submissionTime >= today &&
+                    submissionTime < tomorrow // Check if submission time is within today
+                  ) {
                     todaySolvedProblems.add(submission.problem.name);
                   }
                 }
@@ -277,7 +277,9 @@ const fetchUsers = async ({
               const allSolvedProblems = new Set<string>();
               submissions.forEach(
                 (submission: {
-                  problem: { name: string; }; verdict?: string; }) => {
+                  problem: { name: string };
+                  verdict?: string;
+                }) => {
                   if (submission.verdict && submission.verdict === "OK") {
                     allSolvedProblems.add(submission.problem.name);
                   }

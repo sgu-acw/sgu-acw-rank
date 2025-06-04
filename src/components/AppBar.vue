@@ -20,6 +20,11 @@ const items = ref([
         route: "/codeforces/rank",
         icon: "mdi-trophy",
       },
+      {
+        title: "Rank(retired)",
+        route: "/codeforces/rank_retired",
+        icon: "mdi-trophy",
+      },
     ],
   },
 ]);
@@ -60,7 +65,7 @@ function clickNav() {
             :key="childIndex"
             :prepend-icon="child.icon"
             :title="child.title"
-            @click="router.push( child.route)"
+            @click="router.push(child.route)"
           />
         </v-list-group>
         <v-list-item
