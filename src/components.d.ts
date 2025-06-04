@@ -12,6 +12,7 @@ declare module 'vue' {
     AppFooter: typeof import('./components/AppFooter.vue')['default']
     Blog: typeof import('./components/Blog.vue')['default']
     BlogPage: typeof import('./components/BlogPage.vue')['default']
+    CPCFinder: typeof import('./components/CPCFinder.vue')['default']
     HelloWorld: typeof import('./components/HelloWorld.vue')['default']
     Home: typeof import('./components/Home.vue')['default']
     Ranks: typeof import('./components/Ranks.vue')['default']

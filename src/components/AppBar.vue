@@ -12,6 +12,11 @@ const items = ref([
     icon: "mdi-home",
   },
   {
+    title: "Member Awards",
+    route: "/member-awards",
+    icon: "mdi-medal",
+  },
+  {
     title: "CodeForces",
     icon: "mdi-xml",
     children: [
@@ -22,7 +27,7 @@ const items = ref([
       },
       {
         title: "Rank(retired)",
-        route: "/codeforces/rank_retired",
+        route: "/codeforces/rank-retired",
         icon: "mdi-trophy",
       },
     ],
