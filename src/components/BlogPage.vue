@@ -62,7 +62,6 @@ const loadArticles = async () => {
         title: title || "Untitled",
         content: html,
       });
-      
     }
     articles.value = loadedArticles.sort().reverse();
   } catch (error) {
@@ -93,5 +92,14 @@ onMounted(async () => {
 
 h2 {
   margin-bottom: 10px;
+}
+
+/* Target images within the v-html rendered content */
+.blog-page div :deep(img) {
+  max-width: 100%; /* Ensures images don't overflow their container */
+  height: auto; /* Maintains aspect ratio */
+  display: block; /* Can help with spacing issues */
+  margin-top: 1em; /* Optional: add some space above the image */
+  margin-bottom: 1em; /* Optional: add some space below the image */
 }
 </style>
