@@ -194,7 +194,8 @@ const fetchUsers = async ({
     console.log(userHandles);
     const handlesString = userHandles.join(";");
     const response = await axios.get(
-      `https://codeforces.com/api/user.info?handles=${handlesString}`
+      // `https://codeforces.com/api/user.info?handles=${handlesString}`
+      `https://codeforces-api.zh314.xyz/user.info?handles=${handlesString}`
     );
 
     if (response.data.status === "OK") {
@@ -244,7 +245,8 @@ const fetchUsers = async ({
         const batchPromises = batch.map(async ({ userName, cfHandle }) => {
           try {
             const statusResponse = await axios.get(
-              `https://codeforces.com/api/user.status?handle=${cfHandle}&from=1&count=100000`
+              // `https://codeforces.com/api/user.status?handle=${cfHandle}&from=1&count=100000`
+              `https://codeforces-api.zh314.xyz/user.status?handle=${cfHandle}&from=1&count=100000`
             );
             if (statusResponse.data.status === "OK") {
               const submissions: Submission[] = statusResponse.data.result;
