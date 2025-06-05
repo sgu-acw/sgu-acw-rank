@@ -1,8 +1,6 @@
 <template>
   <v-container class="fill-height d-flex align-center justify-center">
-
-      <Ranks :users="users" />
-
+    <Ranks :users="users" />
   </v-container>
 </template>
 <script setup lang="ts">
@@ -23,6 +21,7 @@ const users = ref({
   woodghost: { handle: "woodghost", name: "钱玟如" },
   "do-now": { handle: "do-now", name: "柯安鸿" },
   c47kiki: { handle: "C47KIKI", name: "陈思琪" },
+  "3977493874": { handle: "3977493874", name: "陈思琪" },
   ling_yu175: { handle: "Ling_Yu175", name: "马嘉亮" },
   vlad66: { handle: "vlad66", name: "王鹏凯" },
   wesssxx: { handle: "Wesssxx", name: "吴仁光" },
