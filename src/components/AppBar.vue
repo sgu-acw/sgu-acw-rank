@@ -48,7 +48,7 @@ function clickNav() {
     <template v-slot:prepend>
       <v-app-bar-nav-icon @click="clickNav()"></v-app-bar-nav-icon>
     </template>
-    <v-app-bar-title>SGU Algo Contest Workshop</v-app-bar-title>
+    <v-app-bar-title>SGU Algo Competition Workshop</v-app-bar-title>
     <template v-slot:append>
       <!-- <LanguageSwitcher /> -->
       <ThemeSwitcher />
