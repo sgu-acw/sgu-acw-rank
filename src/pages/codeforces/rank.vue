@@ -18,6 +18,7 @@ const users = ref({
   cjd666: { handle: "cjd666", name: "陈俊东" },
   blackbreead: { handle: "Blackbreead", name: "叶福都" },
   whitebread: { handle: "WhiteBread", name: "叶福都" },
+  webxixi: { handle: "webxixi", name: "施雨柔" },
   woodghost: { handle: "woodghost", name: "钱玟如" },
   "do-now": { handle: "do-now", name: "柯安鸿" },
   c47kiki: { handle: "C47KIKI", name: "陈思琪" },
