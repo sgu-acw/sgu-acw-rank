@@ -1,6 +1,6 @@
 <template>
   <v-container class="fill-height d-flex align-center justify-center">
-    <Ranks :users="users" />
+    <Ranks :students="users" />
   </v-container>
 </template>
 <script setup lang="ts">

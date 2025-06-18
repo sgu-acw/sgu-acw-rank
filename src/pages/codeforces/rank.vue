@@ -1,13 +1,13 @@
 <template>
   <v-container class="fill-height d-flex align-center justify-center">
-    <Ranks :users="users" />
+    <Ranks :students="users" />
   </v-container>
 </template>
 <script setup lang="ts">
 import { ref } from "vue";
 
 const users = ref({
-  chronobox: { handle: "chronobox", name: "冯诺维" }, // Keep the comma here
+  chronobox: { handle: "chronobox", name: "冯诺维" },
   "cheatgpt_1145.14": { handle: "CheatGPT_1145.14", name: "冯诺维" },
   codexzx: { handle: "codexzx", name: "谢泽栩" },
   xzxze: { handle: "xzxze", name: "谢泽栩" },

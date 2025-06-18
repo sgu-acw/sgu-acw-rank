@@ -1,19 +1,26 @@
 <template>
+  <!-- 主容器，填充高度并居中 -->
   <v-container class="fill-height d-flex align-center justify-center">
     <v-col>
-      <v-card min-width="800px">
+      <!-- 卡片组件，设置最小宽度 -->
+      <v-card :min-width="$vuetify.display.mobile ? '100%' : '800px'">
+        <!-- 卡片标题区域 -->
         <v-card-title class="d-flex align-center">
-          <span class="text-h5">SGU CodeForces Rank</span>
+          <span class="text-h5">{{
+            $vuetify.display.mobile ? "CF RK" : "SGU CodeForces Rank"
+          }}</span>
           <v-spacer></v-spacer>
+          <!-- 导出按钮 -->
           <v-btn
             color="primary"
             @click="exportToXLSX"
             prepend-icon="mdi-file-excel"
           >
-            Export to XLSX
+            {{ $vuetify.display.mobile ? "Export" : "Export to XLSX" }}
           </v-btn>
         </v-card-title>
         <v-divider></v-divider>
+        <!-- 数据表格 -->
         <v-data-table
           v-model:sort-by="sortBy"
           v-model:expanded="expanded"
@@ -29,6 +36,11 @@
           hide-default-footer
           show-expand
         >
+          <!-- <template v-slot:item.name="{ item }">
+            {{ item.name }}
+          </template> -->
+
+          <!-- 头像列模板 -->
           <template v-slot:item.avatar="{ item }">
             <v-avatar size="35" class="my-1">
               <v-img
@@ -37,6 +49,7 @@
               />
             </v-avatar>
           </template>
+          <!-- Rating列模板，显示彩色标签 -->
           <template v-slot:item.rating="{ item }">
             <v-chip
               :border="`${getColor(item.rating)} thin opacity-25`"
@@ -45,6 +58,7 @@
               >{{ item.rating || "N/A" }}</v-chip
             >
           </template>
+          <!-- 展开行按钮模板 -->
           <template
             v-slot:item.data-table-expand="{
               internalItem,
@@ -62,6 +76,7 @@
               variant="text"
             />
           </template>
+          <!-- 展开行内容模板 -->
           <template v-slot:expanded-row="{ columns, item }">
             <td :colspan="columns.length">
               <v-list density="compact">
@@ -90,89 +105,82 @@
 
 <script lang="ts" setup>
 import { ref, onMounted, type PropType } from "vue";
-import axios from "axios";
+
+// 导入工具函数和类型
+import {
+  fetchUserInfo,
+  fetchUserStatus,
+  processUserSubmissions,
+  getColor,
+} from "@/utils/CFAPI";
+import { DefaultMap } from "@/utils/Collections";
+
+import type { Submission, User } from "@/interface/CFAPI";
+
+// 导入XLSX库用于导出Excel
 import * as XLSX from "xlsx";
-import type { Submission } from "@/interface/CFAPI";
+
+// 定义组件props
 const props = defineProps({
-  users: {
-    type: Object as PropType<Record<string, Info>>,
+  students: {
+    type: Object as PropType<Record<string, BaseStudentInfo>>,
     required: true,
   },
 });
 
-const users = ref(props.users);
+// 将props转为响应式引用
+const students = ref(props.students);
 
-interface Account {
-  handle: string;
-  rating: number;
-  avatar: string; // Optional avatar property
-
-  [key: string]: any; // Allow other properties
-}
-interface User {
-  handles: Array<Account>;
-  handle: string;
-  name: string;
-  avatar: string; // Optional avatar property
-  rating: number;
-  todaySolve: number;
-  allSolve: number;
-  [key: string]: any; // Allow other properties
+// 定义接口
+interface BaseStudentInfo {
+  handle: string; // Codeforces用户名
+  name: string; // 学生真实姓名
 }
 
-interface Info {
-  handle: string;
-  // firstName?: string;
-  name: string;
-  [key: string]: any; // Allow other properties
+// 扩展的学生信息接口
+interface StudentInfo extends BaseStudentInfo {
+  handles: Array<User>; // 所有关联的Codeforces账号
+  rating: number; // 最高rating
+  avatar: string; // 头像URL
+  todaySolve: number; // 今日解题数
+  allSolve: number; // 总解题数
 }
 
+// 初始化排序状态
 const sortBy = ref<Array<{ key: string; order: "asc" | "desc" }>>([
-  { key: "rating", order: "desc" },
+  { key: "rating", order: "desc" }, // 默认按rating降序
 ]);
-const expanded = ref<string[]>([]);
 
-const userItems = ref<User[]>([]);
+// 展开行状态
+const expanded = ref<string[]>([]);
+// 表格数据
+const userItems = ref<StudentInfo[]>([]);
+// 加载状态
 const loading = ref(false);
+// 总用户数
 const totalUsers = ref(0);
+// 分页状态
+const page = ref(1);
+const itemsPerPage = ref(10);
+// 表头配置
 const headers = ref([
   {
     title: "Avatar",
     key: "avatar",
-    value: (item: User) => item.avatar || "https://via.placeholder.com/40",
+    value: (item: StudentInfo) => item.avatar,
     sortable: false,
   },
-
-  { title: "Name", key: "name" },
-  { title: "Handle", key: "handle" },
-  // { title: 'Last Name', key: 'lastName' },
+  { title: "Name", key: "name", sortable: false },
+  { title: "Handle", key: "handle", sortable: false },
   { title: "Rating", key: "rating" },
   { title: "Today Solve", key: "todaySolve" },
   { title: "All Solve", key: "allSolve" },
 ]);
-const page = ref(1);
-const itemsPerPage = ref(10);
-function getColor(rating: number) {
-  const rat_mapping: Record<number, string> = {
-    4000: "white",
-    3000: "black",
-    2400: "red",
-    2100: "orange",
-    1900: "purple",
-    1600: "blue",
-    1400: "cyan",
-    1200: "green",
-    0: "gray",
-  };
-  const sortedRatings = Object.keys(rat_mapping)
-    .map(Number)
-    .sort((a, b) => b - a);
-  for (let rat of sortedRatings) {
-    if (rating >= rat) {
-      return rat_mapping[rat];
-    }
-  }
-}
+
+/**
+ * 获取用户信息并处理
+ * @param param0 分页参数
+ */
 const fetchUsers = async ({
   page: newPage,
   itemsPerPage: newItemsPerPage,
@@ -181,113 +189,74 @@ const fetchUsers = async ({
   itemsPerPage: number;
 }) => {
   page.value = newPage;
-  // Define the maximum number of concurrent requests
-  const CONCURRENT_LIMIT = 2;
+
+  const CONCURRENT_LIMIT = 2; // 并发请求限制，避免过多请求
   itemsPerPage.value = newItemsPerPage;
   loading.value = true;
 
-  // In a real application, you'd need a backend to handle the API calls and pagination
-  // as Codeforces API doesn't directly support server-side pagination.
-  // For this example, we'll simulate it by fetching a fixed set of users.
   try {
-    const userHandles = users.value ? Object.keys(users.value) : [];
-    console.log(userHandles);
-    const handlesString = userHandles.join(";");
-    const response = await axios.get(
-      // `https://codeforces.com/api/user.info?handles=${handlesString}`
-      `https://codeforces-api.zh314.xyz/user.info?handles=${handlesString}`
-    );
+    // 获取所有学生handle
+    const handles = students.value ? Object.keys(students.value) : [];
+    // 从Codeforces API获取用户信息
+    const userInfoResponse = await fetchUserInfo(handles);
 
-    if (response.data.status === "OK") {
-      const tmpDict: Record<string, User> = {};
-      response.data.result.forEach((cfProfile: User) => {
-        const user = users.value[cfProfile.handle.toLowerCase()];
-        tmpDict.hasOwnProperty(user.name) ||
-          (tmpDict[user.name] = {
+    if (userInfoResponse.data.status === "OK") {
+      // 临时存储用户信息的映射
+      const tmpUserMp: Record<string, StudentInfo> = {};
+
+      // 处理API返回的用户数据
+      userInfoResponse.data.result.forEach((cfProfile: User) => {
+        // 获取对应的学生信息
+        const student = students.value[cfProfile.handle.toLowerCase()];
+        // 如果学生不存在于临时映射中，则初始化
+        tmpUserMp.hasOwnProperty(student.name) ||
+          (tmpUserMp[student.name] = {
             handles: [],
-            handle: user.handle,
-            name: user.name,
-            avatar: user.avatar,
+            handle: student.handle,
+            name: student.name,
+            avatar: cfProfile.avatar || "",
             rating: 0,
             todaySolve: 0,
             allSolve: 0,
           });
-        tmpDict[user.name].handles.push({
-          handle: user.handle,
-          rating: cfProfile.rating,
-          avatar: cfProfile.avatar || "",
-        });
+        // 添加用户信息
+        tmpUserMp[student.name].handles.push(cfProfile);
 
-        if (cfProfile.rating > tmpDict[user.name].rating) {
-          tmpDict[user.name].rating = cfProfile.rating;
-          tmpDict[user.name].handle = cfProfile.handle;
-          tmpDict[user.name].avatar = cfProfile.avatar;
+        // 更新最高rating和对应的handle、avatar
+        if (cfProfile.rating > tmpUserMp[student.name].rating) {
+          tmpUserMp[student.name].rating = cfProfile.rating;
+          tmpUserMp[student.name].handle = cfProfile.handle;
+          tmpUserMp[student.name].avatar = cfProfile.avatar;
         }
       });
 
-      // Initialize todaySolve and allSolve for all users in tmpDict
-      for (const userName in tmpDict) {
-        tmpDict[userName].todaySolve = 0;
-        tmpDict[userName].allSolve = 0;
+      // 初始化所有用户的解题数
+      for (const userName in tmpUserMp) {
+        tmpUserMp[userName].todaySolve = 0;
+        tmpUserMp[userName].allSolve = 0;
       }
 
-      // Create a list of all handles to fetch statuses for, along with their associated userName
+      // 准备所有需要获取提交记录的handle
       const allHandlesToFetch: { userName: string; cfHandle: string }[] = [];
-      for (const userName in tmpDict) {
-        for (const cfProfile of tmpDict[userName].handles) {
+      for (const userName in tmpUserMp) {
+        for (const cfProfile of tmpUserMp[userName].handles) {
           allHandlesToFetch.push({ userName, cfHandle: cfProfile.handle });
         }
       }
-      // Process status requests in batches to limit concurrency
+
+      // 分批获取用户提交记录
       const statusResults = [];
       for (let i = 0; i < allHandlesToFetch.length; i += CONCURRENT_LIMIT) {
         const batch = allHandlesToFetch.slice(i, i + CONCURRENT_LIMIT);
         const batchPromises = batch.map(async ({ userName, cfHandle }) => {
           try {
-            const statusResponse = await axios.get(
-              // `https://codeforces.com/api/user.status?handle=${cfHandle}&from=1&count=100000`
-              `https://codeforces-api.zh314.xyz/user.status?handle=${cfHandle}&from=1&count=100000`
-            );
+            // 获取用户提交记录
+            const statusResponse = await fetchUserStatus(cfHandle);
             if (statusResponse.data.status === "OK") {
               const submissions: Submission[] = statusResponse.data.result;
-
-              const today = new Date();
-              today.setHours(0, 0, 0, 0); // Start of today
-              const tomorrow = new Date(today);
-              tomorrow.setDate(today.getDate() + 1); // Start of tomorrow
-
-              const todaySolvedProblems = new Set<string>();
-              submissions.forEach(
-                (submission: {
-                  creationTimeSeconds: number;
-                  problem: { name: string };
-                  verdict?: string;
-                }) => {
-                  const submissionTime = new Date(
-                    submission.creationTimeSeconds * 1000
-                  );
-                  if (
-                    submission.verdict === "OK" &&
-                    submissionTime >= today &&
-                    submissionTime < tomorrow // Check if submission time is within today
-                  ) {
-                    todaySolvedProblems.add(submission.problem.name);
-                  }
-                }
-              );
-
-              const allSolvedProblems = new Set<string>();
-              submissions.forEach(
-                (submission: {
-                  problem: { name: string };
-                  verdict?: string;
-                }) => {
-                  if (submission.verdict && submission.verdict === "OK") {
-                    allSolvedProblems.add(submission.problem.name);
-                  }
-                }
-              );
-
+              // 处理提交记录，获取今日解题和总解题
+              const { todaySolvedProblems, allSolvedProblems } =
+                processUserSubmissions(submissions);
               return {
                 userName,
                 cfHandle,
@@ -327,94 +296,92 @@ const fetchUsers = async ({
         statusResults.push(...resultsFromBatch);
       }
 
-      // Aggregate results into tmpDict by collecting unique problem names per user
-      const userAggregatedTodaySolvedProblems: Record<string, Set<string>> = {};
-      const userAggregatedAllSolvedProblems: Record<string, Set<string>> = {};
+      // 使用DefaultMap聚合解题信息
+      const todaySolved: DefaultMap<string, Set<string>> = new DefaultMap(
+        () => new Set<string>()
+      );
+      const allSolved: DefaultMap<string, Set<string>> = new DefaultMap(
+        () => new Set<string>()
+      );
 
+      // 处理每个用户的结果
       for (const result of statusResults) {
-        if (!result.error) {
-          if (!userAggregatedTodaySolvedProblems[result.userName]) {
-            userAggregatedTodaySolvedProblems[result.userName] =
-              new Set<string>();
-          }
-          result.todaySolvedProblems.forEach((problemName) =>
-            userAggregatedTodaySolvedProblems[result.userName].add(problemName)
-          );
+        if (result.error) continue;
 
-          if (!userAggregatedAllSolvedProblems[result.userName]) {
-            userAggregatedAllSolvedProblems[result.userName] =
-              new Set<string>();
-          }
-          result.allSolvedProblems.forEach((problemName) =>
-            userAggregatedAllSolvedProblems[result.userName].add(problemName)
-          );
-        }
+        // 添加今日解题
+        result.todaySolvedProblems.forEach((problemName) =>
+          todaySolved.get(result.userName).add(problemName)
+        );
+
+        // 添加总解题
+        result.allSolvedProblems.forEach((problemName) =>
+          allSolved.get(result.userName).add(problemName)
+        );
       }
 
-      totalUsers.value = response.data.result.length; // For simulation: Total number is equal to fetched count
-      userItems.value = Object.values(tmpDict);
-      // userItems.value.forEach((element) => {
-      //   if (element.handles.length > 1) {
-      //     expanded.value.push(element.name);
-      //   }
-      // });
+      totalUsers.value = userInfoResponse.data.result.length;
+      userItems.value = Object.values(tmpUserMp);
 
-      // Update tmpDict with the counts from the aggregated sets
-      for (const userName in tmpDict) {
-        tmpDict[userName].todaySolve =
-          userAggregatedTodaySolvedProblems[userName]?.size || 0;
-        tmpDict[userName].allSolve =
-          userAggregatedAllSolvedProblems[userName]?.size || 0;
+      // 更新解题数到用户信息
+      for (const userName in tmpUserMp) {
+        tmpUserMp[userName].todaySolve = todaySolved.get(userName).size || 0;
+        tmpUserMp[userName].allSolve = allSolved.get(userName).size || 0;
       }
 
-      userItems.value = Object.values(tmpDict);
+      userItems.value = Object.values(tmpUserMp);
     } else {
-      console.error("Error fetching users:", response.data.comment);
-      // Handle errors appropriately (e.g., show an error message to the user)
+      console.error("Error fetching users:", userInfoResponse.data.comment);
     }
   } catch (error) {
     console.error("Error during API call:", error);
-    // Handle errors appropriately
   } finally {
     loading.value = false;
   }
 };
 
+/**
+ * 处理每页显示数量变化
+ * @param newItemsPerPage 新的每页显示数量
+ */
 const onItemsPerPageChange = (newItemsPerPage: number) => {
   itemsPerPage.value = newItemsPerPage;
   fetchUsers({ page: page.value, itemsPerPage: newItemsPerPage });
 };
 
+// 组件挂载时获取数据
 onMounted(() => {
   fetchUsers({ page: page.value, itemsPerPage: itemsPerPage.value });
 });
 
+/**
+ * 导出数据到Excel
+ */
 const exportToXLSX = () => {
   if (!userItems.value || userItems.value.length === 0) {
-    // Optionally, you could show a notification to the user
     console.warn("No data to export.");
     return;
   }
 
+  // 准备导出数据
   const dataToExport = userItems.value.map((user) => ({
     Name: user.name,
     "Handle (Primary)": user.handle,
     "Rating (Highest)": user.rating || "N/A",
-    // If you want to include all handles in a single cell:
-    // 'All Handles': user.handles.map(h => `${h.handle} (Rating: ${h.rating || 'N/A'})`).join('; ')
   }));
 
+  // 创建工作表和 workbook
   const worksheet = XLSX.utils.json_to_sheet(dataToExport);
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, "SGU CF Ranks");
 
-  // Set column widths for better readability
+  // 设置列宽
   worksheet["!cols"] = [
-    { wch: 25 }, // Name
-    { wch: 25 }, // Handle (Primary)
-    { wch: 15 }, // Rating (Highest)
+    { wch: 25 }, // Name列宽
+    { wch: 25 }, // Handle列宽
+    { wch: 15 }, // Rating列宽
   ];
 
+  // 导出文件
   XLSX.writeFile(workbook, "sgu_codeforces_ranks.xlsx");
 };
 </script>
