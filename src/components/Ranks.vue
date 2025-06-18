@@ -1,105 +1,103 @@
 <template>
   <!-- 主容器，填充高度并居中 -->
   <v-container class="fill-height d-flex align-center justify-center">
-    <v-col>
-      <!-- 卡片组件，设置最小宽度 -->
-      <v-card :min-width="$vuetify.display.mobile ? '100%' : '800px'">
-        <!-- 卡片标题区域 -->
-        <v-card-title class="d-flex align-center">
-          <span class="text-h5">{{
-            $vuetify.display.mobile ? "CF RK" : "SGU CodeForces Rank"
-          }}</span>
-          <v-spacer></v-spacer>
-          <!-- 导出按钮 -->
-          <v-btn
-            color="primary"
-            @click="exportToXLSX"
-            prepend-icon="mdi-file-excel"
-          >
-            {{ $vuetify.display.mobile ? "Export" : "Export to XLSX" }}
-          </v-btn>
-        </v-card-title>
-        <v-divider></v-divider>
-        <!-- 数据表格 -->
-        <v-data-table
-          v-model:sort-by="sortBy"
-          v-model:expanded="expanded"
-          :headers="headers"
-          :items="userItems"
-          :server-items-length="totalUsers"
-          :loading="loading"
-          item-value="name"
-          loading-text="Fetching data from Codeforces API..."
-          @update:items-per-page="onItemsPerPageChange"
-          items-per-page="0"
-          class="elevation-1"
-          hide-default-footer
-          show-expand
+    <!-- 卡片组件，设置最小宽度 -->
+    <v-card :min-width="$vuetify.display.mobile ? '100%' : '800px'">
+      <!-- 卡片标题区域 -->
+      <v-card-title class="d-flex align-center">
+        <span class="text-h5">{{
+          $vuetify.display.mobile ? "CF RK" : "SGU CodeForces Rank"
+        }}</span>
+        <v-spacer></v-spacer>
+        <!-- 导出按钮 -->
+        <v-btn
+          color="primary"
+          @click="exportToXLSX"
+          prepend-icon="mdi-file-excel"
         >
-          <!-- <template v-slot:item.name="{ item }">
+          {{ $vuetify.display.mobile ? "Export" : "Export to XLSX" }}
+        </v-btn>
+      </v-card-title>
+      <v-divider></v-divider>
+      <!-- 数据表格 -->
+      <v-data-table
+        v-model:sort-by="sortBy"
+        v-model:expanded="expanded"
+        :headers="headers"
+        :items="userItems"
+        :server-items-length="totalUsers"
+        :loading="loading"
+        item-value="name"
+        loading-text="Fetching data from Codeforces API..."
+        @update:items-per-page="onItemsPerPageChange"
+        items-per-page="0"
+        class="elevation-1"
+        hide-default-footer
+        show-expand
+      >
+        <!-- <template v-slot:item.name="{ item }">
             {{ item.name }}
           </template> -->
 
-          <!-- 头像列模板 -->
-          <template v-slot:item.avatar="{ item }">
-            <v-avatar size="35" class="my-1">
-              <v-img
-                :src="item.avatar || 'https://via.placeholder.com/40'"
-                :alt="item.name"
-              />
-            </v-avatar>
-          </template>
-          <!-- Rating列模板，显示彩色标签 -->
-          <template v-slot:item.rating="{ item }">
-            <v-chip
-              :border="`${getColor(item.rating)} thin opacity-25`"
-              :color="getColor(item.rating)"
-              size="small"
-              >{{ item.rating || "N/A" }}</v-chip
-            >
-          </template>
-          <!-- 展开行按钮模板 -->
-          <template
-            v-slot:item.data-table-expand="{
-              internalItem,
-              isExpanded,
-              toggleExpand,
-              item,
-            }"
-          >
-            <v-btn
-              v-if="item.handles.length > 1"
-              @click="toggleExpand(internalItem)"
-              :icon="
-                isExpanded(internalItem) ? 'mdi-chevron-up' : 'mdi-chevron-down'
-              "
-              variant="text"
+        <!-- 头像列模板 -->
+        <template v-slot:item.avatar="{ item }">
+          <v-avatar size="35" class="my-1">
+            <v-img
+              :src="item.avatar || 'https://via.placeholder.com/40'"
+              :alt="item.name"
             />
-          </template>
-          <!-- 展开行内容模板 -->
-          <template v-slot:expanded-row="{ columns, item }">
-            <td :colspan="columns.length">
-              <v-list density="compact">
-                <v-list-item
-                  v-for="(cfProfile, index) in item.handles"
-                  :key="index"
-                  :title="`└ ` + cfProfile.handle"
-                >
-                  <template v-slot:append>
-                    <v-chip
-                      :border="`${getColor(cfProfile.rating)} thin opacity-25`"
-                      :color="getColor(cfProfile.rating)"
-                      size="small"
-                      >{{ cfProfile.rating || "N/A" }}</v-chip
-                    >
-                  </template>
-                </v-list-item>
-              </v-list>
-            </td>
-          </template>
-        </v-data-table>
-      </v-card>
-    </v-col>
+          </v-avatar>
+        </template>
+        <!-- Rating列模板，显示彩色标签 -->
+        <template v-slot:item.rating="{ item }">
+          <v-chip
+            :border="`${getColor(item.rating)} thin opacity-25`"
+            :color="getColor(item.rating)"
+            size="small"
+            >{{ item.rating || "N/A" }}</v-chip
+          >
+        </template>
+        <!-- 展开行按钮模板 -->
+        <template
+          v-slot:item.data-table-expand="{
+            internalItem,
+            isExpanded,
+            toggleExpand,
+            item,
+          }"
+        >
+          <v-btn
+            v-if="item.handles.length > 1"
+            @click="toggleExpand(internalItem)"
+            :icon="
+              isExpanded(internalItem) ? 'mdi-chevron-up' : 'mdi-chevron-down'
+            "
+            variant="text"
+          />
+        </template>
+        <!-- 展开行内容模板 -->
+        <template v-slot:expanded-row="{ columns, item }">
+          <td :colspan="columns.length">
+            <v-list density="compact">
+              <v-list-item
+                v-for="(cfProfile, index) in item.handles"
+                :key="index"
+                :title="`└ ` + cfProfile.handle"
+              >
+                <template v-slot:append>
+                  <v-chip
+                    :border="`${getColor(cfProfile.rating)} thin opacity-25`"
+                    :color="getColor(cfProfile.rating)"
+                    size="small"
+                    >{{ cfProfile.rating || "N/A" }}</v-chip
+                  >
+                </template>
+              </v-list-item>
+            </v-list>
+          </td>
+        </template>
+      </v-data-table>
+    </v-card>
   </v-container>
 </template>
 
