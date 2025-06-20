@@ -1,6 +1,6 @@
 <template>
   <v-container class="fill-height d-flex align-center justify-center">
-    <v-card class="blog-page" min-width="60%">
+    <v-card class="blog-page" min-width="60%" style="line-height: 1.8">
       <h2>{{ article.title }}</h2>
       <div v-html="article.content"></div>
     </v-card>

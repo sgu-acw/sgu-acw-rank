@@ -4,6 +4,7 @@
       :to="'/blog/page?id=' + article.id"
       class="blog-page"
       min-width="60%"
+      style="line-height: 1.8"
     >
       <h2>{{ article.title }}</h2>
       <div v-html="article.content"></div>
