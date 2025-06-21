@@ -45,12 +45,14 @@ const loadArticles = async () => {
       const html = renderMarkdown(markdown);
 
       loadedArticles.push({
+        index: parseInt(fileName.split("-")[0]),
         id: fileName,
         title: title || "Untitled",
         content: html,
       });
     }
-    articles.value = loadedArticles.sort().reverse();
+    loadedArticles.sort((a, b) => b.index - a.index)
+    articles.value = loadedArticles
   } catch (error) {
     console.error("Error loading articles:", error);
     // 可以根据需要添加错误处理，例如显示错误消息
