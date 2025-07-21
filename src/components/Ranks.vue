@@ -48,6 +48,10 @@
             />
           </v-avatar>
         </template>
+        <!-- 年级列模板 -->
+        <template v-slot:item.enrollment_year="{ item }">
+          {{ item.enrollment_year > 0 ? item.enrollment_year : "?" }}
+        </template>
         <!-- Rating列模板，显示彩色标签 -->
         <template v-slot:item.rating="{ item }">
           <v-chip
@@ -80,7 +84,7 @@
           <td :colspan="columns.length">
             <v-list density="compact">
               <v-list-item
-                v-for="(cfProfile, index) in item.handles"
+                v-for="(cfProfile, index) in item.cfProfiles"
                 :key="index"
                 :title="`└ ` + cfProfile.handle"
               >
@@ -118,6 +122,23 @@ import type { Submission, User } from "@/interface/CFAPI";
 // 导入XLSX库用于导出Excel
 import * as XLSX from "xlsx";
 
+// 定义接口
+interface BaseStudentInfo {
+  handles: string[]; // 学生的Codeforces handle列表
+  enrollment_year: number; // 入学年份
+}
+
+// 扩展的学生信息接口
+interface StudentInfo extends BaseStudentInfo {
+  cfProfiles: User[]; // Codeforces用户信息列表
+  rating: number; // 最高rating
+  handle: string; // 主账号handle
+  name: string; // 学生姓名
+  avatar: string; // 头像URL
+  todaySolve: number; // 今日解题数
+  allSolve: number; // 总解题数
+}
+
 // 定义组件props
 const props = defineProps({
   students: {
@@ -129,19 +150,14 @@ const props = defineProps({
 // 将props转为响应式引用
 const students = ref(props.students);
 
-// 定义接口
-interface BaseStudentInfo {
-  handle: string; // Codeforces用户名
-  name: string; // 学生真实姓名
-}
+let mapping: Record<string, string> = {};
 
-// 扩展的学生信息接口
-interface StudentInfo extends BaseStudentInfo {
-  handles: Array<User>; // 所有关联的Codeforces账号
-  rating: number; // 最高rating
-  avatar: string; // 头像URL
-  todaySolve: number; // 今日解题数
-  allSolve: number; // 总解题数
+for (const key in students.value) {
+  const student = students.value[key];
+  for (const handle of student.handles) {
+    // 将handle转换为小写并存储到映射中
+    mapping[handle.toLowerCase()] = key;
+  }
 }
 
 // 初始化排序状态
@@ -169,6 +185,7 @@ const headers = ref([
     sortable: false,
   },
   { title: "Name", key: "name", sortable: false },
+  { title: "Grade", key: "enrollment_year" },
   { title: "Handle", key: "handle", sortable: false },
   { title: "Rating", key: "rating" },
   { title: "Today Solve", key: "todaySolve" },
@@ -194,7 +211,8 @@ const fetchUsers = async ({
 
   try {
     // 获取所有学生handle
-    const handles = students.value ? Object.keys(students.value) : [];
+    const handles = mapping ? Object.keys(mapping) : [];
+    console.log("Fetching users for handles:", handles);
     // 从Codeforces API获取用户信息
     const userInfoResponse = await fetchUserInfo(handles);
 
@@ -205,26 +223,28 @@ const fetchUsers = async ({
       // 处理API返回的用户数据
       userInfoResponse.data.result.forEach((cfProfile: User) => {
         // 获取对应的学生信息
-        const student = students.value[cfProfile.handle.toLowerCase()];
+        const name = mapping[cfProfile.handle.toLowerCase()];
         // 如果学生不存在于临时映射中，则初始化
-        tmpUserMp.hasOwnProperty(student.name) ||
-          (tmpUserMp[student.name] = {
+        tmpUserMp.hasOwnProperty(name) ||
+          (tmpUserMp[name] = {
             handles: [],
-            handle: student.handle,
-            name: student.name,
+            cfProfiles: [],
+            handle: cfProfile.handle,
+            name: name,
             avatar: cfProfile.avatar || "",
             rating: 0,
             todaySolve: 0,
             allSolve: 0,
+            enrollment_year: students.value[name].enrollment_year || -1,
           });
         // 添加用户信息
-        tmpUserMp[student.name].handles.push(cfProfile);
+        tmpUserMp[name].cfProfiles.push(cfProfile);
 
         // 更新最高rating和对应的handle、avatar
-        if (cfProfile.rating > tmpUserMp[student.name].rating) {
-          tmpUserMp[student.name].rating = cfProfile.rating;
-          tmpUserMp[student.name].handle = cfProfile.handle;
-          tmpUserMp[student.name].avatar = cfProfile.avatar;
+        if (cfProfile.rating > tmpUserMp[name].rating) {
+          tmpUserMp[name].rating = cfProfile.rating;
+          tmpUserMp[name].handle = cfProfile.handle;
+          tmpUserMp[name].avatar = cfProfile.avatar;
         }
       });
 
@@ -237,7 +257,7 @@ const fetchUsers = async ({
       // 准备所有需要获取提交记录的handle
       const allHandlesToFetch: { userName: string; cfHandle: string }[] = [];
       for (const userName in tmpUserMp) {
-        for (const cfProfile of tmpUserMp[userName].handles) {
+        for (const cfProfile of tmpUserMp[userName].cfProfiles) {
           allHandlesToFetch.push({ userName, cfHandle: cfProfile.handle });
         }
       }
