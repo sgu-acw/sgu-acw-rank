@@ -9,7 +9,7 @@ const users = ref({
   朱子睿: { handles: ["hsn8086", "small-hsn"], enrollment_year: 24 },
   李镔彬: { handles: ["sunren356"], enrollment_year: 22 },
   黄家宝: { handles: ["xmlhs"], enrollment_year: 23 },
-  陈俊东: { handles: ["cjd666"], enrollment_year: 24 },
+  陈俊东: { handles: ["cjd666", "njn999"], enrollment_year: 24 },
   叶福都: { handles: ["Blackbreead", "WhiteBread"], enrollment_year: 23 },
   施雨柔: { handles: ["webxixi"], enrollment_year: -1 },
   钱玟如: { handles: ["woodghost"], enrollment_year: 23 },
@@ -21,6 +21,4 @@ const users = ref({
   汪金力: { handles: ["wang1113"], enrollment_year: 24 },
   林羿安: { handles: ["primal123"], enrollment_year: -1 },
 });
-
-
 </script>
