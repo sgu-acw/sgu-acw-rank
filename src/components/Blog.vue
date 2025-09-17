@@ -5,9 +5,11 @@
       class="blog-page"
       min-width="60%"
       style="line-height: 1.8"
+      
     >
       <h2>{{ article.title }}</h2>
-      <div v-html="article.content"></div>
+      <div v-html="article.content"
+      class="ma-4"/>
     </v-card>
     <br />
   </div>
