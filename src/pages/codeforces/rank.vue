@@ -20,5 +20,6 @@ const users = ref({
   吴仁光: { handles: ["Wesssxx"], enrollment_year: 24 },
   汪金力: { handles: ["wang1113"], enrollment_year: 24 },
   林羿安: { handles: ["primal123"], enrollment_year: -1 },
+  卢成洋: { handles: ["sao8"], enrollment_year: 25 },
 });
 </script>
