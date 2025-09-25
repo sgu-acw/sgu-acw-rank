@@ -30,6 +30,11 @@ const items = ref([
         route: "/codeforces/rank-retired",
         icon: "mdi-trophy",
       },
+      {
+        title: "Profile",
+        route: "/codeforces/profile",
+        icon: "mdi-account",
+      },
     ],
   },
 ]);

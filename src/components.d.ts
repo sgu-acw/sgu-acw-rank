@@ -12,6 +12,7 @@ declare module 'vue' {
     AppFooter: typeof import('./components/AppFooter.vue')['default']
     Blog: typeof import('./components/Blog.vue')['default']
     BlogPage: typeof import('./components/BlogPage.vue')['default']
+    CodeforcesProfile: typeof import('./components/CodeforcesProfile.vue')['default']
     CPCFinder: typeof import('./components/CPCFinder.vue')['default']
     HelloWorld: typeof import('./components/HelloWorld.vue')['default']
     Home: typeof import('./components/Home.vue')['default']
@@ -19,5 +20,6 @@ declare module 'vue' {
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     ThemeSwitcher: typeof import('./components/ThemeSwitcher.vue')['default']
+    UserInfo: typeof import('./components/UserInfo.vue')['default']
   }
 }

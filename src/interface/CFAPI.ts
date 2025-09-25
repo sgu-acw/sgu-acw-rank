@@ -98,3 +98,13 @@ export interface User {
     titlePhoto: string;
 }
 
+export interface RatingChange {
+    contestId: number;
+    contestName: string; // Localized
+    handle: string; // Codeforces user handle
+    rank: number; // User's place in the contest
+    ratingUpdateTimeSeconds: number; // Time of rating update in unix-format
+    oldRating: number; // User rating before the contest
+    newRating: number; // User rating after the contest
+}
+

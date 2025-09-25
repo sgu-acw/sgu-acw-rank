@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { Submission, User } from "@/interface/CFAPI";
+import type { Submission, User, RatingChange } from "@/interface/CFAPI";
 
 async function fetchUserInfo(handles: string[]) {
     try {
@@ -38,6 +38,21 @@ async function fetchUserStatusStructured(handle: string): Promise<Submission[]> 
     if (data.status !== "OK") throw new Error(`Failed to fetch user status for ${handle}`);
     return data.result as Submission[];
 }
+async function fetchUserRating(handle: string): Promise<RatingChange[]> {
+    try {
+        const response = await axios.get(
+            // `https://codeforces.com/api/user.rating?handle=${handle}`
+            `https://codeforces-api.zh314.xyz/user.rating?handle=${handle}`
+        );
+        const data = response.data;
+        if (data.status !== "OK") throw new Error(`Failed to fetch user rating for ${handle}`);
+        return data.result as RatingChange[];
+    } catch (error) {
+        console.error(`Error fetching user rating for ${handle}:`, error);
+        throw error;
+    }
+}
+
 function processUserSubmissions(submissions: Submission[]) {
     const today = new Date();
     today.setHours(0, 0, 0, 0); // Start of today
@@ -76,6 +91,7 @@ function processUserSubmissions(submissions: Submission[]) {
 
     return { todaySolvedProblems, allSolvedProblems };
 };
+
 function getColor(rating: number) {
     const ratMap: Record<number, string> = {
         0: "gray",
@@ -85,8 +101,8 @@ function getColor(rating: number) {
         1900: "purple",
         2100: "orange",
         2600: "red",
-        3000: "black",
-        4000: "white",
+        // 3000: "black",
+        // 4000: "white",
     };
     for (let rat of Object.keys(ratMap).map(Number).reverse())
         if (rating >= rat) return ratMap[rat];
@@ -99,6 +115,7 @@ export {
     fetchUserStatusStructured,
     processUserSubmissions,
     getColor,
+    fetchUserRating, // Export the new function
 };
 
 

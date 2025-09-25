@@ -57,6 +57,21 @@
             target="_blank"
             title="Open Codeforces Profile"
             variant="text"
+            size="small"
+          />
+          <v-btn
+            density="compact"
+            icon="mdi-information"
+            @click="
+              router.push({
+                name: '/codeforces/profile',
+                query: { handle: item.handle },
+              })
+            "
+            target="_blank"
+            title="Open Local Profile"
+            variant="text"
+            size="small"
           />
         </template>
         <!-- 年级列模板 -->
@@ -133,6 +148,7 @@ import type { Submission, User } from "@/interface/CFAPI";
 
 // 导入XLSX库用于导出Excel
 import * as XLSX from "xlsx";
+import router from "@/router";
 
 // 定义接口
 interface BaseStudentInfo {
