@@ -52,7 +52,6 @@
           {{ item.handle }}
           <v-btn
             density="compact"
- 
             icon="mdi-link"
             :href="`https://codeforces.com/profile/${item.handle}`"
             target="_blank"
@@ -115,7 +114,6 @@
       </v-data-table>
     </v-card>
   </v-container>
-  
 </template>
 
 <script lang="ts" setup>
@@ -124,6 +122,7 @@ import { ref, onMounted, type PropType } from "vue";
 // 导入工具函数和类型
 import {
   fetchUserInfo,
+  fetchUserInfoStructured,
   fetchUserStatus,
   processUserSubmissions,
   getColor,
@@ -221,153 +220,147 @@ const fetchUsers = async ({
   const CONCURRENT_LIMIT = 2; // 并发请求限制，避免过多请求
   itemsPerPage.value = newItemsPerPage;
   loading.value = true;
-
+  // 获取所有学生handle
+  const handles = mapping ? Object.keys(mapping) : [];
+  console.log("Fetching users for handles:", handles);
+  // 临时存储用户信息的映射
+  const tmpUserMp: Record<string, StudentInfo> = {};
+  const userData = [];
   try {
-    // 获取所有学生handle
-    const handles = mapping ? Object.keys(mapping) : [];
-    console.log("Fetching users for handles:", handles);
-    // 从Codeforces API获取用户信息
-    const userInfoResponse = await fetchUserInfo(handles);
-
-    if (userInfoResponse.data.status === "OK") {
-      // 临时存储用户信息的映射
-      const tmpUserMp: Record<string, StudentInfo> = {};
-
-      // 处理API返回的用户数据
-      userInfoResponse.data.result.forEach((cfProfile: User) => {
-        // 获取对应的学生信息
-        const name = mapping[cfProfile.handle.toLowerCase()];
-        // 如果学生不存在于临时映射中，则初始化
-        tmpUserMp.hasOwnProperty(name) ||
-          (tmpUserMp[name] = {
-            handles: [],
-            cfProfiles: [],
-            handle: cfProfile.handle,
-            name: name,
-            avatar: cfProfile.avatar || "",
-            rating: 0,
-            todaySolve: 0,
-            allSolve: 0,
-            enrollment_year: students.value[name].enrollment_year || -1,
-          });
-        // 添加用户信息
-        tmpUserMp[name].cfProfiles.push(cfProfile);
-
-        // 更新最高rating和对应的handle、avatar
-        if (cfProfile.rating > tmpUserMp[name].rating) {
-          tmpUserMp[name].rating = cfProfile.rating;
-          tmpUserMp[name].handle = cfProfile.handle;
-          tmpUserMp[name].avatar = cfProfile.avatar;
-        }
-      });
-
-      // 初始化所有用户的解题数
-      for (const userName in tmpUserMp) {
-        tmpUserMp[userName].todaySolve = 0;
-        tmpUserMp[userName].allSolve = 0;
-      }
-
-      // 准备所有需要获取提交记录的handle
-      const allHandlesToFetch: { userName: string; cfHandle: string }[] = [];
-      for (const userName in tmpUserMp) {
-        for (const cfProfile of tmpUserMp[userName].cfProfiles) {
-          allHandlesToFetch.push({ userName, cfHandle: cfProfile.handle });
-        }
-      }
-
-      // 分批获取用户提交记录
-      const statusResults = [];
-      for (let i = 0; i < allHandlesToFetch.length; i += CONCURRENT_LIMIT) {
-        const batch = allHandlesToFetch.slice(i, i + CONCURRENT_LIMIT);
-        const batchPromises = batch.map(async ({ userName, cfHandle }) => {
-          try {
-            // 获取用户提交记录
-            const statusResponse = await fetchUserStatus(cfHandle);
-            if (statusResponse.data.status === "OK") {
-              const submissions: Submission[] = statusResponse.data.result;
-              // 处理提交记录，获取今日解题和总解题
-              const { todaySolvedProblems, allSolvedProblems } =
-                processUserSubmissions(submissions);
-              return {
-                userName,
-                cfHandle,
-                todaySolvedProblems,
-                allSolvedProblems,
-                error: null,
-              };
-            } else {
-              console.error(
-                `Error fetching user status for ${cfHandle}:`,
-                statusResponse.data.comment
-              );
-              return {
-                userName,
-                cfHandle,
-                error: statusResponse.data.comment,
-                todaySolvedProblems: new Set<string>(),
-                allSolvedProblems: new Set<string>(),
-              };
-            }
-          } catch (error) {
-            console.error(
-              `Error during API call for user status ${cfHandle}:`,
-              error
-            );
-
-            return {
-              userName,
-              cfHandle,
-              error,
-              todaySolvedProblems: new Set<string>(),
-              allSolvedProblems: new Set<string>(),
-            };
-          }
-        });
-        const resultsFromBatch = await Promise.all(batchPromises);
-        statusResults.push(...resultsFromBatch);
-      }
-
-      // 使用DefaultMap聚合解题信息
-      const todaySolved: DefaultMap<string, Set<string>> = new DefaultMap(
-        () => new Set<string>()
-      );
-      const allSolved: DefaultMap<string, Set<string>> = new DefaultMap(
-        () => new Set<string>()
-      );
-
-      // 处理每个用户的结果
-      for (const result of statusResults) {
-        if (result.error) continue;
-
-        // 添加今日解题
-        result.todaySolvedProblems.forEach((problemName) =>
-          todaySolved.get(result.userName).add(problemName)
-        );
-
-        // 添加总解题
-        result.allSolvedProblems.forEach((problemName) =>
-          allSolved.get(result.userName).add(problemName)
-        );
-      }
-
-      totalUsers.value = userInfoResponse.data.result.length;
-      userItems.value = Object.values(tmpUserMp);
-
-      // 更新解题数到用户信息
-      for (const userName in tmpUserMp) {
-        tmpUserMp[userName].todaySolve = todaySolved.get(userName).size || 0;
-        tmpUserMp[userName].allSolve = allSolved.get(userName).size || 0;
-      }
-
-      userItems.value = Object.values(tmpUserMp);
-    } else {
-      console.error("Error fetching users:", userInfoResponse.data.comment);
-    }
+    // 处理API返回的用户数据
+    for await (const user of fetchUserInfoStructured(handles))
+      userData.push(user);
   } catch (error) {
     console.error("Error during API call:", error);
-  } finally {
     loading.value = false;
+    return;
   }
+  totalUsers.value = userData.length;
+  for await (const cfProfile of userData) {
+    // 获取对应的学生信息
+    const name = mapping[cfProfile.handle.toLowerCase()];
+    // 如果学生不存在于临时映射中，则初始化
+    tmpUserMp.hasOwnProperty(name) ||
+      (tmpUserMp[name] = {
+        handles: [],
+        cfProfiles: [],
+        handle: cfProfile.handle,
+        name: name,
+        avatar: cfProfile.avatar || "",
+        rating: 0,
+        todaySolve: 0,
+        allSolve: 0,
+        enrollment_year: students.value[name].enrollment_year || -1,
+      });
+    // 添加用户信息
+    tmpUserMp[name].cfProfiles.push(cfProfile);
+
+    // 更新最高rating和对应的handle、avatar
+    if (cfProfile.rating > tmpUserMp[name].rating) {
+      tmpUserMp[name].rating = cfProfile.rating;
+      tmpUserMp[name].handle = cfProfile.handle;
+      tmpUserMp[name].avatar = cfProfile.avatar;
+    }
+  }
+  // 初始化所有用户的解题数
+  for (const userName in tmpUserMp) {
+    tmpUserMp[userName].todaySolve = 0;
+    tmpUserMp[userName].allSolve = 0;
+  }
+
+  // 准备所有需要获取提交记录的handle
+  const allHandlesToFetch: { userName: string; cfHandle: string }[] = [];
+  for (const userName in tmpUserMp) {
+    for (const cfProfile of tmpUserMp[userName].cfProfiles) {
+      allHandlesToFetch.push({ userName, cfHandle: cfProfile.handle });
+    }
+  }
+
+  // 分批获取用户提交记录
+  const statusResults = [];
+  for (let i = 0; i < allHandlesToFetch.length; i += CONCURRENT_LIMIT) {
+    const batch = allHandlesToFetch.slice(i, i + CONCURRENT_LIMIT);
+    const batchPromises = batch.map(async ({ userName, cfHandle }) => {
+      try {
+        // 获取用户提交记录
+        const statusResponse = await fetchUserStatus(cfHandle);
+        if (statusResponse.data.status === "OK") {
+          const submissions: Submission[] = statusResponse.data.result;
+          // 处理提交记录，获取今日解题和总解题
+          const { todaySolvedProblems, allSolvedProblems } =
+            processUserSubmissions(submissions);
+          return {
+            userName,
+            cfHandle,
+            todaySolvedProblems,
+            allSolvedProblems,
+            error: null,
+          };
+        } else {
+          console.error(
+            `Error fetching user status for ${cfHandle}:`,
+            statusResponse.data.comment
+          );
+          return {
+            userName,
+            cfHandle,
+            error: statusResponse.data.comment,
+            todaySolvedProblems: new Set<string>(),
+            allSolvedProblems: new Set<string>(),
+          };
+        }
+      } catch (error) {
+        console.error(
+          `Error during API call for user status ${cfHandle}:`,
+          error
+        );
+
+        return {
+          userName,
+          cfHandle,
+          error,
+          todaySolvedProblems: new Set<string>(),
+          allSolvedProblems: new Set<string>(),
+        };
+      }
+    });
+    const resultsFromBatch = await Promise.all(batchPromises);
+    statusResults.push(...resultsFromBatch);
+  }
+
+  // 使用DefaultMap聚合解题信息
+  const todaySolved: DefaultMap<string, Set<string>> = new DefaultMap(
+    () => new Set<string>()
+  );
+  const allSolved: DefaultMap<string, Set<string>> = new DefaultMap(
+    () => new Set<string>()
+  );
+
+  // 处理每个用户的结果
+  for (const result of statusResults) {
+    if (result.error) continue;
+
+    // 添加今日解题
+    result.todaySolvedProblems.forEach((problemName) =>
+      todaySolved.get(result.userName).add(problemName)
+    );
+
+    // 添加总解题
+    result.allSolvedProblems.forEach((problemName) =>
+      allSolved.get(result.userName).add(problemName)
+    );
+  }
+
+  userItems.value = Object.values(tmpUserMp);
+
+  // 更新解题数到用户信息
+  for (const userName in tmpUserMp) {
+    tmpUserMp[userName].todaySolve = todaySolved.get(userName).size || 0;
+    tmpUserMp[userName].allSolve = allSolved.get(userName).size || 0;
+  }
+
+  userItems.value = Object.values(tmpUserMp);
+  loading.value = false;
 };
 
 /**

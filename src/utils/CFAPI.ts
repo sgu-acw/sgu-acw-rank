@@ -1,7 +1,7 @@
 import axios from "axios";
-import type { Submission } from "@/interface/CFAPI";
+import type { Submission, User } from "@/interface/CFAPI";
 
-const fetchUserInfo = async (handles: string[]) => {
+async function fetchUserInfo(handles: string[]) {
     try {
         // `https://codeforces.com/api/user.info?handles=${handles.join(";")}`
         const response = await axios.get(`https://codeforces-api.zh314.xyz/user.info?handles=${handles.join(";")}`);
@@ -10,9 +10,18 @@ const fetchUserInfo = async (handles: string[]) => {
         console.error("Error fetching user info:", error);
         throw error;
     }
-};
+}
+async function* fetchUserInfoStructured(handles: string[]): AsyncGenerator<User> {
+    const data = (await fetchUserInfo(handles)).data;
+    if (data.status !== "OK") throw new Error("Failed to fetch user info");
+    for (const rawInfo of data.result) yield rawInfo;
 
-const fetchUserStatus = async (handle: string) => {
+}
+async function fetchOneUserInfoStructured(handle: string): Promise<User> {
+    const asyncGen = fetchUserInfoStructured([handle]);
+    return (await asyncGen.next()).value;
+}
+async function fetchUserStatus(handle: string) {
     try {
         const response = await axios.get(
             // `https://codeforces.com/api/user.status?handle=${handle}&from=1&count=100000`
@@ -24,8 +33,12 @@ const fetchUserStatus = async (handle: string) => {
         throw error;
     }
 };
-
-const processUserSubmissions = (submissions: Submission[]) => {
+async function fetchUserStatusStructured(handle: string): Promise<Submission[]> {
+    const data = (await fetchUserStatus(handle)).data;
+    if (data.status !== "OK") throw new Error(`Failed to fetch user status for ${handle}`);
+    return data.result as Submission[];
+}
+function processUserSubmissions(submissions: Submission[]) {
     const today = new Date();
     today.setHours(0, 0, 0, 0); // Start of today
     const tomorrow = new Date(today);
@@ -80,7 +93,10 @@ function getColor(rating: number) {
 }
 export {
     fetchUserInfo,
+    fetchUserInfoStructured,
+    fetchOneUserInfoStructured,
     fetchUserStatus,
+    fetchUserStatusStructured,
     processUserSubmissions,
     getColor,
 };
