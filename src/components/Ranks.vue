@@ -48,6 +48,18 @@
             />
           </v-avatar>
         </template>
+        <template v-slot:item.handle="{ item }">
+          {{ item.handle }}
+          <v-btn
+            density="compact"
+ 
+            icon="mdi-link"
+            :href="`https://codeforces.com/profile/${item.handle}`"
+            target="_blank"
+            title="Open Codeforces Profile"
+            variant="text"
+          />
+        </template>
         <!-- 年级列模板 -->
         <template v-slot:item.enrollment_year="{ item }">
           {{ item.enrollment_year > 0 ? item.enrollment_year : "?" }}
@@ -103,6 +115,7 @@
       </v-data-table>
     </v-card>
   </v-container>
+  
 </template>
 
 <script lang="ts" setup>
