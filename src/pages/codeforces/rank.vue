@@ -21,7 +21,7 @@ const users = ref({
   汪金力: { handles: ["wang1113"], enrollment_year: 24 },
   林羿安: { handles: ["primal123"], enrollment_year: -1 },
   赖佳淇: { handles: ["laijiaqi"], enrollment_year: 24 },
-  汪行浩: { handles: ["morin25", "tomorin258"], enrollment_year: 25 },
+  汪行浩: { handles: ["tomorin258"], enrollment_year: 25 },
   叶丹萍: { handles: ["ydp_051202"], enrollment_year: 24 },
   卢成洋: { handles: ["sao8"], enrollment_year: 25 },
 });
