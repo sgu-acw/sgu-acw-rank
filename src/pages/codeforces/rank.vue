@@ -23,5 +23,6 @@ const users = ref({
   赖佳淇: { handles: ["laijiaqi"], enrollment_year: 24 },
   汪行浩: { handles: ["morin25", "tomorin258"], enrollment_year: 25 },
   叶丹萍: { handles: ["ydp_051202"], enrollment_year: 24 },
+  卢成洋: { handles: ["sao8"], enrollment_year: 25 },
 });
 </script>
