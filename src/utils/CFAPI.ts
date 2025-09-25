@@ -3,12 +3,18 @@ import type { Submission, User, RatingChange } from "@/interface/CFAPI";
 
 async function fetchUserInfo(handles: string[]) {
     try {
-        // `https://codeforces.com/api/user.info?handles=${handles.join(";")}`
         const response = await axios.get(`https://codeforces-api.zh314.xyz/user.info?handles=${handles.join(";")}`);
         return response;
     } catch (error) {
-        console.error("Error fetching user info:", error);
-        throw error;
+        console.error("Error fetching user info from proxy API:", error);
+        try {
+            // Fallback to the official Codeforces API
+            const response = await axios.get(`https://codeforces.com/api/user.info?handles=${handles.join(";")}`);
+            return response;
+        } catch (fallbackError) {
+            console.error("Error fetching user info from official API:", fallbackError);
+            throw fallbackError;
+        }
     }
 }
 async function* fetchUserInfoStructured(handles: string[]): AsyncGenerator<User> {
@@ -24,13 +30,21 @@ async function fetchOneUserInfoStructured(handle: string): Promise<User> {
 async function fetchUserStatus(handle: string) {
     try {
         const response = await axios.get(
-            // `https://codeforces.com/api/user.status?handle=${handle}&from=1&count=100000`
             `https://codeforces-api.zh314.xyz/user.status?handle=${handle}&from=1&count=100000`
         );
         return response;
     } catch (error) {
-        console.error(`Error fetching user status for ${handle}:`, error);
-        throw error;
+        console.error(`Error fetching user status for ${handle} from proxy API:`, error);
+        try {
+            // Fallback to the official Codeforces API
+            const response = await axios.get(
+                `https://codeforces.com/api/user.status?handle=${handle}&from=1&count=100000`
+            );
+            return response;
+        } catch (fallbackError) {
+            console.error(`Error fetching user status for ${handle} from official API:`, fallbackError);
+            throw fallbackError;
+        }
     }
 };
 async function fetchUserStatusStructured(handle: string): Promise<Submission[]> {
@@ -41,15 +55,25 @@ async function fetchUserStatusStructured(handle: string): Promise<Submission[]> 
 async function fetchUserRating(handle: string): Promise<RatingChange[]> {
     try {
         const response = await axios.get(
-            // `https://codeforces.com/api/user.rating?handle=${handle}`
             `https://codeforces-api.zh314.xyz/user.rating?handle=${handle}`
         );
         const data = response.data;
         if (data.status !== "OK") throw new Error(`Failed to fetch user rating for ${handle}`);
         return data.result as RatingChange[];
     } catch (error) {
-        console.error(`Error fetching user rating for ${handle}:`, error);
-        throw error;
+        console.error(`Error fetching user rating for ${handle} from proxy API:`, error);
+        try {
+            // Fallback to the official Codeforces API
+            const response = await axios.get(
+                `https://codeforces.com/api/user.rating?handle=${handle}`
+            );
+            const data = response.data;
+            if (data.status !== "OK") throw new Error(`Failed to fetch user rating for ${handle}`);
+            return data.result as RatingChange[];
+        } catch (fallbackError) {
+            console.error(`Error fetching user rating for ${handle} from official API:`, fallbackError);
+            throw fallbackError;
+        }
     }
 }
 
