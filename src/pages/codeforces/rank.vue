@@ -24,5 +24,6 @@ const users = ref({
   汪行浩: { handles: ["tomorin258"], enrollment_year: 25 },
   叶丹萍: { handles: ["ydp_051202"], enrollment_year: 24 },
   卢成洋: { handles: ["sao8"], enrollment_year: 25 },
+  黄章智: { handles: ["1314Hiten"], enrollment_year: 24 },
 });
 </script>
