@@ -24,5 +24,14 @@ const users = ref({
   汪行浩: { handles: ["tomorin258"], enrollment_year: 25 },
   叶丹萍: { handles: ["ydp_051202"], enrollment_year: 24 },
   卢成洋: { handles: ["sao8"], enrollment_year: 25 },
+  官俊杰: { handles: ["Yz01"], enrollment_year: 24 },
+  郑子俊: { handles: ["HydraTyphoon"], enrollment_year: 25 },
+  陈铭津: { handles: ["_com"], enrollment_year: 23 },
+  陈天源: { handles: ["CTTT"], enrollment_year: 25 },
+  黄章智: { handles: ["1314Hiten"], enrollment_year: 24 },
+  张信言: { handles: ["MAINCAND"], enrollment_year: 25 },
+  杨壹锋: { handles: ["Ioytione"], enrollment_year: 25 },
+  董学文: { handles: ["lapu"], enrollment_year: 24 },
+  徐锋: { handles: ["CodeByXu"], enrollment_year: 23 },
 });
 </script>
