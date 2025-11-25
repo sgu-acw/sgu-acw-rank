@@ -233,7 +233,7 @@ const fetchUsers = async ({
 }) => {
   page.value = newPage;
 
-  const CONCURRENT_LIMIT = 2; // 并发请求限制，避免过多请求
+  const CONCURRENT_LIMIT = 16; // 并发请求限制，避免过多请求
   itemsPerPage.value = newItemsPerPage;
   loading.value = true;
   // 获取所有学生handle
