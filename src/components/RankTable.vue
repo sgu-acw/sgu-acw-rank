@@ -271,25 +271,30 @@ onMounted(() => {
                   </TableCell>
                 </TableRow>
                 <!-- Expanded sub-rows -->
-                <TableRow v-if="row.getIsExpanded()">
-                  <TableCell :colspan="row.getVisibleCells().length" class="bg-muted/50">
-                    <div class="py-2 px-4 space-y-1">
-                      <div
-                        v-for="(cfProfile, index) in row.original.cfProfiles"
-                        :key="index"
-                        class="flex items-center justify-between text-sm"
-                      >
-                        <span class="text-muted-foreground">└ {{ cfProfile.handle }}</span>
+                <template v-if="row.getIsExpanded()">
+                  <TableRow v-for="(cfProfile, index) in row.original.cfProfiles" :key="index" class="bg-muted/50">
+                    <TableCell v-for="cell in row.getVisibleCells()" :key="cell.id">
+                      <template v-if="cell.column.id === 'avatar'">
+                        <Avatar
+                          :src="cfProfile.avatar || 'https://via.placeholder.com/40'"
+                          :alt="cfProfile.handle"
+                          size="35"
+                        />
+                      </template>
+                      <template v-else-if="cell.column.id === 'handle'">
+                        <span class="text-muted-foreground">{{ cfProfile.handle }}</span>
+                      </template>
+                      <template v-else-if="cell.column.id === 'rating'">
                         <span
                           class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold"
                           :class="getRatingColorClass(cfProfile.rating)"
                         >
                           {{ cfProfile.rating || 'N/A' }}
                         </span>
-                      </div>
-                    </div>
-                  </TableCell>
-                </TableRow>
+                      </template>
+                    </TableCell>
+                  </TableRow>
+                </template>
               </template>
               <TableRow v-if="!userItems.length && !loading">
                 <TableCell :colspan="columns.length" class="text-center text-muted-foreground py-8">
