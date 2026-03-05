@@ -17,7 +17,7 @@ import {
 import type { User } from '../lib/interfaces/cfapi'
 import type { BaseStudentInfo } from '../data/students'
 import * as XLSX from 'xlsx'
-import { ExternalLink, Info, ChevronDown, ChevronRight, FileSpreadsheet } from 'lucide-vue-next'
+import { ExternalLink, Info, ChevronDown, ChevronRight, FileSpreadsheet, Eye, EyeOff } from 'lucide-vue-next'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from './ui/table'
 import { Card, CardHeader, CardTitle, CardContent } from './ui/card'
 import { Button } from './ui/button'
@@ -48,6 +48,7 @@ const loading = ref(false)
 const sorting = ref<SortingState>([{ id: 'rating', desc: true }])
 const expanded = ref<ExpandedState>({})
 const isMobile = ref(false)
+const hideNames = ref(false)
 
 const columnVisibility = computed(() => {
   if (isMobile.value) {
@@ -85,7 +86,7 @@ const columns = [
   columnHelper.accessor('name', {
     header: 'Name',
     enableSorting: false,
-    cell: (info) => h('span', { class: 'whitespace-nowrap' }, info.getValue()),
+    cell: (info) => h('span', { class: 'whitespace-nowrap' }, hideNames.value ? '***' : info.getValue()),
   }),
   columnHelper.accessor('enrollment_year', {
     header: 'Grade',
@@ -195,10 +196,16 @@ onMounted(() => {
           <span class="hidden md:inline">SGU CodeForces Rank</span>
           <span class="md:hidden">CF RK</span>
         </CardTitle>
-        <Button variant="outline" size="sm" @click="exportToXLSX">
-          <FileSpreadsheet class="h-4 w-4 md:mr-2" />
-          <span class="hidden md:inline">Export XLSX</span>
-        </Button>
+        <div class="flex gap-2">
+          <Button variant="outline" size="sm" @click="hideNames = !hideNames">
+            <component :is="hideNames ? EyeOff : Eye" class="h-4 w-4 md:mr-2" />
+            <span class="hidden md:inline">{{ hideNames ? 'Show Names' : 'Hide Names' }}</span>
+          </Button>
+          <Button variant="outline" size="sm" @click="exportToXLSX">
+            <FileSpreadsheet class="h-4 w-4 md:mr-2" />
+            <span class="hidden md:inline">Export XLSX</span>
+          </Button>
+        </div>
       </CardHeader>
       <CardContent class="p-0">
         <!-- Loading skeleton -->
