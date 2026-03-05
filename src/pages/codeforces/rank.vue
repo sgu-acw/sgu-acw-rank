@@ -42,8 +42,7 @@ const users = ref({
   叶宇轩: { handles: ["HK-Athy"], enrollment_year: 25 },
   何沁桐: { handles: ["mixed4556456"], enrollment_year: 25 },
   徐小雅: { handles: ["xuxiaoya919"], enrollment_year: 24 },
-  冯坤翰:{ handles: ["wqfr"], enrollment_year: 25 },
-},
-  洪瑜徽:{ handles: ["crackun24"], enrollment_year: 24 },
+  冯坤翰: { handles: ["wqfr"], enrollment_year: 25 },
+  洪瑜徽: { handles: ["crackun24"], enrollment_year: 24 },
 });
 </script>
