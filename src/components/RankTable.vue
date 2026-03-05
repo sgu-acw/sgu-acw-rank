@@ -12,12 +12,9 @@ import {
 } from '@tanstack/vue-table'
 import {
   fetchUserInfoStructured,
-  fetchUserStatus,
-  processUserSubmissions,
   getRatingColorClass,
 } from '../lib/cfapi'
-import { DefaultMap } from '../lib/collections'
-import type { Submission, User } from '../lib/interfaces/cfapi'
+import type { User } from '../lib/interfaces/cfapi'
 import type { BaseStudentInfo } from '../data/students'
 import * as XLSX from 'xlsx'
 import { ExternalLink, Info, ChevronDown, ChevronRight, FileSpreadsheet } from 'lucide-vue-next'
@@ -33,8 +30,6 @@ interface StudentInfo extends BaseStudentInfo {
   handle: string
   name: string
   avatar: string
-  todaySolve: number
-  allSolve: number
 }
 
 const props = defineProps<{
@@ -56,7 +51,7 @@ const isMobile = ref(false)
 
 const columnVisibility = computed(() => {
   if (isMobile.value) {
-    return { expand: false, avatar: false, enrollment_year: false, todaySolve: false, allSolve: false }
+    return { expand: false, avatar: false, enrollment_year: false }
   }
   return {}
 })
@@ -106,12 +101,6 @@ const columns = [
   columnHelper.accessor('rating', {
     header: 'Rating',
   }),
-  columnHelper.accessor('todaySolve', {
-    header: 'Today Solve',
-  }),
-  columnHelper.accessor('allSolve', {
-    header: 'All Solve',
-  }),
 ]
 
 const table = useVueTable({
@@ -133,8 +122,6 @@ const table = useVueTable({
   getExpandedRowModel: getExpandedRowModel(),
   getRowCanExpand: (row) => row.original.cfProfiles.length > 1,
 })
-
-const CONCURRENT_LIMIT = 16
 
 const fetchUsers = async () => {
   loading.value = true
@@ -162,8 +149,6 @@ const fetchUsers = async () => {
         name,
         avatar: cfProfile.avatar || '',
         rating: 0,
-        todaySolve: 0,
-        allSolve: 0,
         enrollment_year: props.students[name].enrollment_year || -1,
       }
     }
@@ -173,45 +158,6 @@ const fetchUsers = async () => {
       tmpUserMp[name].handle = cfProfile.handle
       tmpUserMp[name].avatar = cfProfile.avatar
     }
-  }
-
-  // Fetch submissions in batches
-  const allHandlesToFetch: { userName: string; cfHandle: string }[] = []
-  for (const userName in tmpUserMp) {
-    for (const cfProfile of tmpUserMp[userName].cfProfiles) {
-      allHandlesToFetch.push({ userName, cfHandle: cfProfile.handle })
-    }
-  }
-
-  const todaySolved: DefaultMap<string, Set<string>> = new DefaultMap(() => new Set())
-  const allSolved: DefaultMap<string, Set<string>> = new DefaultMap(() => new Set())
-
-  for (let i = 0; i < allHandlesToFetch.length; i += CONCURRENT_LIMIT) {
-    const batch = allHandlesToFetch.slice(i, i + CONCURRENT_LIMIT)
-    const results = await Promise.all(batch.map(async ({ userName, cfHandle }) => {
-      try {
-        const statusResponse = await fetchUserStatus(cfHandle)
-        if (statusResponse.data.status === 'OK') {
-          const submissions: Submission[] = statusResponse.data.result
-          const { todaySolvedProblems, allSolvedProblems } = processUserSubmissions(submissions)
-          return { userName, todaySolvedProblems, allSolvedProblems, error: null }
-        }
-        return { userName, todaySolvedProblems: new Set<string>(), allSolvedProblems: new Set<string>(), error: 'API error' }
-      } catch (error) {
-        return { userName, todaySolvedProblems: new Set<string>(), allSolvedProblems: new Set<string>(), error }
-      }
-    }))
-
-    for (const result of results) {
-      if (result.error) continue
-      result.todaySolvedProblems.forEach(p => todaySolved.get(result.userName).add(p))
-      result.allSolvedProblems.forEach(p => allSolved.get(result.userName).add(p))
-    }
-  }
-
-  for (const userName in tmpUserMp) {
-    tmpUserMp[userName].todaySolve = todaySolved.get(userName).size || 0
-    tmpUserMp[userName].allSolve = allSolved.get(userName).size || 0
   }
 
   userItems.value = Object.values(tmpUserMp)
