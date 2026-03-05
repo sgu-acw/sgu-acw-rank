@@ -1,0 +1,9 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import RankTable from '../../components/RankTable.vue';
+import { retiredStudents } from '../../data/students';
+---
+
+<BaseLayout title="SGU ACW - CodeForces Rank (Retired)">
+  <RankTable client:load students={retiredStudents} />
+</BaseLayout>

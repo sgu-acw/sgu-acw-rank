@@ -1,0 +1,67 @@
+---
+import '../styles/globals.css'
+import AppNav from '../components/AppNav.vue'
+import ThemeToggle from '../components/ThemeToggle.vue'
+
+interface Props {
+  title?: string
+}
+
+const { title = 'SGU Algo Competition Workshop' } = Astro.props
+---
+
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+  <title>{title}</title>
+</head>
+<body>
+  <!-- Top bar -->
+  <header class="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <div class="flex h-14 items-center px-4">
+      <button
+        id="nav-toggle"
+        class="inline-flex items-center justify-center rounded-md p-2 hover:bg-accent hover:text-accent-foreground transition-colors mr-2"
+      >
+        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 12h18M3 6h18M3 18h18" />
+        </svg>
+      </button>
+      <a href="/" class="font-semibold text-lg">
+        <span class="hidden md:inline">SGU Algo Competition Workshop</span>
+        <span class="md:hidden">SGU ACW</span>
+      </a>
+      <div class="flex-1" />
+      <ThemeToggle client:load />
+    </div>
+  </header>
+
+  <div class="flex">
+    <AppNav client:load />
+    <main class="flex-1 min-h-[calc(100vh-3.5rem)] p-4 md:ml-64 transition-all">
+      <slot />
+    </main>
+  </div>
+
+  <!-- Theme init script: runs before paint to prevent flash -->
+  <script is:inline>
+    const theme = localStorage.getItem('theme');
+    if (theme === 'light') {
+      document.documentElement.classList.remove('dark');
+    } else {
+      document.documentElement.classList.add('dark');
+    }
+  </script>
+
+  <!-- Nav toggle script -->
+  <script is:inline>
+    document.getElementById('nav-toggle')?.addEventListener('click', () => {
+      const event = new CustomEvent('toggle-nav');
+      window.dispatchEvent(event);
+    });
+  </script>
+</body>
+</html>
