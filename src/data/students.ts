@@ -46,7 +46,8 @@ export const activeStudents: Record<string, BaseStudentInfo> = {
   方致远: { handles: ["zhipuyu"], enrollment_year: -1 },
   林浩荣: { handles: ["husky.h"], enrollment_year: -1 },
   彭林聪: { handles: ["yaoyi_07"], enrollment_year: -1 },
-  杨文辉: { handles: ["xinghuiy"], enrollment_year: -1 }
+  杨文辉: { handles: ["xinghuiy"], enrollment_year: -1 },
+  黄培芳: { handles: ["Crire"], enrollment_year: -1 }
 };
 
 export const retiredStudents: Record<string, BaseStudentInfo> = {
