@@ -30,7 +30,7 @@ export const activeStudents: Record<string, BaseStudentInfo> = {
   陈天源: { handles: ["CTTT"], enrollment_year: 25 },
   黄章智: { handles: ["1314Hiten"], enrollment_year: 24 },
   张信言: { handles: ["MAINCAND"], enrollment_year: 25 },
-  杨壹锋: { handles: ["Ioytione"], enrollment_year: 25 },
+  杨壹锋: { handles: ["Ioytione", "Witch_Ellen"], enrollment_year: 25 },
   董学文: { handles: ["lapu"], enrollment_year: 24 },
   徐锋: { handles: ["CodeByXu"], enrollment_year: 23 },
   林沐怀: { handles: ["xiuke"], enrollment_year: 25 },
