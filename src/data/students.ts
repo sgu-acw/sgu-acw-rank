@@ -23,7 +23,7 @@ export const activeStudents: Record<string, BaseStudentInfo> = {
   赖佳淇: { handles: ["laijiaqi."], enrollment_year: 24 },
   汪行浩: { handles: ["tomorin258"], enrollment_year: 25 },
   叶丹萍: { handles: ["ydp_051202"], enrollment_year: 24 },
-  卢成洋: { handles: ["sao8"], enrollment_year: 25 },
+  卢成洋: { handles: ["sao8", "takina3023"], enrollment_year: 25 },
   官俊杰: { handles: ["Yz01"], enrollment_year: 24 },
   郑子俊: { handles: ["HydraTyphoon"], enrollment_year: 25 },
   陈铭津: { handles: ["3471468411"], enrollment_year: 23 },
