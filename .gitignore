@@ -22,3 +22,10 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# python bytecode
+__pycache__/
+*.pyc
+
+# playwright mcp artifacts
+.playwright-mcp/

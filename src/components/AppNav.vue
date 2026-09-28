@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import {
-  Home, Medal, Code, Trophy, User, ChevronDown, ChevronRight, Menu, X,
+  Home, Medal, Code, Trophy, User, ChevronDown, ChevronRight, Menu, X, Activity,
 } from 'lucide-vue-next'
 
 const isOpen = ref(false)
@@ -10,6 +10,7 @@ const isMobile = ref(false)
 
 const navItems = [
   { title: 'Home', route: '/', icon: Home },
+  { title: 'Status', route: '/status', icon: Activity },
   { title: 'Member Awards', route: '/member-awards', icon: Medal },
 ]
 

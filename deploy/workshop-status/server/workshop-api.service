@@ -1,0 +1,27 @@
+[Unit]
+Description=Workshop open/closed status API
+Documentation=https://github.com/sgu-acw/sgu-acw-rank
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /opt/workshop-api/workshop-api.py
+EnvironmentFile=-/etc/workshop-api.env
+Restart=always
+RestartSec=2
+
+# The service only reads a timestamp file; lock the rest down.
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_INET AF_INET6
+RestrictNamespaces=true
+LockPersonality=true
+
+[Install]
+WantedBy=multi-user.target
