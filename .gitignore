@@ -27,5 +27,11 @@ pnpm-debug.log*
 __pycache__/
 *.pyc
 
+# firmware credentials (secrets.example.h is the template)
+firmware/**/secrets.h
+
 # playwright mcp artifacts
 .playwright-mcp/
+
+# wrangler local state
+.wrangler/
