@@ -1,0 +1,10 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import AuthForm from '../components/AuthForm.vue';
+---
+
+<BaseLayout title="SGU ACW - 登录">
+  <div class="mx-auto max-w-5xl px-4 py-10 md:px-6">
+    <AuthForm client:load initialMode="login" redirectTo="/me" />
+  </div>
+</BaseLayout>

@@ -12,6 +12,18 @@ export default defineConfig({
     tailwind({ applyBaseStyles: false }),
   ],
   output: 'static',
+  vite: {
+    server: {
+      // 本地开发时把 /api 转给后端。生产环境由 Cloudflare Pages Function
+      // 完成同样的转发，所以前端代码不需要区分环境。
+      proxy: {
+        '/api': {
+          target: 'http://127.0.0.1:8091',
+          changeOrigin: false,
+        },
+      },
+    },
+  },
   markdown: {
     remarkPlugins: [remarkMath, remarkLinkCard],
     rehypePlugins: [rehypeKatex],

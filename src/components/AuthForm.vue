@@ -1,0 +1,204 @@
+<script setup lang="ts">
+/**
+ * 登录 / 注册表单。
+ *
+ * 两种模式共用一套字段样式，用 tab 切换。注册成功和登录成功都直接跳转，
+ * 不在这里处理后续导航，交给调用方传 onSuccess。
+ */
+import { computed, ref } from 'vue'
+import { AlertCircle, Loader2 } from 'lucide-vue-next'
+import { Alert } from './ui/alert'
+import { Button } from './ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
+import { Input } from './ui/input'
+import { ApiError, isStudentIdShaped, normalizeStudentId } from '../lib/api'
+import { useAuth } from '../lib/auth'
+
+const props = withDefaults(
+  defineProps<{
+    /** 初始模式 */
+    initialMode?: 'login' | 'register'
+    /** 成功后做什么。默认整页跳到 /me */
+    redirectTo?: string
+  }>(),
+  { initialMode: 'login', redirectTo: '/me' },
+)
+
+const { login, register } = useAuth()
+
+const mode = ref<'login' | 'register'>(props.initialMode)
+const submitting = ref(false)
+const error = ref('')
+
+const studentId = ref('')
+const password = ref('')
+const displayName = ref('')
+const inviteCode = ref('')
+
+// 学号格式提示。不在输入框上监听 keyup 来触发：浏览器自动填充和脚本设值都
+// 不会发 keyup，那样会漏掉。改为直接看当前值，只多一个「非空」条件。
+const studentIdLooksWrong = computed(
+  () => studentId.value.trim() !== '' && !isStudentIdShaped(studentId.value),
+)
+
+const canSubmit = computed(() => {
+  if (submitting.value) return false
+  if (!studentId.value.trim() || !password.value) return false
+  if (mode.value === 'register') {
+    if (!displayName.value.trim() || !inviteCode.value.trim()) return false
+    if (!isStudentIdShaped(studentId.value)) return false
+  }
+  return true
+})
+
+// 按钮为何不可点。光把按钮置灰而不说明原因，用户只能猜。
+const blockedReason = computed(() => {
+  if (submitting.value) return ''
+  if (!inviteCode.value.trim() && mode.value === 'register') return '请填写邀请码'
+  if (!studentId.value.trim()) return '请填写学号'
+  if (!isStudentIdShaped(studentId.value)) return '学号格式不对，应为 11 位数字'
+  if (!displayName.value.trim() && mode.value === 'register') return '请填写姓名'
+  if (!password.value) return '请填写密码'
+  if (mode.value === 'register' && password.value.length < 8) return '密码至少 8 位'
+  return ''
+})
+
+function switchMode(next: 'login' | 'register') {
+  mode.value = next
+  error.value = ''
+}
+
+async function submit() {
+  if (!canSubmit.value) return
+
+  submitting.value = true
+  error.value = ''
+
+  try {
+    if (mode.value === 'login') {
+      await login(normalizeStudentId(studentId.value), password.value)
+    } else {
+      await register({
+        invite_code: inviteCode.value.trim().toUpperCase(),
+        student_id: normalizeStudentId(studentId.value),
+        display_name: displayName.value.trim(),
+        password: password.value,
+      })
+    }
+    window.location.href = props.redirectTo
+  } catch (err) {
+    if (err instanceof ApiError) {
+      error.value = err.message
+    } else {
+      error.value = '出了点问题，请稍后重试'
+    }
+    submitting.value = false
+  }
+}
+</script>
+
+<template>
+  <Card class="w-full max-w-md mx-auto">
+    <CardHeader class="pb-4">
+      <CardTitle class="text-lg">{{ mode === 'login' ? '登录' : '注册' }}</CardTitle>
+
+      <div class="flex gap-1 pt-3">
+        <button
+          v-for="tab in [
+            { key: 'login' as const, label: '登录' },
+            { key: 'register' as const, label: '注册' },
+          ]"
+          :key="tab.key"
+          type="button"
+          class="flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors"
+          :class="
+            mode === tab.key
+              ? 'bg-accent text-accent-foreground'
+              : 'text-muted-foreground hover:bg-muted/60'
+          "
+          @click="switchMode(tab.key)"
+        >
+          {{ tab.label }}
+        </button>
+      </div>
+    </CardHeader>
+
+    <CardContent class="space-y-4">
+      <Alert v-if="error" variant="destructive" class="flex items-start gap-2">
+        <AlertCircle class="h-4 w-4 shrink-0 translate-y-0.5" />
+        <span class="text-sm">{{ error }}</span>
+      </Alert>
+
+      <form class="space-y-4" @submit.prevent="submit">
+        <div v-if="mode === 'register'" class="space-y-1.5">
+          <label for="invite" class="text-sm font-medium">邀请码</label>
+          <Input
+            id="invite"
+            v-model="inviteCode"
+            placeholder="群里的邀请码"
+            autocomplete="off"
+            autocapitalize="characters"
+            spellcheck="false"
+            class="font-mono uppercase"
+          />
+        </div>
+
+        <div class="space-y-1.5">
+          <label for="student-id" class="text-sm font-medium">学号</label>
+          <Input
+            id="student-id"
+            v-model="studentId"
+            placeholder="11 位学号"
+            autocomplete="username"
+            inputmode="numeric"
+            spellcheck="false"
+            class="font-mono"
+          />
+          <p v-if="studentIdLooksWrong" class="text-xs text-destructive">
+            学号格式看起来不对，应为 11 位数字
+          </p>
+          <p v-else class="text-xs text-muted-foreground">
+            {{ mode === 'register' ? '入学年份、学院、专业会从学号自动识别' : '' }}
+          </p>
+        </div>
+
+        <div v-if="mode === 'register'" class="space-y-1.5">
+          <label for="display-name" class="text-sm font-medium">姓名</label>
+          <Input
+            id="display-name"
+            v-model="displayName"
+            placeholder="真实姓名"
+            autocomplete="name"
+          />
+        </div>
+
+        <div class="space-y-1.5">
+          <label for="password" class="text-sm font-medium">密码</label>
+          <Input
+            id="password"
+            v-model="password"
+            type="password"
+            :placeholder="mode === 'register' ? '至少 8 位' : ''"
+            :autocomplete="mode === 'login' ? 'current-password' : 'new-password'"
+          />
+        </div>
+
+        <Button type="submit" class="w-full" :disabled="!canSubmit">
+          <Loader2 v-if="submitting" class="mr-2 h-4 w-4 animate-spin" />
+          {{ mode === 'login' ? '登录' : '注册并登录' }}
+        </Button>
+
+        <p v-if="blockedReason" class="text-center text-xs text-muted-foreground">
+          {{ blockedReason }}
+        </p>
+      </form>
+
+      <p v-if="mode === 'login'" class="text-xs text-muted-foreground text-center">
+        忘记密码请联系管理员重置
+      </p>
+      <p v-else class="text-xs text-muted-foreground text-center">
+        注册需要群里发的邀请码
+      </p>
+    </CardContent>
+  </Card>
+</template>
