@@ -19,6 +19,7 @@ const checkedAt = ref<Date | null>(null)
 const label = computed(() => stateLabel(state.value))
 const description = computed(() => stateDescription(state.value))
 const age = computed(() => formatAge(data.value?.age))
+const devices = computed(() => data.value?.devices ?? [])
 
 const lastSeenText = computed(() => {
   const ts = data.value?.last_seen
@@ -102,6 +103,22 @@ async function manualRefresh() {
           <dd class="mt-0.5 text-xs text-muted-foreground/60">每 20 秒自动刷新</dd>
         </div>
       </dl>
+
+      <div v-if="devices.length" class="mt-4 flex flex-wrap items-center gap-2 text-xs">
+        <span class="text-muted-foreground">正在报到的设备</span>
+        <span
+          v-for="device in devices"
+          :key="device.id"
+          class="inline-flex items-center gap-1.5 rounded-md border border-border/40 px-2 py-1"
+        >
+          <span
+            class="h-1.5 w-1.5 rounded-full"
+            :class="device.open ? 'bg-emerald-500' : 'bg-muted-foreground/40'"
+          />
+          <span class="font-medium">{{ device.id }}</span>
+          <span class="text-muted-foreground/60">{{ formatAge(device.age) }}</span>
+        </span>
+      </div>
     </div>
 
     <div class="mt-6 rounded-lg border border-border/40 bg-card p-6">
@@ -110,12 +127,12 @@ async function manualRefresh() {
         这是怎么判断的
       </h2>
       <ol class="mt-3 space-y-2 text-sm text-muted-foreground">
-        <li>1. 工作坊里的树莓派每 30 秒向状态服务发一次心跳。</li>
-        <li>2. 心跳是一个到服务器的短 SSH 连接,由服务器上的受限命令记录时间戳。</li>
+        <li>1. 工作坊里的设备每 30 秒向状态服务发一次心跳。</li>
+        <li>2. 服务器记录收到心跳的时间,设备自己的时钟不参与判断。</li>
         <li>3. 只要最近一次心跳在 {{ ttlText }} 之内,就认为工作坊开门;否则当作关门。</li>
       </ol>
       <p class="mt-3 text-xs text-muted-foreground/60">
-        树莓派断电、断网或还没开机,心跳就会停下,状态自动变成没开门。
+        设备断电、断网或还没开机,心跳就会停下,状态自动变成没开门。
       </p>
     </div>
   </div>

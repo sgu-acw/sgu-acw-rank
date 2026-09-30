@@ -74,12 +74,12 @@ const fetchStudents = async () => {
     if (response.data && response.data.data) {
       students.value = response.data.data
     } else {
-      error.value = 'No data received from API.'
+      error.value = '接口没有返回数据。'
       students.value = []
     }
   } catch (err) {
     console.error('Error fetching student data:', err)
-    error.value = 'Failed to load data.'
+    error.value = '数据加载失败。'
     students.value = []
   } finally {
     loading.value = false
@@ -137,7 +137,7 @@ onMounted(() => {
               </TableRow>
               <TableRow v-if="!students.length">
                 <TableCell :colspan="columns.length" class="text-center text-muted-foreground py-8">
-                  No data available or failed to load.
+                  暂无数据或加载失败。
                 </TableCell>
               </TableRow>
             </TableBody>

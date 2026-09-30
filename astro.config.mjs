@@ -4,6 +4,7 @@ import vue from '@astrojs/vue';
 import tailwind from '@astrojs/tailwind';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
+import remarkLinkCard from './src/plugins/remark-link-card.mjs';
 
 export default defineConfig({
   integrations: [
@@ -12,7 +13,7 @@ export default defineConfig({
   ],
   output: 'static',
   markdown: {
-    remarkPlugins: [remarkMath],
+    remarkPlugins: [remarkMath, remarkLinkCard],
     rehypePlugins: [rehypeKatex],
     shikiConfig: {
       theme: 'one-dark-pro',

@@ -10,12 +10,20 @@ import { onMounted, onUnmounted, ref } from 'vue'
 export const WORKSHOP_STATUS_API: string =
   import.meta.env.PUBLIC_WORKSHOP_STATUS_API ?? 'https://sgu-acw.hsn8086.com'
 
+export interface WorkshopDevice {
+  id: string
+  last_seen: number
+  age: number
+  open: boolean
+}
+
 export interface WorkshopStatus {
   open: boolean
   last_seen: number | null
   age: number | null
   ttl: number
   now: number
+  devices?: WorkshopDevice[]
 }
 
 export type WorkshopState = 'loading' | 'open' | 'closed' | 'error'
@@ -73,13 +81,13 @@ export function stateLabel(state: WorkshopState): string {
 export function stateDescription(state: WorkshopState): string {
   switch (state) {
     case 'open':
-      return '树莓派在线,工作坊现在开着'
+      return '工作坊里的设备在线,现在开着'
     case 'closed':
-      return '树莓派不在线,工作坊现在关着'
+      return '工作坊里的设备不在线,现在关着'
     case 'error':
       return '联系不上状态服务,稍后重试'
     default:
-      return '正在查询树莓派'
+      return '正在查询工作坊里的设备'
   }
 }
 

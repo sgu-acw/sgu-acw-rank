@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import {
-  Home, Medal, Code, Trophy, User, ChevronDown, ChevronRight, Menu, X, Activity,
+  Home, Medal, Code, Trophy, User, ChevronDown, ChevronRight, Menu, X, Activity, Compass,
 } from 'lucide-vue-next'
 
 const isOpen = ref(false)
@@ -9,15 +9,16 @@ const cfOpen = ref(false)
 const isMobile = ref(false)
 
 const navItems = [
-  { title: 'Home', route: '/', icon: Home },
-  { title: 'Status', route: '/status', icon: Activity },
-  { title: 'Member Awards', route: '/member-awards', icon: Medal },
+  { title: '首页', route: '/', icon: Home },
+  { title: '导航', route: '/nav', icon: Compass },
+  { title: '工作坊状态', route: '/status', icon: Activity },
+  // { title: '成员获奖', route: '/member-awards', icon: Medal }, // 页面已下线
 ]
 
 const cfItems = [
-  { title: 'Rank', route: '/codeforces/rank', icon: Trophy },
-  { title: 'Rank (retired)', route: '/codeforces/rank-retired', icon: Trophy },
-  { title: 'Profile', route: '/codeforces/profile', icon: User },
+  { title: '排名', route: '/codeforces/rank', icon: Trophy },
+  { title: '排名（退役）', route: '/codeforces/rank-retired', icon: Trophy },
+  { title: '个人资料', route: '/codeforces/profile', icon: User },
 ]
 
 onMounted(() => {

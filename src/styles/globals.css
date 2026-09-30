@@ -57,3 +57,31 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  /* Link card, produced by src/plugins/remark-link-card.mjs */
+  .link-card {
+    @apply my-4 flex items-start justify-between gap-4 rounded-lg border border-border/40 bg-card p-4 no-underline transition-colors;
+  }
+  .link-card:hover {
+    @apply border-border bg-muted/40;
+  }
+  .link-card-main {
+    @apply flex min-w-0 flex-col gap-1;
+  }
+  .link-card-title {
+    @apply text-sm font-medium text-foreground;
+  }
+  .link-card-desc {
+    @apply text-xs leading-relaxed text-muted-foreground;
+  }
+  .link-card-host {
+    @apply truncate font-mono text-[11px] text-muted-foreground/60;
+  }
+  .link-card-arrow {
+    @apply shrink-0 text-sm text-muted-foreground/40 transition-colors;
+  }
+  .link-card:hover .link-card-arrow {
+    @apply text-primary;
+  }
+}

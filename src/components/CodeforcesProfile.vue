@@ -105,16 +105,16 @@ onMounted(async () => {
           <h2 class="text-2xl font-bold" :style="{ color: rankColor }">{{ user.handle }}</h2>
           <div class="mt-2 space-y-1 text-sm">
             <p>
-              <strong>Rating:</strong>
+              <strong>Rating：</strong>
               <span :style="{ color: rankColor }" class="ml-2">{{ user.rating }}</span>
               <span class="ml-2 text-muted-foreground">
-                (max. <span :style="{ color: rankColor }">{{ user.maxRank }}</span> |
-                <span :style="{ color: rankColor }">{{ user.maxRating }}</span>)
+                （最高 <span :style="{ color: rankColor }">{{ user.maxRank }}</span> |
+                <span :style="{ color: rankColor }">{{ user.maxRating }}</span>）
               </span>
             </p>
-            <p><strong>Organization:</strong> {{ user.organization || 'N/A' }}</p>
-            <p><strong>Friends:</strong> {{ user.friendOfCount }}</p>
-            <p><strong>Email:</strong> {{ user.email || 'N/A' }}</p>
+            <p><strong>组织：</strong> {{ user.organization || 'N/A' }}</p>
+            <p><strong>好友数：</strong> {{ user.friendOfCount }}</p>
+            <p><strong>邮箱：</strong> {{ user.email || 'N/A' }}</p>
           </div>
         </div>
       </div>
@@ -123,7 +123,7 @@ onMounted(async () => {
 
       <!-- Rating Sparkline -->
       <div v-if="ratingHistory.length >= 2" class="mt-4">
-        <h3 class="text-center text-sm font-medium mb-2">Rating History</h3>
+        <h3 class="text-center text-sm font-medium mb-2">Rating 变化</h3>
         <svg viewBox="0 0 600 100" class="w-full h-24" preserveAspectRatio="none">
           <defs>
             <linearGradient id="sparkGrad" x1="0" y1="0" x2="0" y2="1">
@@ -141,7 +141,7 @@ onMounted(async () => {
     <div v-else class="w-full max-w-[400px]">
       <Input
         v-model="searchHandle"
-        placeholder="Enter Codeforces Handle"
+        placeholder="输入 Codeforces Handle"
         @keyup.enter="searchUser"
       />
     </div>

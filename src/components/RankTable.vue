@@ -74,7 +74,7 @@ const columns = [
     size: 40,
   }),
   columnHelper.accessor('avatar', {
-    header: 'Avatar',
+    header: '头像',
     cell: (info) => h(Avatar, {
       src: info.getValue() || 'https://via.placeholder.com/40',
       alt: info.row.original.name,
@@ -84,12 +84,12 @@ const columns = [
     size: 50,
   }),
   columnHelper.accessor('name', {
-    header: 'Name',
+    header: '姓名',
     enableSorting: false,
     cell: (info) => h('span', { class: 'whitespace-nowrap' }, hideNames.value ? '***' : info.getValue()),
   }),
   columnHelper.accessor('enrollment_year', {
-    header: 'Grade',
+    header: '年级',
     cell: (info) => {
       const v = info.getValue()
       return v > 0 ? String(v) : '?'
@@ -168,13 +168,13 @@ const fetchUsers = async () => {
 const exportToXLSX = () => {
   if (!userItems.value.length) return
   const dataToExport = userItems.value.map((user) => ({
-    Name: user.name,
-    'Handle (Primary)': user.handle,
-    'Rating (Highest)': user.rating || 'N/A',
+    姓名: user.name,
+    'Handle（主账号）': user.handle,
+    'Rating（最高）': user.rating || 'N/A',
   }))
   const worksheet = XLSX.utils.json_to_sheet(dataToExport)
   const workbook = XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'SGU CF Ranks')
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'SGU CF 排名')
   worksheet['!cols'] = [{ wch: 25 }, { wch: 25 }, { wch: 15 }]
   XLSX.writeFile(workbook, 'sgu_codeforces_ranks.xlsx')
 }
@@ -193,17 +193,17 @@ onMounted(() => {
     <Card class="w-full max-w-[900px]">
       <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-4">
         <CardTitle class="text-lg md:text-xl">
-          <span class="hidden md:inline">SGU CodeForces Rank</span>
-          <span class="md:hidden">CF RK</span>
+          <span class="hidden md:inline">SGU CodeForces 排名</span>
+          <span class="md:hidden">CF 排名</span>
         </CardTitle>
         <div class="flex gap-2">
           <Button variant="outline" size="sm" @click="hideNames = !hideNames">
             <component :is="hideNames ? EyeOff : Eye" class="h-4 w-4 md:mr-2" />
-            <span class="hidden md:inline">{{ hideNames ? 'Show Names' : 'Hide Names' }}</span>
+            <span class="hidden md:inline">{{ hideNames ? '显示姓名' : '隐藏姓名' }}</span>
           </Button>
           <Button variant="outline" size="sm" @click="exportToXLSX">
             <FileSpreadsheet class="h-4 w-4 md:mr-2" />
-            <span class="hidden md:inline">Export XLSX</span>
+            <span class="hidden md:inline">导出 XLSX</span>
           </Button>
         </div>
       </CardHeader>
@@ -211,7 +211,7 @@ onMounted(() => {
         <!-- Loading skeleton -->
         <div v-if="loading" class="p-6 space-y-3">
           <div class="text-sm text-muted-foreground text-center mb-4">
-            Fetching data from Codeforces API...
+            正在从 Codeforces API 获取数据...
           </div>
           <Skeleton v-for="i in 8" :key="i" class="h-12 w-full" />
         </div>
@@ -250,14 +250,14 @@ onMounted(() => {
                         :href="`https://codeforces.com/profile/${cell.getValue()}`"
                         target="_blank"
                         class="inline-flex items-center p-1 ml-1 hover:bg-accent rounded"
-                        title="Open Codeforces Profile"
+                        title="在 Codeforces 查看主页"
                       >
                         <ExternalLink class="h-3.5 w-3.5" />
                       </a>
                       <a
                         :href="`/codeforces/profile?handle=${cell.getValue()}`"
                         class="inline-flex items-center p-1 hover:bg-accent rounded"
-                        title="Open Local Profile"
+                        title="查看站内资料"
                       >
                         <Info class="h-3.5 w-3.5" />
                       </a>
@@ -305,7 +305,7 @@ onMounted(() => {
               </template>
               <TableRow v-if="!userItems.length && !loading">
                 <TableCell :colspan="columns.length" class="text-center text-muted-foreground py-8">
-                  No data available.
+                  暂无数据。
                 </TableCell>
               </TableRow>
             </TableBody>
