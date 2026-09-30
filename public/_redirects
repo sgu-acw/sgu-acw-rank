@@ -1,0 +1,6 @@
+# 旧链接的落点。Cloudflare Pages 会在静态资源之前处理这些规则。
+# 导航一文已独立成 /nav 页面
+/blog/10000-置顶/*  /nav  301
+/blog/10000-%E7%BD%AE%E9%A1%B6/*  /nav  301
+# 成员获奖页暂时下线
+/member-awards/*  /  301
