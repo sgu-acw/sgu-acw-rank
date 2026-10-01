@@ -64,20 +64,23 @@ function go(path: string) {
 
     <CardContent>
       <!--
-        三个分支都加 key。否则 Vue 会按位置复用同一个 div，把加载状态的
-        容器（flex items-center）直接拿给登录后的内容用，里面的 dl 就成了
-        flex item 被挤成竖排。key 不同才会真正换节点。
+        三个分支的根元素都是普通块级 div，**不在这里放 flex**。
+        加载态要横向排列图标和文字，所以把 flex 收进内层 span。
+
+        原因：Vue 在 hydration 时会按位置复用节点，一旦根元素上有 flex，
+        那个 flex 容器会被拿给别的分支用，登录后的 dl 就成了 flex item
+        被挤成竖排（实测宽度只剩 48px）。加 key 不管用，试过。
+
+        所以让根元素保持「无副作用」的普通 div，布局放在内部。
       -->
-      <div
-        v-if="loading || !ready"
-        key="loading"
-        class="flex items-center gap-2 py-6 text-sm text-muted-foreground"
-      >
-        <Loader2 class="h-4 w-4 animate-spin" />
-        正在读取…
+      <div v-if="loading || !ready" class="py-6 text-sm text-muted-foreground">
+        <span class="flex items-center gap-2">
+          <Loader2 class="h-4 w-4 animate-spin" />
+          正在读取…
+        </span>
       </div>
 
-      <div v-else-if="!user" key="anonymous" class="space-y-4 py-2">
+      <div v-else-if="!user" class="space-y-4 py-2">
         <p class="text-sm text-muted-foreground">你还没有登录。</p>
         <div class="flex gap-2">
           <Button class="flex-1" @click="go('/login')">去登录</Button>
