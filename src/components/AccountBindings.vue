@@ -6,7 +6,7 @@
  * 这证明的是「这个人控制那个账号」，不是「这个人是韶关学院的」——后者需要
  * 学校配合，前者正是绑定真正要确认的事。
  */
-import { onMounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import { AlertCircle, Check, ExternalLink, Loader2, Plus, RefreshCw, Trash2 } from 'lucide-vue-next'
 import { Alert } from './ui/alert'
 import { Button } from './ui/button'
@@ -28,6 +28,10 @@ const notice = ref('')
 const accounts = ref<PlatformAccount[]>([])
 const adding = ref(false)
 const verifying = ref<number | null>(null)
+//: 账号 id → 还要等几秒才能再点验证。后端限流时不只报错，还让按钮走个
+//: 倒计时，免得用户以为是坏了而反复点。
+const cooldowns = ref<Record<number, number>>({})
+let ticker: number | undefined
 
 const newPlatform = ref<Platform>('codeforces')
 const newIdentifier = ref('')
@@ -70,6 +74,8 @@ async function add() {
 }
 
 async function verify(account: PlatformAccount) {
+  if (cooldowns.value[account.id] > 0) return
+
   verifying.value = account.id
   error.value = ''
   try {
@@ -81,6 +87,10 @@ async function verify(account: PlatformAccount) {
     if (result.ok) flash('验证通过')
     else error.value = result.detail
   } catch (err) {
+    if (err instanceof ApiError && err.status === 429) {
+      const wait = err.retryAfter ?? 10
+      cooldowns.value = { ...cooldowns.value, [account.id]: wait }
+    }
     error.value = err instanceof ApiError ? err.message : '验证失败'
   } finally {
     verifying.value = null
@@ -109,7 +119,26 @@ async function remove(account: PlatformAccount) {
   }
 }
 
-onMounted(load)
+onMounted(() => {
+  load()
+  // 每秒把倒计时往下减。用一个 ticker 而不是每个账号一个定时器。
+  ticker = window.setInterval(() => {
+    const next: Record<number, number> = {}
+    let any = false
+    for (const [id, seconds] of Object.entries(cooldowns.value)) {
+      const left = seconds - 1
+      if (left > 0) {
+        next[Number(id)] = left
+        any = true
+      }
+    }
+    if (any || Object.keys(cooldowns.value).length) cooldowns.value = next
+  }, 1000)
+})
+
+onUnmounted(() => {
+  if (ticker !== undefined) window.clearInterval(ticker)
+})
 </script>
 
 <template>
@@ -162,11 +191,14 @@ onMounted(load)
                 <Button
                   v-if="!account.verified_at"
                   size="sm"
-                  :disabled="verifying === account.id"
+                  :disabled="verifying === account.id || cooldowns[account.id] > 0"
                   @click="verify(account)"
                 >
                   <Loader2 v-if="verifying === account.id" class="mr-1 h-3.5 w-3.5 animate-spin" />
-                  验证
+                  <template v-if="cooldowns[account.id] > 0">
+                    {{ cooldowns[account.id] }} 秒后可重试
+                  </template>
+                  <template v-else>验证</template>
                 </Button>
                 <Button variant="ghost" size="sm" @click="remove(account)">
                   <Trash2 class="h-3.5 w-3.5" />

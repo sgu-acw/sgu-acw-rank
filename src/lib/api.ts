@@ -15,11 +15,18 @@ export interface ApiErrorBody {
 /** 后端返回了非 2xx 时抛出，detail 是可以直接显示给用户的中文说明。 */
 export class ApiError extends Error {
   readonly status: number
+  /**
+   * 429 时后端给的 `Retry-After`，单位秒。
+   *
+   * 有它就不用去解析中文提示来算倒计时——那个字符串随时可能改。
+   */
+  readonly retryAfter: number | null
 
-  constructor(status: number, message: string) {
+  constructor(status: number, message: string, retryAfter: number | null = null) {
     super(message)
     this.name = 'ApiError'
     this.status = status
+    this.retryAfter = retryAfter
   }
 }
 
@@ -68,7 +75,13 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 
   if (!response.ok) {
     const detail = (body as ApiErrorBody | null)?.detail
-    throw new ApiError(response.status, detail || `请求失败（${response.status}）`)
+    const retryAfterRaw = response.headers.get('Retry-After')
+    const retryAfter = retryAfterRaw ? Number(retryAfterRaw) : null
+    throw new ApiError(
+      response.status,
+      detail || `请求失败（${response.status}）`,
+      Number.isFinite(retryAfter) ? retryAfter : null,
+    )
   }
 
   return body as T
