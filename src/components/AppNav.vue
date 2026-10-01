@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import {
-  Home, Medal, Code, Trophy, User, ChevronDown, ChevronRight, Menu, X, Activity, Compass, LogIn,
+  Home, Code, Trophy, User, ChevronDown, ChevronRight, Activity, Compass, LogIn, BarChart3, Settings,
 } from 'lucide-vue-next'
 import { useAuth } from '../lib/auth'
 
@@ -17,13 +17,13 @@ const isMobile = ref(false)
 const currentPath = ref('')
 
 // 侧边栏底部的登录入口。未登录时显示「登录」，已登录时显示姓名并链到个人中心。
-const { user, ensureLoaded } = useAuth()
+const { user, isAdmin, ensureLoaded } = useAuth()
 
 const navItems = [
   { title: '首页', route: '/', icon: Home },
   { title: '导航', route: '/nav', icon: Compass },
+  { title: '每日练习', route: '/practice', icon: BarChart3 },
   { title: '工作坊状态', route: '/status', icon: Activity },
-  // { title: '成员获奖', route: '/member-awards', icon: Medal }, // 页面已下线
 ]
 
 const cfItems = [
@@ -114,7 +114,17 @@ function onNavClick() {
       </div>
 
       <!-- 账号入口。mt-auto 把它推到侧边栏底部，与导航项分开。 -->
-      <div class="mt-auto pt-4">
+      <div class="mt-auto space-y-1 pt-4">
+        <a
+          v-if="user && isAdmin"
+          href="/admin"
+          @click="onNavClick"
+          class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
+          :class="isActive('/admin') ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'"
+        >
+          <Settings class="h-4 w-4 shrink-0" />
+          管理
+        </a>
         <a
           v-if="user"
           href="/me"

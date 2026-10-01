@@ -15,6 +15,8 @@ RestartSec=2
 NoNewPrivileges=true
 ProtectSystem=strict
 ProtectHome=true
+# ...except the heartbeat directory, which POST /heartbeat writes to.
+ReadWritePaths=/var/lib/workshop
 PrivateTmp=true
 PrivateDevices=true
 ProtectKernelTunables=true

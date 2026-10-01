@@ -5,11 +5,12 @@
  * 页面本身是公开的（静态站无法在服务端拦人），靠 /auth/me 的结果决定显示
  * 什么。未登录时提示去登录，而不是跳转，这样链接可以安全地分享。
  */
-import { computed, onMounted } from 'vue'
-import { LogOut, Loader2 } from 'lucide-vue-next'
+import { computed, onMounted, ref } from 'vue'
+import { LogOut, Loader2, Settings } from 'lucide-vue-next'
 import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Separator } from './ui/separator'
+import AccountBindings from './AccountBindings.vue'
 import { useAuth } from '../lib/auth'
 
 const { user, loading, ready, isAdmin, ensureLoaded, logout } = useAuth()
@@ -60,12 +61,21 @@ function go(path: string) {
     </CardHeader>
 
     <CardContent>
-      <div v-if="loading || !ready" class="flex items-center gap-2 py-6 text-sm text-muted-foreground">
+      <!--
+        三个分支都加 key。否则 Vue 会按位置复用同一个 div，把加载状态的
+        容器（flex items-center）直接拿给登录后的内容用，里面的 dl 就成了
+        flex item 被挤成竖排。key 不同才会真正换节点。
+      -->
+      <div
+        v-if="loading || !ready"
+        key="loading"
+        class="flex items-center gap-2 py-6 text-sm text-muted-foreground"
+      >
         <Loader2 class="h-4 w-4 animate-spin" />
         正在读取…
       </div>
 
-      <div v-else-if="!user" class="space-y-4 py-2">
+      <div v-else-if="!user" key="anonymous" class="space-y-4 py-2">
         <p class="text-sm text-muted-foreground">你还没有登录。</p>
         <div class="flex gap-2">
           <Button class="flex-1" @click="go('/login')">去登录</Button>
@@ -73,7 +83,7 @@ function go(path: string) {
         </div>
       </div>
 
-      <div v-else class="space-y-4">
+      <div v-else key="account" class="space-y-4">
         <div>
           <p class="text-xl font-semibold tracking-tight">{{ user.display_name }}</p>
           <p class="font-mono text-xs text-muted-foreground">{{ user.student_id }}</p>
@@ -109,4 +119,16 @@ function go(path: string) {
       </div>
     </CardContent>
   </Card>
+
+  <!-- 账号绑定只在已登录时显示，它需要会话。 -->
+  <div v-if="ready && user" class="mt-4">
+    <AccountBindings />
+  </div>
+
+  <div v-if="ready && user && isAdmin" class="mt-4">
+    <Button variant="outline" class="w-full" @click="go('/admin')">
+      <Settings class="mr-2 h-4 w-4" />
+      进入管理页
+    </Button>
+  </div>
 </template>

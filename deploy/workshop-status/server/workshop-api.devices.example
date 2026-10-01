@@ -1,0 +1,12 @@
+# Heartbeat devices.
+#
+#   <id>=<token>
+#
+# The token identifies the device; the API maps it back to the id, so firmware
+# only ever sends the token. Generate entries with add-device.sh, do not hand
+# edit unless you mean to.
+#
+#   pi=...        the Raspberry Pi, beating over SSH (no token needed)
+#   esp8266=...   a microcontroller POSTing /heartbeat
+#
+# This file is installed at /etc/workshop-api.devices, mode 0600.

@@ -121,6 +121,192 @@ export const metaApi = {
   bootstrap: () => api.get<{ has_users: boolean; user_count: number }>('/bootstrap'),
 }
 
+// --------------------------------------------------------------------------- //
+// 平台账号
+// --------------------------------------------------------------------------- //
+
+export interface PlatformAccount {
+  id: number
+  platform: Platform
+  identifier: string
+  verified_at: string | null
+  /** 未验证时才有，是要填进平台签名的那串码。 */
+  verify_token?: string | null
+  verify_expires_at?: string | null
+  created_at: string
+}
+
+export type Platform = 'codeforces' | 'atcoder' | 'luogu' | 'nowcoder'
+
+/**
+ * 各平台填签名的位置。成员看到「去填码」时得知道去哪填，所以把入口和
+ * 字段名都写在这里。
+ */
+export const PLATFORM_META: Record<
+  Platform,
+  { label: string; field: string; settingsUrl: string; idHint: string }
+> = {
+  codeforces: {
+    label: 'Codeforces',
+    field: 'Organization',
+    settingsUrl: 'https://codeforces.com/settings/social',
+    idHint: 'handle，如 tourist',
+  },
+  atcoder: {
+    label: 'AtCoder',
+    field: 'Affiliation',
+    settingsUrl: 'https://atcoder.jp/settings',
+    idHint: '用户名，如 tourist',
+  },
+  luogu: {
+    label: '洛谷',
+    field: '个性签名',
+    settingsUrl: 'https://www.luogu.com.cn/user/setting',
+    idHint: '用户名或数字 uid',
+  },
+  nowcoder: {
+    label: '牛客',
+    field: '个人简介',
+    settingsUrl: 'https://ac.nowcoder.com/acm/contest/profile',
+    idHint: '数字 uid',
+  },
+}
+
+export const accountsApi = {
+  mine: () => api.get<PlatformAccount[]>('/accounts'),
+
+  add: (platform: Platform, identifier: string) =>
+    api.post<PlatformAccount>('/accounts', { platform, identifier }),
+
+  verify: (id: number) =>
+    api.post<{ ok: boolean; detail: string; account: PlatformAccount | null }>(
+      `/accounts/${id}/verify`,
+    ),
+
+  renew: (id: number) => api.post<PlatformAccount>(`/accounts/${id}/renew`),
+
+  remove: (id: number) => api.delete<void>(`/accounts/${id}`),
+
+  of: (userId: number) => api.get<PlatformAccount[]>(`/accounts/of/${userId}`),
+}
+
+// --------------------------------------------------------------------------- //
+// 每日练习量
+// --------------------------------------------------------------------------- //
+
+export interface PracticeDay {
+  date: string
+  count: number
+}
+
+export interface PracticeEntry {
+  user_id: number
+  display_name: string
+  student_id: string
+  enroll_year: number
+  rank: number
+  total: number
+  days: PracticeDay[]
+}
+
+export interface PracticeRank {
+  days: number
+  platform: Platform | null
+  dates: string[]
+  entries: PracticeEntry[]
+  generated_at: number
+}
+
+export interface SyncStatus {
+  has_run: boolean
+  started_at?: string | null
+  finished_at?: string | null
+  account_count: number
+  ok_count: number
+  error_count: number
+  errors: string[]
+}
+
+export const practiceApi = {
+  rank: (params: { days?: number; platform?: Platform | null } = {}) => {
+    const query = new URLSearchParams()
+    if (params.days) query.set('days', String(params.days))
+    if (params.platform) query.set('platform', params.platform)
+    const suffix = query.toString()
+    return api.get<PracticeRank>(`/practice/rank${suffix ? `?${suffix}` : ''}`)
+  },
+
+  status: () => api.get<SyncStatus>('/practice/status'),
+}
+
+// --------------------------------------------------------------------------- //
+// 管理
+// --------------------------------------------------------------------------- //
+
+export interface Invite {
+  id: number
+  code: string
+  grants_role: 'member' | 'admin'
+  max_uses: number
+  use_count: number
+  expires_at: string
+  revoked_at: string | null
+  note: string
+  created_by: number | null
+  created_at: string
+  is_usable: boolean
+}
+
+export interface AdminUser {
+  id: number
+  student_id: string
+  display_name: string
+  enroll_year: number
+  level: number
+  college_code: string
+  major_code: string
+  role: 'root' | 'admin' | 'member'
+  status: 'active' | 'disabled'
+  created_at: string
+  last_login_at: string | null
+  /** 仅管理员可见可改。 */
+  admin_note: string
+}
+
+export const adminApi = {
+  stats: () =>
+    api.get<{
+      user_count: number
+      active_count: number
+      admin_count: number
+      usable_invite_count: number
+    }>('/admin/stats'),
+
+  users: () => api.get<AdminUser[]>('/admin/users'),
+
+  updateUser: (
+    id: number,
+    payload: { role?: string; status?: string; admin_note?: string },
+  ) => api.patch<AdminUser>(`/admin/users/${id}`, payload),
+
+  resetPassword: (id: number) =>
+    api.post<{ student_id: string; display_name: string; temporary_password: string }>(
+      `/admin/users/${id}/reset-password`,
+    ),
+
+  invites: (includeDead = true) =>
+    api.get<Invite[]>(`/admin/invites?include_dead=${includeDead}`),
+
+  createInvite: (payload: {
+    max_uses: number
+    ttl_hours: number
+    grants_role: string
+    note: string
+  }) => api.post<Invite>('/admin/invites', payload),
+
+  revokeInvite: (id: number) => api.delete<void>(`/admin/invites/${id}`),
+}
+
 /**
  * 学号在前端也校验一遍，纯粹为了即时反馈。
  *
