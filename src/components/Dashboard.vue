@@ -114,18 +114,18 @@ onMounted(async () => {
       <!-- 工作坊开没开门。放在最上面，因为它是每天都会被看一眼的信息。 -->
       <WorkshopStatusCard />
 
-      <div v-if="data">
-        <!-- 抬头 -->
-        <div class="flex flex-wrap items-center justify-between gap-3">
+      <div v-if="data" class="space-y-3">
+        <!-- 抬头。姓名与操作放在一行，练习日退成脚注。 -->
+        <div class="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h1 class="text-lg font-semibold tracking-tight">
+            <h1 class="text-xl font-semibold tracking-tight">
               {{ user.display_name }}
-              <span v-if="formatEnrollYear(user.enroll_year)" class="ml-1 text-sm font-normal text-muted-foreground">
+              <span v-if="formatEnrollYear(user.enroll_year)" class="ml-1.5 text-sm font-normal text-muted-foreground">
                 {{ formatEnrollYear(user.enroll_year) }}
               </span>
             </h1>
-            <p class="mt-0.5 text-xs text-muted-foreground">
-              练习日 {{ data.practice_day }}（凌晨 4 点换天）
+            <p class="mt-1 text-xs text-muted-foreground">
+              练习日 {{ data.practice_day }} · 凌晨 4 点换天
             </p>
           </div>
           <Button
@@ -148,42 +148,36 @@ onMounted(async () => {
           </Button>
         </div>
 
-        <!-- 三个数字 -->
-        <div class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <Card>
-            <CardContent class="p-4">
-              <p class="text-xs text-muted-foreground">今日</p>
-              <p class="mt-1 font-mono text-2xl font-semibold">{{ data.today }}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent class="p-4">
-              <p class="text-xs text-muted-foreground">最近 7 天</p>
-              <p class="mt-1 font-mono text-2xl font-semibold">{{ data.week }}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent class="p-4">
-              <p class="text-xs text-muted-foreground">最近 30 天</p>
-              <p class="mt-1 font-mono text-2xl font-semibold">{{ data.total }}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent class="p-4">
+        <!--
+          四个数字放在一张卡里，用分隔线切分。
+          拆成四张独立卡片会让它们看起来是四件不相干的事，而它们其实是一组。
+        -->
+        <Card>
+          <CardContent class="grid grid-cols-2 divide-y divide-border/40 p-0 sm:grid-cols-4 sm:divide-x sm:divide-y-0">
+            <div v-for="stat in [
+              { label: '今日', value: data.today },
+              { label: '最近 7 天', value: data.week },
+              { label: '最近 30 天', value: data.total },
+            ]" :key="stat.label" class="px-5 py-4">
+              <p class="text-xs text-muted-foreground">{{ stat.label }}</p>
+              <p class="mt-1.5 font-mono text-2xl font-semibold tabular-nums">{{ stat.value }}</p>
+            </div>
+
+            <div class="px-5 py-4">
               <p class="text-xs text-muted-foreground">7 天排名</p>
-              <p class="mt-1 font-mono text-2xl font-semibold">
+              <p class="mt-1.5 font-mono text-2xl font-semibold tabular-nums">
                 <template v-if="data.practice_rank">
                   {{ data.practice_rank }}
                   <span class="text-sm font-normal text-muted-foreground">/ {{ data.practice_total }}</span>
                 </template>
                 <span v-else class="text-base font-normal text-muted-foreground">未上榜</span>
               </p>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+          </CardContent>
+        </Card>
 
         <!-- 趋势 -->
-        <Card class="mt-3">
+        <Card>
           <CardHeader class="pb-3">
             <div class="flex items-center justify-between">
               <CardTitle class="flex items-center gap-2 text-sm font-medium">
@@ -216,7 +210,7 @@ onMounted(async () => {
         </Card>
 
         <!-- 平台账号 -->
-        <Card class="mt-3">
+        <Card>
           <CardHeader class="pb-3">
             <div class="flex items-center justify-between">
               <CardTitle class="text-sm font-medium">平台账号</CardTitle>

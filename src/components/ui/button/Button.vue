@@ -3,16 +3,23 @@ import { cn } from '../../../lib/utils'
 import { cva, type VariantProps } from 'class-variance-authority'
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
+  // 按压反馈用 :active 缩放，不是 hover。
+  //
+  // 按钮要在**按下的瞬间**就有反应，等抬起才变就感觉是死的。缩放 0.97
+  // 幅度很小，但手指能感觉到。
+  //
+  // transition 只列具体属性，不用 all：all 会连带把布局属性也做成过渡，
+  // 既浪费又容易出意外。
+  'inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-[color,background-color,border-color,transform] duration-150 ease-[var(--ease-out)] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
   {
     variants: {
       variant: {
         default: 'bg-primary text-primary-foreground hover:bg-primary/90',
         destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
-        outline: 'border border-input bg-background hover:bg-accent hover:text-accent-foreground',
+        outline: 'border border-input bg-card hover:bg-accent hover:text-accent-foreground',
         secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
         ghost: 'hover:bg-accent hover:text-accent-foreground',
-        link: 'text-primary underline-offset-4 hover:underline',
+        link: 'text-primary underline-offset-4 hover:underline active:scale-100',
       },
       size: {
         default: 'h-10 px-4 py-2',

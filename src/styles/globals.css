@@ -4,8 +4,13 @@
 
 @layer base {
   :root {
+    /*
+     * 浅色主题。保持原本的样子——白色底，不做「内容区略灰」那一套。
+     * 侧边栏仍然是纯白，靠边框区分层次就够。
+     */
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
+    --sidebar: 0 0% 100%;
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
@@ -24,28 +29,64 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 84% 4.9%;
     --radius: 0.5rem;
+
+    /*
+     * 缓动曲线。CSS 内置的 ease-out / ease-in-out 太弱，动起来没力度。
+     * 这几条来自 easing.dev，是常用曲线的强化版。
+     */
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+    --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
   }
 
+  /*
+   * 深色主题。
+   *
+   * 底色不用纯黑。纯黑（#000）看着像关掉的屏幕，而且没有层次空间——卡片、
+   * 浮层、背景会挤在同一个亮度上，只能靠边框区分，看起来很平。
+   *
+   * 这里按 Material 的做法分三层，亮度递增：背景 → 卡片 → 浮层。边框再亮
+   * 一档，用来勾出轮廓。
+   */
   .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
+    --background: 240 6% 7%;
+    --foreground: 240 6% 93%;
+
+    --card: 240 5% 10%;
+    --card-foreground: 240 6% 93%;
+
+    /*
+     * 侧边栏与顶栏。比内容区**浅**一档。
+     *
+     * 内深外浅：内容区是主体，压得深一点；导航是外围框架，抬亮一点。反过来
+     * 会让侧边栏看起来是凹进去的，而它其实是站在内容之外的。
+     *
+     * 幅度刻意压得很小（7% → 9%），够看出分层，又不至于让侧边栏抢注意力。
+     */
+    --sidebar: 240 6% 9%;
+
+    --popover: 240 5% 12%;
+    --popover-foreground: 240 6% 93%;
+
+    /* 主色仍用高对比的浅色，深色底上最清楚。 */
+    --primary: 240 6% 93%;
+    --primary-foreground: 240 6% 10%;
+
+    --secondary: 240 4% 16%;
+    --secondary-foreground: 240 6% 93%;
+
+    --muted: 240 4% 16%;
+    --muted-foreground: 240 5% 65%;
+
+    --accent: 240 4% 16%;
+    --accent-foreground: 240 6% 93%;
+
+    --destructive: 0 63% 45%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
+
+    --border: 240 5% 19%;
+    --input: 240 5% 19%;
+    --ring: 240 5% 60%;
   }
 }
 
@@ -55,6 +96,42 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+
+  /*
+   * 滚动条。默认那条在深色底上很跳，而且宽度占地方。
+   */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+
+  /*
+   * 键盘焦点要看得见，鼠标点击不要留框。
+   *
+   * :focus-visible 而不是 :focus：后者会让每次鼠标点击都留一圈描边，
+   * 看起来像是没响应完。
+   */
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+
+  /*
+   * 尊重系统的「减少动态效果」设置。
+   *
+   * 把位移和缩放换成近乎瞬时的淡入淡出，而不是直接关掉动画——颜色和
+   * 透明度变化有助于理解状态变化，不该一并拿掉。
+   */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }
 

@@ -1,18 +1,52 @@
 <script setup lang="ts">
+/**
+ * 工作坊开没开门。
+ *
+ * 这是首页上最有时效性的一条信息——「现在能不能过去」。所以它不按普通卡片
+ * 做，而是一个横条：状态用大字号加颜色直接说结论，补充说明退到次要位置。
+ *
+ * 开门时圆点会呼吸。这是页面上唯一持续动的元素，用来传递「这是活的」；
+ * 其余地方都保持静止，免得抢注意力。
+ */
 import { computed } from 'vue'
-import { Activity } from 'lucide-vue-next'
-import {
-  formatAge,
-  stateDescription,
-  stateDotClass,
-  stateLabel,
-  stateTextClass,
-  useWorkshopStatus,
-} from '../lib/workshopStatus'
+import { Activity, ArrowUpRight } from 'lucide-vue-next'
+import { formatAge, stateDescription, useWorkshopStatus } from '../lib/workshopStatus'
 
 const { data, state } = useWorkshopStatus()
 
-const label = computed(() => stateLabel(state.value))
+/** 三种状态的呈现。集中在一处，免得散在模板里到处判断。 */
+const LOOK = {
+  open: {
+    label: '开门中',
+    dot: 'bg-emerald-500',
+    text: 'text-emerald-600 dark:text-emerald-400',
+    ring: 'ring-emerald-500/20',
+    surface: 'bg-emerald-500/[0.06]',
+  },
+  closed: {
+    label: '没开门',
+    dot: 'bg-muted-foreground/40',
+    text: 'text-muted-foreground',
+    ring: 'ring-transparent',
+    surface: '',
+  },
+  error: {
+    label: '状态未知',
+    dot: 'bg-amber-500/70',
+    text: 'text-amber-600 dark:text-amber-500',
+    ring: 'ring-amber-500/20',
+    surface: 'bg-amber-500/[0.06]',
+  },
+  loading: {
+    label: '检测中',
+    dot: 'bg-muted-foreground/30',
+    text: 'text-muted-foreground',
+    ring: 'ring-transparent',
+    surface: '',
+  },
+} as const
+
+const look = computed(() => LOOK[state.value])
 const description = computed(() => stateDescription(state.value))
 const age = computed(() => formatAge(data.value?.age))
 </script>
@@ -20,32 +54,33 @@ const age = computed(() => formatAge(data.value?.age))
 <template>
   <a
     href="/status"
-    class="group block rounded-md border border-border/40 bg-card p-4 transition-colors hover:border-border hover:bg-muted/40"
+    class="group flex items-center gap-4 rounded-lg border border-border/50 px-4 py-3.5 transition-colors duration-150 hover:border-border"
+    :class="look.surface"
   >
-    <div class="flex items-center justify-between gap-4">
-      <span class="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-        <Activity class="h-3.5 w-3.5" />
-        工作坊开门了吗
-      </span>
-      <span class="text-xs text-muted-foreground/60 transition-colors group-hover:text-primary">
-        详情
-      </span>
+    <!-- 状态圆点。开门时外面套一圈呼吸的光晕。 -->
+    <span class="relative flex h-2.5 w-2.5 shrink-0">
+      <span
+        v-if="state === 'open'"
+        class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500/40"
+      />
+      <span class="relative inline-flex h-2.5 w-2.5 rounded-full" :class="look.dot" />
+    </span>
+
+    <div class="min-w-0 flex-1">
+      <div class="flex items-baseline gap-2">
+        <span class="text-base font-semibold tracking-tight" :class="look.text">
+          {{ look.label }}
+        </span>
+        <span class="truncate text-xs text-muted-foreground">{{ description }}</span>
+      </div>
+      <p v-if="age" class="mt-0.5 text-[11px] text-muted-foreground/60">{{ age }}</p>
     </div>
 
-    <div class="mt-3 flex items-center gap-2.5">
-      <span class="relative flex h-2.5 w-2.5">
-        <span
-          v-if="state === 'open'"
-          class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500/50"
-        />
-        <span class="relative inline-flex h-2.5 w-2.5 rounded-full" :class="stateDotClass(state)" />
-      </span>
-      <span class="text-xl font-semibold tracking-tight" :class="stateTextClass(state)">
-        {{ label }}
-      </span>
-    </div>
-
-    <p class="mt-1.5 text-xs text-muted-foreground">{{ description }}</p>
-    <p class="mt-0.5 text-xs text-muted-foreground/60">{{ age }}</p>
+    <span
+      class="flex shrink-0 items-center gap-0.5 text-xs text-muted-foreground/50 transition-colors group-hover:text-foreground"
+    >
+      详情
+      <ArrowUpRight class="h-3 w-3 transition-transform duration-150 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+    </span>
   </a>
 </template>

@@ -14,6 +14,8 @@ export default {
         ring: 'hsl(var(--ring))',
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
+        /* 侧边栏与顶栏。比内容区深一档，形成结构层次。 */
+        sidebar: 'hsl(var(--sidebar))',
         primary: {
           DEFAULT: 'hsl(var(--primary))',
           foreground: 'hsl(var(--primary-foreground))',

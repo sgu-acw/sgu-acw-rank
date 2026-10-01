@@ -66,7 +66,7 @@ function onNavClick() {
 
   <!-- Sidebar -->
   <aside
-    class="fixed top-14 left-0 z-40 flex h-[calc(100vh-3.5rem)] w-64 flex-col border-r border-border/40 bg-background transition-transform duration-200"
+    class="fixed top-14 left-0 z-40 flex h-[calc(100vh-3.5rem)] w-64 flex-col border-r border-border/50 bg-sidebar transition-transform duration-200 ease-[var(--ease-drawer)]"
     :class="isOpen ? 'translate-x-0' : '-translate-x-full'"
   >
     <nav class="flex h-full flex-col p-4">
