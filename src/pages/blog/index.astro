@@ -1,7 +1,6 @@
 ---
 import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import WorkshopStatusCard from '../../components/WorkshopStatusCard.vue';
 
 const posts = await getCollection('blog');
 const sorted = posts.sort((a, b) => {
@@ -30,9 +29,6 @@ const postsWithContent = await Promise.all(
 
 <BaseLayout title="SGU ACW - 博客">
   <div class="max-w-3xl mx-auto px-2">
-    <div class="mb-6">
-      <WorkshopStatusCard client:load />
-    </div>
     <div class="divide-y divide-border/50">
       {postsWithContent.map(({ post, Content, excerpt }) => (
         <a href={`/blog/${post.id.replace(/\.md$/, '')}`} class="block group">

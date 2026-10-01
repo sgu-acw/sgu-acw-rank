@@ -72,6 +72,9 @@ const createForm = ref({
 // 成员编辑：只保存正在编辑的那一行的备注，避免整表联动。
 const editingNote = ref<Record<number, string>>({})
 const editingName = ref<Record<number, string>>({})
+//: 学院名/专业名的人工覆盖。空串表示恢复成按学号查表。
+const editingCollege = ref<Record<number, string>>({})
+const editingMajor = ref<Record<number, string>>({})
 const savingNote = ref<number | null>(null)
 const copiedCode = ref<string | null>(null)
 
@@ -272,11 +275,20 @@ const copyCode = (code: string) => copyText(code, code)
 const copyLink = (code: string) => copyText(inviteLink(code), `link:${code}`)
 
 async function saveNote(target: AdminUser) {
-  const value = editingNote.value[target.id]
-  const name = editingName.value[target.id]
-  const payload: { admin_note?: string; display_name?: string } = {}
-  if (value !== undefined) payload.admin_note = value
-  if (name !== undefined) payload.display_name = name
+  const payload: {
+    admin_note?: string
+    display_name?: string
+    college_override?: string
+    major_override?: string
+  } = {}
+  if (editingNote.value[target.id] !== undefined) payload.admin_note = editingNote.value[target.id]
+  if (editingName.value[target.id] !== undefined) payload.display_name = editingName.value[target.id]
+  if (editingCollege.value[target.id] !== undefined) {
+    payload.college_override = editingCollege.value[target.id]
+  }
+  if (editingMajor.value[target.id] !== undefined) {
+    payload.major_override = editingMajor.value[target.id]
+  }
   if (!Object.keys(payload).length) return
 
   savingNote.value = target.id
@@ -284,8 +296,12 @@ async function saveNote(target: AdminUser) {
     const updated = await adminApi.updateUser(target.id, payload)
     target.admin_note = updated.admin_note
     target.display_name = updated.display_name
+    target.college_name = updated.college_name
+    target.major_name = updated.major_name
     delete editingNote.value[target.id]
     delete editingName.value[target.id]
+    delete editingCollege.value[target.id]
+    delete editingMajor.value[target.id]
     flash('已保存')
   } catch (err) {
     error.value = err instanceof ApiError ? err.message : '保存失败'
@@ -675,8 +691,26 @@ onMounted(async () => {
                   <option value="admin">管理员</option>
                 </select>
 
+                <Input
+                  :model-value="editingCollege[member.id] ?? member.college_name ?? ''"
+                  placeholder="学院（可改）"
+                  class="h-8 w-44 text-xs"
+                  @update:model-value="(v: string) => (editingCollege[member.id] = v)"
+                />
+                <Input
+                  :model-value="editingMajor[member.id] ?? member.major_name ?? ''"
+                  placeholder="专业（可改）"
+                  class="h-8 w-40 text-xs"
+                  @update:model-value="(v: string) => (editingMajor[member.id] = v)"
+                />
+
                 <Button
-                  v-if="editingNote[member.id] !== undefined || editingName[member.id] !== undefined"
+                  v-if="
+                    editingNote[member.id] !== undefined ||
+                    editingName[member.id] !== undefined ||
+                    editingCollege[member.id] !== undefined ||
+                    editingMajor[member.id] !== undefined
+                  "
                   size="sm"
                   :disabled="savingNote === member.id"
                   @click="saveNote(member)"

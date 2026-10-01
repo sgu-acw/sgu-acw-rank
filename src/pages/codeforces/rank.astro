@@ -1,9 +1,0 @@
----
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import RankTable from '../../components/RankTable.vue';
-import { activeStudents } from '../../data/students';
----
-
-<BaseLayout title="SGU ACW - CodeForces 排名">
-  <RankTable client:load students={activeStudents} />
-</BaseLayout>

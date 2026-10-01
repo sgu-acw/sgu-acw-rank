@@ -221,6 +221,11 @@ export interface PracticeEntry {
   student_id: string
   enroll_year: number
   rank: number
+  /** 学院名可能被管理员改过，所以不一定跟 college_code 对得上。 */
+  college_code: string
+  major_code: string
+  college_name: string | null
+  major_name: string | null
   total: number
   days: PracticeDay[]
 }
@@ -231,6 +236,8 @@ export interface PracticeRank {
   dates: string[]
   entries: PracticeEntry[]
   generated_at: number
+  /** 可从全部有数据的人里统计，所以选完一个学院其他学院还在。 */
+  filters: { colleges: string[]; enroll_years: number[] }
 }
 
 export interface SyncStatus {
@@ -295,10 +302,21 @@ export interface RatingBoard {
 }
 
 export const practiceApi = {
-  rank: (params: { days?: number; platform?: Platform | null } = {}) => {
+  rank: (
+    params: {
+      days?: number
+      platform?: Platform | null
+      college?: string | null
+      enroll_year?: number | null
+      q?: string | null
+    } = {},
+  ) => {
     const query = new URLSearchParams()
     if (params.days) query.set('days', String(params.days))
     if (params.platform) query.set('platform', params.platform)
+    if (params.college) query.set('college', params.college)
+    if (params.enroll_year) query.set('enroll_year', String(params.enroll_year))
+    if (params.q) query.set('q', params.q)
     const suffix = query.toString()
     return api.get<PracticeRank>(`/practice/rank${suffix ? `?${suffix}` : ''}`)
   },
@@ -353,6 +371,9 @@ export interface AdminUser {
   last_login_at: string | null
   /** 仅管理员可见可改。 */
   admin_note: string
+  /** 学院名与专业名。可能被管理员改过，所以不一定跟码对得上。 */
+  college_name: string | null
+  major_name: string | null
 }
 
 export interface AdminUserPage {
@@ -406,7 +427,15 @@ export const adminApi = {
 
   updateUser: (
     id: number,
-    payload: { role?: string; status?: string; admin_note?: string; display_name?: string },
+    payload: {
+      role?: string
+      status?: string
+      admin_note?: string
+      display_name?: string
+      /** 空串表示恢复成按学号查表。 */
+      college_override?: string
+      major_override?: string
+    },
   ) => api.patch<AdminUser>(`/admin/users/${id}`, payload),
 
   deleteUser: (id: number) => api.delete<void>(`/admin/users/${id}`),

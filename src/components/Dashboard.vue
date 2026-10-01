@@ -16,6 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { ApiError, PLATFORM_META, practiceApi, type Dashboard, type Platform } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { formatEnrollYear } from '../lib/format'
+import WorkshopStatusCard from './WorkshopStatusCard.vue'
 
 const { user, ensureLoaded } = useAuth()
 
@@ -86,16 +87,19 @@ onMounted(async () => {
       正在读取…
     </div>
 
-    <!-- 未登录：引导，而不是报错 -->
-    <Card v-else-if="!user" class="py-10 text-center">
-      <CardContent class="space-y-3">
-        <p class="text-sm text-muted-foreground">登录后可以看到自己的练习数据。</p>
-        <Button @click="go('/login')">
-          <LogIn class="mr-2 h-4 w-4" />
-          去登录
-        </Button>
-      </CardContent>
-    </Card>
+    <!-- 未登录：工作坊状态 + 引导。状态是公开信息，不登录也该看得到。 -->
+    <template v-else-if="!user">
+      <WorkshopStatusCard />
+      <Card class="py-10 text-center">
+        <CardContent class="space-y-3">
+          <p class="text-sm text-muted-foreground">登录后可以看到自己的练习数据。</p>
+          <Button @click="go('/login')">
+            <LogIn class="mr-2 h-4 w-4" />
+            去登录
+          </Button>
+        </CardContent>
+      </Card>
+    </template>
 
     <template v-else>
       <Alert v-if="error" variant="destructive" class="flex items-start gap-2">
@@ -106,6 +110,9 @@ onMounted(async () => {
         <TrendingUp class="h-4 w-4 shrink-0 translate-y-0.5" />
         <span class="text-sm">{{ notice }}</span>
       </Alert>
+
+      <!-- 工作坊开没开门。放在最上面，因为它是每天都会被看一眼的信息。 -->
+      <WorkshopStatusCard />
 
       <div v-if="data">
         <!-- 抬头 -->
