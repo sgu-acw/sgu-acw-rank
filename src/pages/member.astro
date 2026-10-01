@@ -1,0 +1,15 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import MemberProfile from '../components/MemberProfile.vue';
+---
+
+<BaseLayout title="SGU ACW - 成员资料">
+  <div class="mx-auto max-w-3xl px-4 py-8 md:px-6">
+    <!--
+      用查询参数而不是 /member/3 这样的路径：本站是纯静态输出，构建时不知道
+      有哪些成员 id，动态路由会要求 getStaticPaths。查询参数没有这个问题，
+      代价只是 URL 略长。
+    -->
+    <MemberProfile client:load />
+  </div>
+</BaseLayout>

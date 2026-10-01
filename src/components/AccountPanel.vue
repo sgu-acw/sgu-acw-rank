@@ -11,6 +11,7 @@ import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Separator } from './ui/separator'
 import AccountBindings from './AccountBindings.vue'
+import PasswordForm from './PasswordForm.vue'
 import { useAuth } from '../lib/auth'
 import { formatEnrollYear } from '../lib/format'
 
@@ -124,6 +125,10 @@ function go(path: string) {
   <!-- 账号绑定只在已登录时显示，它需要会话。 -->
   <div v-if="ready && user" class="mt-4">
     <AccountBindings />
+  </div>
+
+  <div v-if="ready && user" class="mt-4">
+    <PasswordForm />
   </div>
 
   <div v-if="ready && user && isAdmin" class="mt-4">

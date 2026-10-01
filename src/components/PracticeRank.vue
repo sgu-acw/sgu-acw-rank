@@ -197,7 +197,12 @@ onMounted(async () => {
 
             <div class="min-w-0 flex-1">
               <div class="flex items-baseline gap-2">
-                <span class="truncate text-sm font-medium">{{ entry.display_name }}</span>
+                <a
+                  :href="`/member?id=${entry.user_id}`"
+                  class="truncate text-sm font-medium hover:text-primary hover:underline"
+                >
+                  {{ entry.display_name }}
+                </a>
                 <span
                   v-if="formatEnrollYear(entry.enroll_year)"
                   class="shrink-0 text-[11px] text-muted-foreground"
