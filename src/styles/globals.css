@@ -133,6 +133,56 @@
       scroll-behavior: auto !important;
     }
   }
+
+  /*
+   * 移动端的几项基础处理。
+   */
+  html {
+    /*
+     * iOS 上禁止自动放大字号。横屏时 Safari 会自作主张把文字放大，
+     * 排版就乱了。
+     */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+
+    /* 点击链接时的灰色高亮块很跳，去掉。 */
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    /* 横向溢出时不要整页跟着动。 */
+    overflow-x: hidden;
+
+    /*
+     * 安全区。刘海屏横屏时左右有 insets，底部有 Home 横条。
+     * 直接用 padding 而不是 margin，免得背景色露出白边。
+     */
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  /*
+   * 输入框字号在移动端提到 16px。
+   *
+   * iOS Safari 对 font-size < 16px 的输入框会在聚焦时自动放大页面，
+   * 而且放大后不会自动缩回。宁可字大一点，也不要这种「被缩放」的感觉。
+   *
+   * 只在窄屏生效，桌面端保持原本的 14px。
+   */
+  @media (max-width: 640px) {
+    input,
+    select,
+    textarea {
+      font-size: 16px !important;
+    }
+  }
+
+  /*
+   * 滚动到锚点时给顶栏留出空间，否则标题会被 sticky 顶栏盖住。
+   */
+  :target {
+    scroll-margin-top: 4rem;
+  }
 }
 
 @layer components {

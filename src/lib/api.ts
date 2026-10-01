@@ -38,6 +38,7 @@ export interface User {
   level: number
   college_code: string
   major_code: string
+  class_no: number
   role: 'root' | 'admin' | 'member'
   status: 'active' | 'disabled'
   created_at: string
@@ -226,6 +227,8 @@ export interface PracticeEntry {
   major_code: string
   college_name: string | null
   major_name: string | null
+  /** 专业加班级序号，如「软件工程 3 班」。 */
+  class_label: string | null
   total: number
   days: PracticeDay[]
 }
@@ -286,6 +289,12 @@ export interface RatingEntry {
   student_id: string
   enroll_year: number
   rank: number
+  /** 与练习量榜保持一致，两个维度显示的信息不该有差别。 */
+  college_code: string
+  major_code: string
+  college_name: string | null
+  major_name: string | null
+  class_label: string | null
   platform: Platform
   identifier: string
   platform_name: string | null
@@ -365,6 +374,7 @@ export interface AdminUser {
   level: number
   college_code: string
   major_code: string
+  class_no: number
   role: 'root' | 'admin' | 'member'
   status: 'active' | 'disabled'
   created_at: string

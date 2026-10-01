@@ -67,17 +67,18 @@ const age = computed(() => formatAge(data.value?.age))
     </span>
 
     <div class="min-w-0 flex-1">
-      <div class="flex items-baseline gap-2">
-        <span class="text-base font-semibold tracking-tight" :class="look.text">
+      <div class="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+        <!-- 状态词不折行。「没开门」拆成「没开/门」很难读。 -->
+        <span class="whitespace-nowrap text-base font-semibold tracking-tight" :class="look.text">
           {{ look.label }}
         </span>
-        <span class="truncate text-xs text-muted-foreground">{{ description }}</span>
+        <span class="text-xs text-muted-foreground">{{ description }}</span>
       </div>
       <p v-if="age" class="mt-0.5 text-[11px] text-muted-foreground/60">{{ age }}</p>
     </div>
 
     <span
-      class="flex shrink-0 items-center gap-0.5 text-xs text-muted-foreground/50 transition-colors group-hover:text-foreground"
+      class="hidden shrink-0 items-center gap-0.5 text-xs text-muted-foreground/50 transition-colors group-hover:text-foreground sm:flex"
     >
       详情
       <ArrowUpRight class="h-3 w-3 transition-transform duration-150 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />

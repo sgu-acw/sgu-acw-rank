@@ -665,18 +665,23 @@ onMounted(async () => {
                 </div>
               </div>
 
-              <!-- 姓名与备注。都是仅管理员可见可改。 -->
-              <div class="flex items-center gap-2">
+              <!--
+                姓名与备注。都是仅管理员可见可改。
+
+                窄屏下换行堆叠：这几个输入框加起来近 700px，390px 的屏幕上
+                横着排会全部挤在一起。
+              -->
+              <div class="flex flex-wrap items-center gap-2">
                 <Input
                   :model-value="editingName[member.id] ?? member.display_name"
                   placeholder="姓名"
-                  class="h-8 w-32 text-xs"
+                  class="h-9 w-full text-sm sm:h-8 sm:w-32 sm:text-xs"
                   @update:model-value="(v: string) => (editingName[member.id] = v)"
                 />
                 <Input
                   :model-value="editingNote[member.id] ?? member.admin_note"
                   placeholder="备注（仅管理员可见）"
-                  class="h-8 flex-1 text-xs"
+                  class="h-9 w-full text-sm sm:h-8 sm:flex-1 sm:text-xs"
                   @update:model-value="(v: string) => (editingNote[member.id] = v)"
                 />
 
@@ -684,7 +689,7 @@ onMounted(async () => {
                 <select
                   v-if="canChangeRole(member)"
                   :value="member.role"
-                  class="h-8 shrink-0 rounded-md border border-input bg-background px-2 text-xs"
+                  class="h-9 w-full shrink-0 rounded-md border border-input bg-background px-2 text-sm sm:h-8 sm:w-auto sm:text-xs"
                   @change="(e: Event) => changeRole(member, (e.target as HTMLSelectElement).value)"
                 >
                   <option value="member">成员</option>
@@ -694,13 +699,13 @@ onMounted(async () => {
                 <Input
                   :model-value="editingCollege[member.id] ?? member.college_name ?? ''"
                   placeholder="学院（可改）"
-                  class="h-8 w-44 text-xs"
+                  class="h-9 w-full text-sm sm:h-8 sm:w-44 sm:text-xs"
                   @update:model-value="(v: string) => (editingCollege[member.id] = v)"
                 />
                 <Input
                   :model-value="editingMajor[member.id] ?? member.major_name ?? ''"
                   placeholder="专业（可改）"
-                  class="h-8 w-40 text-xs"
+                  class="h-9 w-full text-sm sm:h-8 sm:w-40 sm:text-xs"
                   @update:model-value="(v: string) => (editingMajor[member.id] = v)"
                 />
 

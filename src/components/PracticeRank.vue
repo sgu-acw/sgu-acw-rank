@@ -87,11 +87,54 @@ const maxDaily = computed(() => {
   return Math.max(1, max)
 })
 
-/** 把每日数量画成柱子的高度。0 也留 2px，这样空白日不会看起来缺了一块。 */
+/**
+ * 窄屏。手机上柱状图要换一种画法。
+ */
+const isNarrow = ref(false)
+
+/**
+ * 把某人的每日数据聚合成柱子。
+ *
+ * 桌面端 90 天有 90 根柱子，一根挨一根，看得出每天的形状。手机屏只有
+ * 390px，90 根柱子每根不到 2px，画出来就是一条灰线，既看不出起伏，
+ * 也点不中。
+ *
+ * 所以窄屏按周合并：90 天变 13 根，每根代表一周的题量。牺牲了单日
+ * 精度，换来能看清趋势——这是手机上唯一说得通的选择。
+ */
+function barsFor(days: { date: string; count: number }[]): { date: string; count: number }[] {
+  if (!isNarrow.value || days.length <= 30) return days
+
+  const buckets: { date: string; count: number }[] = []
+  for (let i = 0; i < days.length; i += 7) {
+    const chunk = days.slice(i, i + 7)
+    buckets.push({
+      // 用这一周的最后一天当标签，表示「截至这天」。
+      date: chunk[chunk.length - 1].date,
+      count: chunk.reduce((sum, d) => sum + d.count, 0),
+    })
+  }
+  return buckets
+}
+
+/** 聚合后的最大值。柱子高度得按它算，否则会顶出容器。 */
+const maxBar = computed(() => {
+  if (!data.value) return 1
+  let max = 0
+  for (const entry of data.value.entries) {
+    for (const bar of barsFor(entry.days)) max = Math.max(max, bar.count)
+  }
+  return Math.max(1, max)
+})
+
+/** 把数量画成柱子的高度。0 也留 2px，这样空白日不会看起来缺了一块。 */
 function barHeight(count: number): string {
   if (count <= 0) return '2px'
-  return `${Math.max(4, (count / maxDaily.value) * 40)}px`
+  return `${Math.max(4, (count / maxBar.value) * 40)}px`
 }
+
+/** 柱子是一周还是单日，决定提示文字怎么写。 */
+const weekly = computed(() => isNarrow.value && days.value > 30)
 
 async function load() {
   loading.value = true
@@ -151,6 +194,14 @@ watch(search, () => {
 })
 
 onMounted(async () => {
+  // 用 matchMedia 而不是监听 resize：它只在真正跨越断点时才回调，
+  // 而且能直接给出当前是否匹配，不用自己拿宽度去比。
+  const mq = window.matchMedia('(max-width: 639px)')
+  isNarrow.value = mq.matches
+  mq.addEventListener('change', (e) => {
+    isNarrow.value = e.matches
+  })
+
   await ensureLoaded()
   await load()
 })
@@ -184,7 +235,7 @@ onMounted(async () => {
           { key: 'rating' as const, label: 'Rating' },
         ]"
         :key="tab.key"
-        class="flex-1 rounded px-3 py-1.5 text-xs font-medium transition-colors"
+        class="flex-1 rounded px-3 py-2 text-xs font-medium transition-colors active:scale-[0.98]"
         :class="
           dimension === tab.key
             ? 'bg-accent text-accent-foreground'
@@ -202,7 +253,7 @@ onMounted(async () => {
         <button
           v-for="option in DAY_OPTIONS"
           :key="option.value"
-          class="rounded px-3 py-1.5 text-xs font-medium transition-colors"
+          class="rounded px-3 py-2 text-xs font-medium transition-colors active:scale-[0.98]"
           :class="
             days === option.value
               ? 'bg-accent text-accent-foreground'
@@ -218,7 +269,7 @@ onMounted(async () => {
         <button
           v-for="option in PLATFORM_OPTIONS"
           :key="option.value"
-          class="rounded px-3 py-1.5 text-xs font-medium transition-colors"
+          class="rounded px-3 py-2 text-xs font-medium transition-colors active:scale-[0.98]"
           :class="
             platform === option.value
               ? 'bg-accent text-accent-foreground'
@@ -232,7 +283,7 @@ onMounted(async () => {
 
       <!-- 高级筛选开关。默认收起，免得一进来就面对一排下拉框。 -->
       <button
-        class="flex items-center gap-1.5 rounded-md border border-border/40 px-3 py-1.5 text-xs font-medium transition-colors hover:bg-muted/60"
+        class="flex items-center gap-1.5 rounded-md border border-border/40 px-3 py-2 text-xs font-medium transition-colors hover:bg-muted/60 active:scale-[0.98]"
         :class="showFilters || hasFilters ? 'text-foreground' : 'text-muted-foreground'"
         @click="showFilters = !showFilters"
       >
@@ -264,18 +315,18 @@ onMounted(async () => {
     <!-- 高级筛选面板 -->
     <div
       v-if="dimension === 'practice' && showFilters"
-      class="grid gap-2 rounded-md border border-border/40 p-3 sm:grid-cols-2 lg:grid-cols-4"
+      class="grid gap-3 rounded-md border border-border/40 p-3 sm:grid-cols-2 sm:gap-2 lg:grid-cols-4"
     >
       <div class="space-y-1">
         <label class="text-xs font-medium text-muted-foreground">搜索</label>
-        <Input v-model="search" placeholder="姓名或学号" class="h-8 text-xs" />
+        <Input v-model="search" placeholder="姓名或学号" class="h-9 text-sm" />
       </div>
 
       <div class="space-y-1">
         <label class="text-xs font-medium text-muted-foreground">学院</label>
         <select
           v-model="college"
-          class="h-8 w-full rounded-md border border-input bg-background px-2 text-xs"
+          class="h-9 w-full rounded-md border border-input bg-background px-2.5 text-sm"
           @change="reload()"
         >
           <option value="">全部</option>
@@ -289,7 +340,7 @@ onMounted(async () => {
         <label class="text-xs font-medium text-muted-foreground">年级</label>
         <select
           v-model="enrollYear"
-          class="h-8 w-full rounded-md border border-input bg-background px-2 text-xs"
+          class="h-9 w-full rounded-md border border-input bg-background px-2.5 text-sm"
           @change="reload()"
         >
           <option :value="null">全部</option>
@@ -353,7 +404,7 @@ onMounted(async () => {
           <div
             v-for="entry in data.entries"
             :key="entry.user_id"
-            class="flex items-center gap-3 px-4 py-3"
+            class="flex items-center gap-2 px-3 py-3 sm:gap-3 sm:px-4"
           >
             <span
               class="w-6 shrink-0 text-center font-mono text-xs"
@@ -363,7 +414,12 @@ onMounted(async () => {
             </span>
 
             <div class="min-w-0 flex-1">
-              <div class="flex items-baseline gap-2">
+              <!--
+                姓名、年级、学院专业。窄屏分两行：第一行姓名和年级，
+                第二行学院专业班级。
+                挤在一行会互相压缩，长专业名直接把姓名截断。
+              -->
+              <div class="flex flex-wrap items-baseline gap-x-2">
                 <button
                   class="truncate text-sm font-medium underline-offset-4 transition-colors hover:text-primary hover:underline"
                   :title="`查看 ${entry.display_name} 的资料`"
@@ -379,26 +435,35 @@ onMounted(async () => {
                 </span>
                 <span
                   v-if="entry.college_name"
-                  class="hidden shrink-0 text-[11px] text-muted-foreground/70 sm:inline"
+                  class="w-full text-[11px] text-muted-foreground/70 sm:w-auto"
                 >
                   {{ entry.college_name }}
                   <template v-if="entry.major_name"> · {{ entry.major_name }}</template>
+                  <template v-if="entry.class_label"> · {{ entry.class_label }}</template>
                 </span>
               </div>
 
-              <!-- 每日柱状图。每根柱子悬停时放大并浮出当天的数量。 -->
-              <div class="mt-1.5 flex items-end gap-0.5" style="height: 40px">
+              <!--
+                柱状图。窄屏且窗口较长时按周聚合，否则 90 根柱子会挤成
+                一条线，既看不出起伏也点不中。
+              -->
+              <div class="mt-1.5 flex items-end gap-px sm:gap-0.5" style="height: 40px">
                 <span
-                  v-for="day in entry.days"
-                  :key="day.date"
-                  class="group/bar relative flex-1 cursor-default rounded-sm transition-all duration-150 hover:bg-primary"
-                  :class="day.count > 0 ? 'bg-primary/70' : 'bg-muted'"
-                  :style="{ height: barHeight(day.count) }"
+                  v-for="bar in barsFor(entry.days)"
+                  :key="bar.date"
+                  class="group/bar relative flex-1 cursor-default rounded-sm transition-all duration-150 hover:bg-primary active:bg-primary"
+                  :class="bar.count > 0 ? 'bg-primary/70' : 'bg-muted'"
+                  :style="{ height: barHeight(bar.count) }"
                 >
+                  <!--
+                    提示。桌面端靠悬停，触屏没有悬停，所以长按也要能出。
+                    group-active/bar 让手指按下时同样显示。
+                  -->
                   <span
-                    class="pointer-events-none absolute bottom-full left-1/2 z-10 mb-1 -translate-x-1/2 whitespace-nowrap rounded border border-border/60 bg-popover px-1.5 py-0.5 text-[10px] text-popover-foreground opacity-0 shadow-sm transition-opacity duration-150 group-hover/bar:opacity-100"
+                    class="pointer-events-none absolute bottom-full left-1/2 z-10 mb-1 -translate-x-1/2 whitespace-nowrap rounded border border-border/60 bg-popover px-1.5 py-0.5 text-[10px] text-popover-foreground opacity-0 shadow-sm transition-opacity duration-150 group-hover/bar:opacity-100 group-active/bar:opacity-100"
                   >
-                    {{ day.date.slice(5) }} · {{ day.count }} 题
+                    <template v-if="weekly">截至 {{ bar.date.slice(5) }} 那周 · {{ bar.count }} 题</template>
+                    <template v-else>{{ bar.date.slice(5) }} · {{ bar.count }} 题</template>
                   </span>
                 </span>
               </div>
@@ -441,7 +506,7 @@ onMounted(async () => {
           <div
             v-for="entry in rating.entries"
             :key="`${entry.platform}-${entry.identifier}`"
-            class="flex items-center gap-3 px-4 py-3"
+            class="flex items-center gap-2 px-3 py-3 sm:gap-3 sm:px-4"
           >
             <span
               class="w-6 shrink-0 text-center font-mono text-xs"
@@ -466,7 +531,19 @@ onMounted(async () => {
                   {{ formatEnrollYear(entry.enroll_year) }}
                 </span>
               </div>
-              <p class="truncate font-mono text-xs text-muted-foreground">{{ entry.identifier }}</p>
+              <!--
+                handle 与班级专业。窄屏分两行——handle 和「信息工程学院 ·
+                软件工程 · 软件工程 3 班」挤一行会互相截断。
+              -->
+              <p class="truncate font-mono text-xs text-muted-foreground">
+                {{ entry.identifier }}
+              </p>
+              <p
+                v-if="entry.class_label || entry.college_name"
+                class="truncate text-[11px] text-muted-foreground/70"
+              >
+                {{ [entry.college_name, entry.major_name, entry.class_label].filter(Boolean).join(' · ') }}
+              </p>
             </div>
 
             <div class="shrink-0 text-right">

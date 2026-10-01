@@ -42,6 +42,7 @@ interface MemberInfo {
   major_code: string
   college_name: string | null
   major_name: string | null
+  class_label: string | null
   role: string
 }
 
@@ -135,8 +136,11 @@ watch(() => props.userId, load, { immediate: true })
         </span>
       </div>
 
-      <p v-if="member.college_name || member.major_name" class="text-xs text-muted-foreground">
-        {{ [member.college_name, member.major_name].filter(Boolean).join(' · ') }}
+      <p
+        v-if="member.college_name || member.major_name || member.class_label"
+        class="text-xs text-muted-foreground"
+      >
+        {{ [member.college_name, member.major_name, member.class_label].filter(Boolean).join(' · ') }}
       </p>
 
       <!-- 平台账号 -->
