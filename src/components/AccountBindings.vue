@@ -189,6 +189,13 @@ onMounted(load)
                 </a>
                 ，保存后回来点验证。原有内容不用删，加在后面即可。
               </p>
+              <!-- 有些平台的字段有坑（比如 CF 的组织是个选择器），单说清楚。 -->
+              <p
+                v-if="PLATFORM_META[account.platform].hint"
+                class="text-xs text-muted-foreground/70"
+              >
+                {{ PLATFORM_META[account.platform].hint }}
+              </p>
               <div class="flex items-center gap-2">
                 <code class="rounded bg-muted px-2 py-1 font-mono text-sm">{{ account.verify_token }}</code>
                 <Button variant="ghost" size="sm" @click="renew(account)">

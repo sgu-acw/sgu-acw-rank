@@ -144,11 +144,14 @@ export type Platform = 'codeforces' | 'atcoder' | 'luogu' | 'nowcoder'
  */
 export const PLATFORM_META: Record<
   Platform,
-  { label: string; field: string; settingsUrl: string; idHint: string }
+  { label: string; field: string; hint?: string; settingsUrl: string; idHint: string }
 > = {
   codeforces: {
     label: 'Codeforces',
-    field: 'Organization',
+    // 不能填 Organization：那是个选择器，会要求从已有组织里选或者新建一个，
+    // 填不进任意文本。名字、姓氏、城市都是自由文本。
+    field: '姓氏',
+    hint: '「组织」是个选择器，填不了任意文本。请填在「姓氏（英文）」里；已经写过姓氏的话，填在「城市」里也一样。',
     settingsUrl: 'https://codeforces.com/settings/social',
     idHint: 'handle，如 tourist',
   },
