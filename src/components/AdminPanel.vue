@@ -5,8 +5,8 @@
  * 只有 admin 或 root 能用。页面本身是静态的，拦不住人，真正的权限在
  * 后端——这里只是不给无权的人显示入口，每个请求失败都会照常提示。
  */
-import { computed, onMounted, ref } from 'vue'
-import { AlertCircle, Check, Copy, Loader2, Trash2 } from 'lucide-vue-next'
+import { computed, onMounted, ref, watch } from 'vue'
+import { AlertCircle, Check, Copy, Loader2, Plus, Search, Trash2 } from 'lucide-vue-next'
 import { Alert } from './ui/alert'
 import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
@@ -16,6 +16,7 @@ import {
   ApiError,
   adminApi,
   type AdminUser,
+  type AdminUserPage,
   type Invite,
 } from '../lib/api'
 import { useAuth } from '../lib/auth'
@@ -27,8 +28,26 @@ const error = ref('')
 const notice = ref('')
 
 const invites = ref<Invite[]>([])
-const users = ref<AdminUser[]>([])
-const stats = ref<{ user_count: number; active_count: number; admin_count: number; usable_invite_count: number } | null>(null)
+const page = ref<AdminUserPage | null>(null)
+const stats = ref<{
+  user_count: number
+  active_count: number
+  admin_count: number
+  usable_invite_count: number
+} | null>(null)
+
+// 成员筛选条件。改动后重新拉取，搜索框做防抖。
+const filters = ref({
+  q: '',
+  role: '',
+  status: '',
+  enroll_year: null as number | null,
+  college_code: '',
+  has_account: null as boolean | null,
+  sort: 'enroll_year',
+  page: 1,
+  page_size: 20,
+})
 
 // 新建邀请码的表单
 const form = ref({
@@ -38,12 +57,40 @@ const form = ref({
   note: '',
 })
 
+// 新建成员的表单
+const showCreate = ref(false)
+const creating = ref(false)
+const createForm = ref({
+  student_id: '',
+  display_name: '',
+  password: '',
+  role: 'member',
+  admin_note: '',
+})
+
 // 成员编辑：只保存正在编辑的那一行的备注，避免整表联动。
 const editingNote = ref<Record<number, string>>({})
+const editingName = ref<Record<number, string>>({})
 const savingNote = ref<number | null>(null)
 const copiedCode = ref<string | null>(null)
 
 const isRoot = computed(() => user.value?.role === 'root')
+const members = computed(() => page.value?.items ?? [])
+const totalPages = computed(() => {
+  if (!page.value) return 1
+  return Math.max(1, Math.ceil(page.value.total / page.value.page_size))
+})
+
+/** 是否有任何筛选条件生效，用于决定要不要显示「清除」。 */
+const hasFilters = computed(
+  () =>
+    !!filters.value.q ||
+    !!filters.value.role ||
+    !!filters.value.status ||
+    filters.value.enroll_year !== null ||
+    !!filters.value.college_code ||
+    filters.value.has_account !== null,
+)
 
 function flash(message: string) {
   notice.value = message
@@ -56,18 +103,104 @@ async function load() {
   loading.value = true
   error.value = ''
   try {
-    const [inviteList, userList, summary] = await Promise.all([
+    const [inviteList, userPage, summary] = await Promise.all([
       adminApi.invites(),
-      adminApi.users(),
+      adminApi.users(filters.value),
       adminApi.stats(),
     ])
     invites.value = inviteList
-    users.value = userList
+    page.value = userPage
     stats.value = summary
   } catch (err) {
     error.value = err instanceof ApiError ? err.message : '加载失败'
   } finally {
     loading.value = false
+  }
+}
+
+/** 只重拉成员列表，不动邀请码和统计。筛选变动时用这个。 */
+async function reloadMembers() {
+  try {
+    page.value = await adminApi.users(filters.value)
+  } catch (err) {
+    error.value = err instanceof ApiError ? err.message : '加载失败'
+  }
+}
+
+// 搜索框防抖：每敲一个字就发请求太浪费。
+let searchTimer: number | undefined
+watch(
+  () => filters.value.q,
+  () => {
+    window.clearTimeout(searchTimer)
+    searchTimer = window.setTimeout(() => {
+      filters.value.page = 1
+      reloadMembers()
+    }, 300)
+  },
+)
+
+// 其余筛选项立即生效，并回到第一页（否则可能停在一个空页上）。
+watch(
+  () => [
+    filters.value.role,
+    filters.value.status,
+    filters.value.enroll_year,
+    filters.value.college_code,
+    filters.value.has_account,
+    filters.value.sort,
+  ],
+  () => {
+    filters.value.page = 1
+    reloadMembers()
+  },
+)
+
+function clearFilters() {
+  filters.value.q = ''
+  filters.value.role = ''
+  filters.value.status = ''
+  filters.value.enroll_year = null
+  filters.value.college_code = ''
+  filters.value.has_account = null
+}
+
+function goPage(next: number) {
+  if (next < 1 || next > totalPages.value) return
+  filters.value.page = next
+  reloadMembers()
+}
+
+async function createUser() {
+  creating.value = true
+  error.value = ''
+  try {
+    await adminApi.createUser({
+      student_id: createForm.value.student_id.trim(),
+      display_name: createForm.value.display_name.trim(),
+      password: createForm.value.password,
+      role: createForm.value.role,
+      admin_note: createForm.value.admin_note,
+    })
+    createForm.value = { student_id: '', display_name: '', password: '', role: 'member', admin_note: '' }
+    showCreate.value = false
+    await load()
+    flash('已创建')
+  } catch (err) {
+    error.value = err instanceof ApiError ? err.message : '创建失败'
+  } finally {
+    creating.value = false
+  }
+}
+
+async function deleteUser(target: AdminUser) {
+  if (!window.confirm(`确定删除 ${target.display_name}（${target.student_id}）？\n\n会同时删掉其平台绑定与练习记录，不可恢复。`)) return
+  try {
+    await adminApi.deleteUser(target.id)
+    await load()
+    flash('已删除')
+  } catch (err) {
+    error.value = err instanceof ApiError ? err.message : '删除失败'
   }
 }
 
@@ -114,13 +247,20 @@ async function copyCode(code: string) {
 
 async function saveNote(target: AdminUser) {
   const value = editingNote.value[target.id]
-  if (value === undefined) return
+  const name = editingName.value[target.id]
+  const payload: { admin_note?: string; display_name?: string } = {}
+  if (value !== undefined) payload.admin_note = value
+  if (name !== undefined) payload.display_name = name
+  if (!Object.keys(payload).length) return
+
   savingNote.value = target.id
   try {
-    const updated = await adminApi.updateUser(target.id, { admin_note: value })
+    const updated = await adminApi.updateUser(target.id, payload)
     target.admin_note = updated.admin_note
+    target.display_name = updated.display_name
     delete editingNote.value[target.id]
-    flash('备注已保存')
+    delete editingName.value[target.id]
+    flash('已保存')
   } catch (err) {
     error.value = err instanceof ApiError ? err.message : '保存失败'
   } finally {
@@ -296,11 +436,129 @@ onMounted(async () => {
       <!-- 成员 -->
       <Card>
         <CardHeader class="pb-3">
-          <CardTitle class="text-sm font-medium">成员</CardTitle>
+          <div class="flex items-center justify-between">
+            <CardTitle class="text-sm font-medium">
+              成员
+              <span v-if="page" class="ml-1 font-normal text-muted-foreground">
+                {{ page.total }} 人
+              </span>
+            </CardTitle>
+            <Button size="sm" @click="showCreate = !showCreate">
+              <Plus class="mr-1 h-3.5 w-3.5" />
+              新建
+            </Button>
+          </div>
         </CardHeader>
+
+        <CardContent class="space-y-3 pb-4">
+          <!-- 搜索与筛选 -->
+          <div class="flex flex-wrap items-center gap-2">
+            <div class="relative min-w-[180px] flex-1">
+              <Search class="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/60" />
+              <Input
+                v-model="filters.q"
+                placeholder="搜学号或姓名"
+                class="h-9 pl-8 text-xs"
+              />
+            </div>
+
+            <select
+              v-model="filters.role"
+              class="h-9 rounded-md border border-input bg-background px-2 text-xs"
+            >
+              <option value="">全部身份</option>
+              <option value="member">成员</option>
+              <option value="admin">管理员</option>
+              <option value="root">root</option>
+            </select>
+
+            <select
+              v-model="filters.status"
+              class="h-9 rounded-md border border-input bg-background px-2 text-xs"
+            >
+              <option value="">全部状态</option>
+              <option value="active">在用</option>
+              <option value="disabled">已停用</option>
+            </select>
+
+            <select
+              v-model="filters.enroll_year"
+              class="h-9 rounded-md border border-input bg-background px-2 text-xs"
+            >
+              <option :value="null">全部年级</option>
+              <option v-for="year in page?.enroll_years ?? []" :key="year" :value="year">
+                {{ year }} 级
+              </option>
+            </select>
+
+            <select
+              v-model="filters.has_account"
+              class="h-9 rounded-md border border-input bg-background px-2 text-xs"
+            >
+              <option :value="null">全部</option>
+              <option :value="true">已绑账号</option>
+              <option :value="false">未绑账号</option>
+            </select>
+
+            <select
+              v-model="filters.sort"
+              class="h-9 rounded-md border border-input bg-background px-2 text-xs"
+            >
+              <option value="enroll_year">按年级</option>
+              <option value="student_id">按学号</option>
+              <option value="display_name">按姓名</option>
+              <option value="created_at">按注册时间</option>
+            </select>
+
+            <Button v-if="hasFilters" variant="ghost" size="sm" @click="clearFilters">
+              清除
+            </Button>
+          </div>
+
+          <!-- 新建成员 -->
+          <div v-if="showCreate" class="space-y-2 rounded-md border border-border/40 p-3">
+            <p class="text-xs font-medium">新建成员（不需要邀请码）</p>
+            <div class="grid gap-2 sm:grid-cols-2">
+              <Input v-model="createForm.student_id" placeholder="学号" class="h-9 font-mono text-xs" />
+              <Input v-model="createForm.display_name" placeholder="姓名" class="h-9 text-xs" />
+              <Input
+                v-model="createForm.password"
+                type="password"
+                placeholder="初始密码（至少 8 位）"
+                class="h-9 text-xs"
+              />
+              <select
+                v-model="createForm.role"
+                class="h-9 rounded-md border border-input bg-background px-2 text-xs"
+              >
+                <option value="member">成员</option>
+                <option v-if="isRoot" value="admin">管理员</option>
+              </select>
+            </div>
+            <Input v-model="createForm.admin_note" placeholder="备注（可选）" class="h-9 text-xs" />
+            <div class="flex gap-2">
+              <Button
+                size="sm"
+                :disabled="creating || !createForm.student_id || !createForm.display_name || createForm.password.length < 8"
+                @click="createUser"
+              >
+                <Loader2 v-if="creating" class="mr-1 h-3.5 w-3.5 animate-spin" />
+                创建
+              </Button>
+              <Button variant="ghost" size="sm" @click="showCreate = false">取消</Button>
+            </div>
+            <p class="text-xs text-muted-foreground">
+              年级、学院、专业由学号解析得出。只有 root 能创建管理员。
+            </p>
+          </div>
+        </CardContent>
+
         <CardContent class="p-0">
-          <div class="divide-y divide-border/40">
-            <div v-for="member in users" :key="member.id" class="space-y-2 px-4 py-3">
+          <div v-if="!members.length" class="p-4 text-sm text-muted-foreground">
+            没有符合条件的成员。
+          </div>
+          <div v-else class="divide-y divide-border/40">
+            <div v-for="member in members" :key="member.id" class="space-y-2 px-4 py-3">
               <div class="flex flex-wrap items-center gap-2">
                 <span class="text-sm font-medium">{{ member.display_name }}</span>
                 <span class="font-mono text-xs text-muted-foreground">{{ member.student_id }}</span>
@@ -328,19 +586,33 @@ onMounted(async () => {
                   <Button variant="ghost" size="sm" @click="resetPassword(member)">
                     重置密码
                   </Button>
+                  <Button
+                    v-if="member.role !== 'root' && member.id !== user?.id"
+                    variant="ghost"
+                    size="sm"
+                    @click="deleteUser(member)"
+                  >
+                    <Trash2 class="h-3.5 w-3.5" />
+                  </Button>
                 </div>
               </div>
 
-              <!-- 管理员备注。仅管理员可见可改。 -->
+              <!-- 姓名与备注。都是仅管理员可见可改。 -->
               <div class="flex items-center gap-2">
+                <Input
+                  :model-value="editingName[member.id] ?? member.display_name"
+                  placeholder="姓名"
+                  class="h-8 w-32 text-xs"
+                  @update:model-value="(v: string) => (editingName[member.id] = v)"
+                />
                 <Input
                   :model-value="editingNote[member.id] ?? member.admin_note"
                   placeholder="备注（仅管理员可见）"
-                  class="h-8 text-xs"
+                  class="h-8 flex-1 text-xs"
                   @update:model-value="(v: string) => (editingNote[member.id] = v)"
                 />
                 <Button
-                  v-if="editingNote[member.id] !== undefined"
+                  v-if="editingNote[member.id] !== undefined || editingName[member.id] !== undefined"
                   size="sm"
                   :disabled="savingNote === member.id"
                   @click="saveNote(member)"
@@ -349,6 +621,26 @@ onMounted(async () => {
                 </Button>
               </div>
             </div>
+          </div>
+        </CardContent>
+
+        <!-- 分页 -->
+        <CardContent v-if="page && totalPages > 1" class="flex items-center justify-between border-t border-border/40 py-3">
+          <span class="text-xs text-muted-foreground">
+            第 {{ page.page }} / {{ totalPages }} 页
+          </span>
+          <div class="flex gap-1">
+            <Button variant="outline" size="sm" :disabled="page.page <= 1" @click="goPage(page.page - 1)">
+              上一页
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              :disabled="page.page >= totalPages"
+              @click="goPage(page.page + 1)"
+            >
+              下一页
+            </Button>
           </div>
         </CardContent>
       </Card>

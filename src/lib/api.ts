@@ -273,6 +273,27 @@ export interface AdminUser {
   admin_note: string
 }
 
+export interface AdminUserPage {
+  items: AdminUser[]
+  total: number
+  page: number
+  page_size: number
+  enroll_years: number[]
+  college_codes: string[]
+}
+
+export interface AdminUserQuery {
+  q?: string
+  role?: string
+  status?: string
+  enroll_year?: number | null
+  college_code?: string
+  has_account?: boolean | null
+  page?: number
+  page_size?: number
+  sort?: string
+}
+
 export const adminApi = {
   stats: () =>
     api.get<{
@@ -282,12 +303,31 @@ export const adminApi = {
       usable_invite_count: number
     }>('/admin/stats'),
 
-  users: () => api.get<AdminUser[]>('/admin/users'),
+  users: (query: AdminUserQuery = {}) => {
+    const params = new URLSearchParams()
+    for (const [key, value] of Object.entries(query)) {
+      // 空值不发，避免后端把空串当成筛选条件。
+      if (value === undefined || value === null || value === '') continue
+      params.set(key, String(value))
+    }
+    const suffix = params.toString()
+    return api.get<AdminUserPage>(`/admin/users${suffix ? `?${suffix}` : ''}`)
+  },
+
+  createUser: (payload: {
+    student_id: string
+    display_name: string
+    password: string
+    role?: string
+    admin_note?: string
+  }) => api.post<AdminUser>('/admin/users', payload),
 
   updateUser: (
     id: number,
-    payload: { role?: string; status?: string; admin_note?: string },
+    payload: { role?: string; status?: string; admin_note?: string; display_name?: string },
   ) => api.patch<AdminUser>(`/admin/users/${id}`, payload),
+
+  deleteUser: (id: number) => api.delete<void>(`/admin/users/${id}`),
 
   resetPassword: (id: number) =>
     api.post<{ student_id: string; display_name: string; temporary_password: string }>(
