@@ -29,10 +29,11 @@ const status = ref<SyncStatus | null>(null)
 // 未登录与加载失败是两回事，分开呈现：前者引导登录，后者提示重试。
 const needsLogin = ref(false)
 
-const days = ref(7)
+const days = ref(1)
 const platform = ref<Platform | ''>('')
 
 const DAY_OPTIONS = [
+  { value: 1, label: '今日' },
   { value: 7, label: '最近 7 天' },
   { value: 30, label: '最近 30 天' },
   { value: 90, label: '最近 90 天' },
@@ -99,7 +100,7 @@ onMounted(async () => {
       <div>
         <h1 class="text-lg font-semibold tracking-tight">每日练习量</h1>
         <p class="mt-0.5 text-xs text-muted-foreground">
-          按过题数统计。同一平台的主号与小号已合并。
+          按过题数统计。同一平台的主号与小号已合并。一天从凌晨 4 点算起。
         </p>
       </div>
       <Button variant="outline" size="sm" :disabled="loading" @click="load">
