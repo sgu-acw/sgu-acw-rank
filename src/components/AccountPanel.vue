@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Separator } from './ui/separator'
 import AccountBindings from './AccountBindings.vue'
 import { useAuth } from '../lib/auth'
+import { formatEnrollYear } from '../lib/format'
 
 const { user, loading, ready, isAdmin, ensureLoaded, logout } = useAuth()
 
@@ -94,7 +95,7 @@ function go(path: string) {
         <dl class="space-y-2 text-sm">
           <div class="flex justify-between">
             <dt class="text-muted-foreground">入学年份</dt>
-            <dd>{{ user.enroll_year }} 级</dd>
+            <dd>{{ formatEnrollYear(user.enroll_year) || '—' }}</dd>
           </div>
           <div class="flex justify-between">
             <dt class="text-muted-foreground">培养层次</dt>

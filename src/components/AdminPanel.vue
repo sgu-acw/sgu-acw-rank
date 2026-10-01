@@ -20,6 +20,7 @@ import {
   type Invite,
 } from '../lib/api'
 import { useAuth } from '../lib/auth'
+import { formatEnrollYear } from '../lib/format'
 
 const { user, ensureLoaded, isAdmin } = useAuth()
 
@@ -193,6 +194,20 @@ async function createUser() {
   }
 }
 
+async function changeRole(target: AdminUser, role: string) {
+  if (role === target.role) return
+  const label = roleLabel(role)
+  if (!window.confirm(`把 ${target.display_name} 的身份改为「${label}」？`)) return
+  try {
+    const updated = await adminApi.updateUser(target.id, { role })
+    target.role = updated.role
+    await load()
+    flash(`已改为${label}`)
+  } catch (err) {
+    error.value = err instanceof ApiError ? err.message : '修改失败'
+  }
+}
+
 async function deleteUser(target: AdminUser) {
   if (!window.confirm(`确定删除 ${target.display_name}（${target.student_id}）？\n\n会同时删掉其平台绑定与练习记录，不可恢复。`)) return
   try {
@@ -296,6 +311,17 @@ async function resetPassword(target: AdminUser) {
 
 function roleLabel(role: string): string {
   return role === 'root' ? 'root' : role === 'admin' ? '管理员' : '成员'
+}
+
+/** 当前登录者能否改动这个人的身份。
+ *
+ * 规则与后端一致，这里只是提前把不可用的控件置灰，免得点下去才报错：
+ * root 的身份谁都改不了；只有 root 能授予或撤销管理员。
+ */
+function canChangeRole(member: AdminUser): boolean {
+  if (member.role === 'root') return false
+  if (member.id === user.value?.id) return false
+  return isRoot.value
 }
 
 function inviteState(invite: Invite): { text: string; tone: string } {
@@ -562,7 +588,12 @@ onMounted(async () => {
               <div class="flex flex-wrap items-center gap-2">
                 <span class="text-sm font-medium">{{ member.display_name }}</span>
                 <span class="font-mono text-xs text-muted-foreground">{{ member.student_id }}</span>
-                <span class="text-xs text-muted-foreground">{{ member.enroll_year }} 级</span>
+                <span
+                  v-if="formatEnrollYear(member.enroll_year)"
+                  class="text-xs text-muted-foreground"
+                >
+                  {{ formatEnrollYear(member.enroll_year) }}
+                </span>
 
                 <span
                   class="rounded border border-border/40 px-1.5 py-0.5 text-[10px]"
@@ -611,6 +642,18 @@ onMounted(async () => {
                   class="h-8 flex-1 text-xs"
                   @update:model-value="(v: string) => (editingNote[member.id] = v)"
                 />
+
+                <!-- 身份。只有 root 能改，且改不了 root 自己和自己的。 -->
+                <select
+                  v-if="canChangeRole(member)"
+                  :value="member.role"
+                  class="h-8 shrink-0 rounded-md border border-input bg-background px-2 text-xs"
+                  @change="(e: Event) => changeRole(member, (e.target as HTMLSelectElement).value)"
+                >
+                  <option value="member">成员</option>
+                  <option value="admin">管理员</option>
+                </select>
+
                 <Button
                   v-if="editingNote[member.id] !== undefined || editingName[member.id] !== undefined"
                   size="sm"

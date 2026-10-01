@@ -19,6 +19,7 @@ import {
   type SyncStatus,
 } from '../lib/api'
 import { useAuth } from '../lib/auth'
+import { formatEnrollYear } from '../lib/format'
 
 const { ensureLoaded } = useAuth()
 
@@ -197,8 +198,11 @@ onMounted(async () => {
             <div class="min-w-0 flex-1">
               <div class="flex items-baseline gap-2">
                 <span class="truncate text-sm font-medium">{{ entry.display_name }}</span>
-                <span class="shrink-0 text-[11px] text-muted-foreground">
-                  {{ entry.enroll_year }} 级
+                <span
+                  v-if="formatEnrollYear(entry.enroll_year)"
+                  class="shrink-0 text-[11px] text-muted-foreground"
+                >
+                  {{ formatEnrollYear(entry.enroll_year) }}
                 </span>
               </div>
 
