@@ -1,59 +1,10 @@
 ---
-import { getCollection, render } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import WorkshopStatusCard from '../components/WorkshopStatusCard.vue';
-
-const posts = await getCollection('blog');
-const sorted = posts.sort((a, b) => {
-  return (b.data.sortOrder ?? 0) - (a.data.sortOrder ?? 0);
-});
-
-// Render each post to get HTML content for preview
-const postsWithContent = await Promise.all(
-  sorted.map(async (post) => {
-    const { Content } = await render(post);
-    // Extract plain text from the raw markdown body for excerpt
-    const plainText = post.body
-      ?.replace(/^---[\s\S]*?---\n*/m, '') // remove frontmatter
-      ?.replace(/#+\s/g, '')               // remove headings
-      ?.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // links -> text
-      ?.replace(/[*_~`]/g, '')             // remove formatting
-      ?.replace(/\|.*\|/g, '')             // remove table rows
-      ?.replace(/---/g, '')                // remove hr
-      ?.replace(/!\[.*?\]\(.*?\)/g, '')    // remove images
-      ?.trim()
-      ?.slice(0, 200) || '';
-    return { post, Content, excerpt: plainText };
-  })
-);
+import Dashboard from '../components/Dashboard.vue';
 ---
 
-<BaseLayout title="SGU ACW - 博客">
-  <div class="max-w-3xl mx-auto px-2">
-    <div class="mb-6">
-      <WorkshopStatusCard client:load />
-    </div>
-    <div class="divide-y divide-border/50">
-      {postsWithContent.map(({ post, Content, excerpt }) => (
-        <a href={`/blog/${post.id.replace(/\.md$/, '')}`} class="block group">
-          <article class="py-6 md:py-8 px-2 md:px-4 -mx-2 md:-mx-4 rounded-lg hover:bg-muted/40 transition-colors duration-200">
-            <h2 class="text-base md:text-lg font-medium tracking-tight group-hover:text-primary transition-colors">
-              {post.data.title}
-            </h2>
-            {excerpt && (
-              <p class="mt-2 text-sm text-muted-foreground leading-relaxed line-clamp-2">
-                {excerpt}{excerpt.length >= 200 ? '…' : ''}
-              </p>
-            )}
-            <span class="inline-flex items-center gap-1 mt-3 text-xs text-muted-foreground/70 group-hover:text-primary transition-colors">
-              阅读全文
-              <svg class="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-              </svg>
-            </span>
-          </article>
-        </a>
-      ))}
-    </div>
+<BaseLayout title="SGU ACW - 首页">
+  <div class="mx-auto max-w-3xl px-4 py-8 md:px-6">
+    <Dashboard client:load />
   </div>
 </BaseLayout>

@@ -227,6 +227,57 @@ export interface SyncStatus {
   errors: string[]
 }
 
+export interface DashboardAccount {
+  platform: Platform
+  label: string
+  identifier: string
+  platform_name: string | null
+  verified: boolean
+  rating: number | null
+  max_rating: number | null
+}
+
+export interface Dashboard {
+  practice_day: string
+  today: number
+  week: number
+  total: number
+  days: PracticeDay[]
+  practice_rank: number | null
+  practice_total: number
+  accounts: DashboardAccount[]
+  refresh_remaining: number
+  refresh_limit: number
+}
+
+export interface RefreshResult {
+  synced: number
+  added: number
+  failures: string[]
+  remaining: number
+}
+
+export interface RatingEntry {
+  user_id: number
+  display_name: string
+  student_id: string
+  enroll_year: number
+  rank: number
+  platform: Platform
+  identifier: string
+  platform_name: string | null
+  rating: number | null
+  max_rating: number | null
+  fetched_at: string | null
+}
+
+export interface RatingBoard {
+  platform: Platform
+  label: string
+  entries: RatingEntry[]
+  generated_at: number
+}
+
 export const practiceApi = {
   rank: (params: { days?: number; platform?: Platform | null } = {}) => {
     const query = new URLSearchParams()
@@ -237,6 +288,21 @@ export const practiceApi = {
   },
 
   status: () => api.get<SyncStatus>('/practice/status'),
+
+  /** 首页面板：一次拿齐所有数字。 */
+  dashboard: () => api.get<Dashboard>('/practice/dashboard'),
+
+  /** 某个平台的 rating 榜。 */
+  rating: (platform: Platform) =>
+    api.get<RatingBoard>(`/practice/rating?platform=${platform}`),
+
+  quota: () =>
+    api.get<{ week_start: string; limit: number; used: number; remaining: number }>(
+      '/practice/quota',
+    ),
+
+  /** 手动刷新自己的账号。每周三次。 */
+  refresh: () => api.post<RefreshResult>('/practice/refresh'),
 }
 
 // --------------------------------------------------------------------------- //

@@ -5,7 +5,7 @@
  * 数据由后端定时同步平台得来，页面只读。一个人在同一平台可能绑了主号和
  * 小号，后端已经把同一天的多个账号合并过，这里显示的就是合并后的数字。
  */
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { AlertCircle, Loader2, LogIn, RefreshCw } from 'lucide-vue-next'
 import { Alert } from './ui/alert'
 import { Button } from './ui/button'
@@ -16,6 +16,7 @@ import {
   practiceApi,
   type Platform,
   type PracticeRank,
+  type RatingBoard,
   type SyncStatus,
 } from '../lib/api'
 import { useAuth } from '../lib/auth'
@@ -23,15 +24,23 @@ import { formatEnrollYear } from '../lib/format'
 
 const { ensureLoaded } = useAuth()
 
+/** 两个维度：练习量按天统计，rating 是平台上的等级分。 */
+type Dimension = 'practice' | 'rating'
+
+const dimension = ref<Dimension>('practice')
+
 const loading = ref(true)
 const error = ref('')
 const data = ref<PracticeRank | null>(null)
+const rating = ref<RatingBoard | null>(null)
 const status = ref<SyncStatus | null>(null)
 // 未登录与加载失败是两回事，分开呈现：前者引导登录，后者提示重试。
 const needsLogin = ref(false)
 
 const days = ref(1)
 const platform = ref<Platform | ''>('')
+// rating 榜必须指定平台，不能选「全部」：各平台的等级分不在同一把尺子上。
+const ratingPlatform = ref<Platform>('codeforces')
 
 const DAY_OPTIONS = [
   { value: 1, label: '今日' },
@@ -47,6 +56,11 @@ const PLATFORM_OPTIONS = [
     label: PLATFORM_META[key].label,
   })),
 ]
+
+const RATING_PLATFORMS = (Object.keys(PLATFORM_META) as Platform[]).map((key) => ({
+  value: key,
+  label: PLATFORM_META[key].label,
+}))
 
 /** 把总数画成一条紧凑的柱状图，让人一眼看出谁最近在动。 */
 function bars(entry: PracticeRank['entries'][number]): number[] {
@@ -72,12 +86,16 @@ async function load() {
   error.value = ''
   needsLogin.value = false
   try {
-    const [rank, sync] = await Promise.all([
-      practiceApi.rank({ days: days.value, platform: platform.value || null }),
-      practiceApi.status(),
-    ])
-    data.value = rank
-    status.value = sync
+    if (dimension.value === 'rating') {
+      rating.value = await practiceApi.rating(ratingPlatform.value)
+    } else {
+      const [rank, sync] = await Promise.all([
+        practiceApi.rank({ days: days.value, platform: platform.value || null }),
+        practiceApi.status(),
+      ])
+      data.value = rank
+      status.value = sync
+    }
   } catch (err) {
     if (err instanceof ApiError && err.status === 401) {
       needsLogin.value = true
@@ -89,6 +107,9 @@ async function load() {
   }
 }
 
+// 切换维度或筛选条件就重拉。rating 榜只看平台，与天数无关。
+watch([dimension, ratingPlatform], () => load())
+
 onMounted(async () => {
   await ensureLoaded()
   await load()
@@ -99,9 +120,14 @@ onMounted(async () => {
   <div class="space-y-4">
     <div class="flex flex-wrap items-center justify-between gap-3">
       <div>
-        <h1 class="text-lg font-semibold tracking-tight">每日练习量</h1>
+        <h1 class="text-lg font-semibold tracking-tight">榜单</h1>
         <p class="mt-0.5 text-xs text-muted-foreground">
-          按过题数统计。同一平台的主号与小号已合并。一天从凌晨 4 点算起。
+          <template v-if="dimension === 'practice'">
+            按过题数统计。同一平台的主号与小号已合并。一天从凌晨 4 点算起。
+          </template>
+          <template v-else>
+            平台上的等级分，以账号为单位——主号和小号各有各的 rating，合并没有意义。
+          </template>
         </p>
       </div>
       <Button variant="outline" size="sm" :disabled="loading" @click="load">
@@ -110,7 +136,28 @@ onMounted(async () => {
       </Button>
     </div>
 
-    <div class="flex flex-wrap gap-2">
+    <!-- 维度 -->
+    <div class="flex gap-1 rounded-md border border-border/40 p-0.5">
+      <button
+        v-for="tab in [
+          { key: 'practice' as const, label: '练习量' },
+          { key: 'rating' as const, label: 'Rating' },
+        ]"
+        :key="tab.key"
+        class="flex-1 rounded px-3 py-1.5 text-xs font-medium transition-colors"
+        :class="
+          dimension === tab.key
+            ? 'bg-accent text-accent-foreground'
+            : 'text-muted-foreground hover:bg-muted/60'
+        "
+        @click="dimension = tab.key"
+      >
+        {{ tab.label }}
+      </button>
+    </div>
+
+    <!-- 筛选。练习量按天数与平台；rating 只看平台，不按天分。 -->
+    <div v-if="dimension === 'practice'" class="flex flex-wrap gap-2">
       <div class="flex gap-1 rounded-md border border-border/40 p-0.5">
         <button
           v-for="option in DAY_OPTIONS"
@@ -144,6 +191,22 @@ onMounted(async () => {
       </div>
     </div>
 
+    <div v-else class="flex flex-wrap gap-1 rounded-md border border-border/40 p-0.5">
+      <button
+        v-for="option in RATING_PLATFORMS"
+        :key="option.value"
+        class="rounded px-3 py-1.5 text-xs font-medium transition-colors"
+        :class="
+          ratingPlatform === option.value
+            ? 'bg-accent text-accent-foreground'
+            : 'text-muted-foreground hover:bg-muted/60'
+        "
+        @click="ratingPlatform = option.value"
+      >
+        {{ option.label }}
+      </button>
+    </div>
+
     <Alert v-if="error" variant="destructive" class="flex items-start gap-2">
       <AlertCircle class="h-4 w-4 shrink-0 translate-y-0.5" />
       <span class="text-sm">{{ error }}</span>
@@ -151,7 +214,7 @@ onMounted(async () => {
 
     <Card v-if="needsLogin">
       <CardContent class="space-y-3 py-8 text-center">
-        <p class="text-sm text-muted-foreground">练习榜包含成员姓名与做题量，需要登录后查看。</p>
+        <p class="text-sm text-muted-foreground">榜单包含成员姓名与数据，需要登录后查看。</p>
         <Button @click="() => (window.location.href = '/login')">
           <LogIn class="mr-2 h-4 w-4" />
           去登录
@@ -159,7 +222,7 @@ onMounted(async () => {
       </CardContent>
     </Card>
 
-    <Card v-else>
+    <Card v-else-if="dimension === 'practice'">
       <CardHeader class="pb-3">
         <div class="flex items-center justify-between">
           <CardTitle class="text-sm font-medium">
@@ -235,12 +298,86 @@ onMounted(async () => {
       </CardContent>
     </Card>
 
-    <p v-if="status?.has_run" class="text-xs text-muted-foreground">
+    <!-- Rating 榜。以账号为单位，所以同一个人可能出现多行。 -->
+    <Card v-else>
+      <CardHeader class="pb-3">
+        <div class="flex items-center justify-between">
+          <CardTitle class="text-sm font-medium">
+            {{ rating?.label ?? '' }} Rating
+          </CardTitle>
+          <span v-if="rating?.entries.length" class="text-xs text-muted-foreground">
+            共 {{ rating.entries.length }} 个账号
+          </span>
+        </div>
+      </CardHeader>
+
+      <CardContent class="p-0">
+        <div v-if="loading" class="flex items-center gap-2 p-6 text-sm text-muted-foreground">
+          <Loader2 class="h-4 w-4 animate-spin" />
+          正在读取…
+        </div>
+
+        <div v-else-if="!rating?.entries.length" class="p-6 text-center text-sm text-muted-foreground">
+          还没有人绑定这个平台的账号，或者 rating 尚未同步（每天一次）。
+        </div>
+
+        <div v-else class="divide-y divide-border/40">
+          <div
+            v-for="entry in rating.entries"
+            :key="`${entry.platform}-${entry.identifier}`"
+            class="flex items-center gap-3 px-4 py-3"
+          >
+            <span
+              class="w-6 shrink-0 text-center font-mono text-xs"
+              :class="entry.rank <= 3 ? 'font-semibold text-foreground' : 'text-muted-foreground'"
+            >
+              {{ entry.rank }}
+            </span>
+
+            <div class="min-w-0 flex-1">
+              <div class="flex items-baseline gap-2">
+                <a
+                  :href="`/member?id=${entry.user_id}`"
+                  class="truncate text-sm font-medium hover:text-primary hover:underline"
+                >
+                  {{ entry.display_name }}
+                </a>
+                <span
+                  v-if="formatEnrollYear(entry.enroll_year)"
+                  class="shrink-0 text-[11px] text-muted-foreground"
+                >
+                  {{ formatEnrollYear(entry.enroll_year) }}
+                </span>
+              </div>
+              <p class="truncate font-mono text-xs text-muted-foreground">
+                {{ entry.identifier }}
+              </p>
+            </div>
+
+            <div class="shrink-0 text-right">
+              <span class="font-mono text-sm font-semibold">{{ entry.rating }}</span>
+              <p
+                v-if="entry.max_rating && entry.max_rating !== entry.rating"
+                class="font-mono text-[10px] text-muted-foreground"
+              >
+                最高 {{ entry.max_rating }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+
+    <p v-if="dimension === 'practice' && status?.has_run" class="text-xs text-muted-foreground">
       上次同步：{{ status.account_count }} 个账号，成功 {{ status.ok_count }}
       <span v-if="status.error_count">，失败 {{ status.error_count }}</span>
       <span v-if="status.errors.length" class="block pt-1 text-destructive/80">
         {{ status.errors.join('；') }}
       </span>
+    </p>
+
+    <p v-else-if="dimension === 'rating'" class="text-xs text-muted-foreground">
+      Rating 每天同步一次。刚打完比赛的话，去首页点「刷新」立刻更新。
     </p>
   </div>
 </template>

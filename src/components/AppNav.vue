@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import {
-  Home, Code, Trophy, User, ChevronDown, ChevronRight, Activity, Compass, LogIn, BarChart3, Settings,
+  Home, Code, Trophy, User, ChevronDown, ChevronRight, Activity, Compass, LogIn, BarChart3, Settings, BookOpen,
 } from 'lucide-vue-next'
 import { useAuth } from '../lib/auth'
 
@@ -21,6 +21,7 @@ const { user, isAdmin, ensureLoaded } = useAuth()
 
 const navItems = [
   { title: '首页', route: '/', icon: Home },
+  { title: '博客', route: '/blog', icon: BookOpen },
   { title: '导航', route: '/nav', icon: Compass },
   { title: '每日练习', route: '/practice', icon: BarChart3 },
   { title: '工作坊状态', route: '/status', icon: Activity },
