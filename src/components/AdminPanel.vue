@@ -6,7 +6,7 @@
  * 后端——这里只是不给无权的人显示入口，每个请求失败都会照常提示。
  */
 import { computed, onMounted, ref, watch } from 'vue'
-import { AlertCircle, Check, Copy, Loader2, Plus, Search, Trash2 } from 'lucide-vue-next'
+import { AlertCircle, Check, Copy, Link2, Loader2, Plus, Search, Trash2 } from 'lucide-vue-next'
 import { Alert } from './ui/alert'
 import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
@@ -248,17 +248,28 @@ async function revoke(invite: Invite) {
   }
 }
 
-async function copyCode(code: string) {
+/** 邀请链接。成员点开就直接进注册页并填好码。 */
+function inviteLink(code: string): string {
+  return `${window.location.origin}/register?code=${code}`
+}
+
+async function copyText(text: string, key: string) {
   try {
-    await navigator.clipboard.writeText(code)
-    copiedCode.value = code
+    await navigator.clipboard.writeText(text)
+    copiedCode.value = key
     window.setTimeout(() => {
-      if (copiedCode.value === code) copiedCode.value = null
+      if (copiedCode.value === key) copiedCode.value = null
     }, 1500)
   } catch {
-    // 剪贴板不可用（非 https 或未授权）时不去打扰用户，码就在页面上。
+    // 剪贴板不可用（非 https 或未授权）时不去打扰用户，内容就在页面上。
   }
 }
+
+/** 复制码本身，用于手抄或贴在文字里。 */
+const copyCode = (code: string) => copyText(code, code)
+
+/** 复制整条链接，用于发到群里。 */
+const copyLink = (code: string) => copyText(inviteLink(code), `link:${code}`)
 
 async function saveNote(target: AdminUser) {
   const value = editingNote.value[target.id]
@@ -426,12 +437,22 @@ onMounted(async () => {
             <div v-for="invite in invites" :key="invite.id" class="flex items-center gap-3 px-4 py-2.5">
               <button
                 class="flex items-center gap-1.5 font-mono text-sm hover:text-primary"
-                :title="'点击复制'"
+                title="点击复制邀请码"
                 @click="copyCode(invite.code)"
               >
                 {{ invite.code }}
                 <Copy v-if="copiedCode !== invite.code" class="h-3 w-3 text-muted-foreground/50" />
                 <Check v-else class="h-3 w-3 text-emerald-500" />
+              </button>
+
+              <button
+                class="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary"
+                title="复制邀请链接，成员点开即自动填入"
+                @click="copyLink(invite.code)"
+              >
+                <Link2 class="h-3 w-3" />
+                链接
+                <Check v-if="copiedCode === `link:${invite.code}`" class="h-3 w-3 text-emerald-500" />
               </button>
 
               <span class="text-xs" :class="inviteState(invite).tone">{{ inviteState(invite).text }}</span>

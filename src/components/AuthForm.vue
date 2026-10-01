@@ -5,7 +5,7 @@
  * 两种模式共用一套字段样式，用 tab 切换。注册成功和登录成功都直接跳转，
  * 不在这里处理后续导航，交给调用方传 onSuccess。
  */
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { AlertCircle, Loader2 } from 'lucide-vue-next'
 import { Alert } from './ui/alert'
 import { Button } from './ui/button'
@@ -67,6 +67,16 @@ function switchMode(next: 'login' | 'register') {
   mode.value = next
   error.value = ''
 }
+
+onMounted(() => {
+  // 邀请链接形如 /register?code=ABCD1234。带了这个参数就直接进注册模式并把
+  // 码填好——成员从群里点过来时不该还要手抄一遍。
+  const code = new URLSearchParams(window.location.search).get('code')
+  if (code) {
+    mode.value = 'register'
+    inviteCode.value = code.trim().toUpperCase()
+  }
+})
 
 async function submit() {
   if (!canSubmit.value) return
