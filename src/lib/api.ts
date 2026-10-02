@@ -362,6 +362,9 @@ export interface Invite {
   revoked_at: string | null
   note: string
   created_by: number | null
+  /** 创建者姓名与学号。码出了问题得知道找谁问。 */
+  created_by_name: string | null
+  created_by_student_id: string | null
   created_at: string
   is_usable: boolean
 }

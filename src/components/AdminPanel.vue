@@ -78,7 +78,6 @@ const editingMajor = ref<Record<number, string>>({})
 const savingNote = ref<number | null>(null)
 const copiedCode = ref<string | null>(null)
 
-const isRoot = computed(() => user.value?.role === 'root')
 const members = computed(() => page.value?.items ?? [])
 const totalPages = computed(() => {
   if (!page.value) return 1
@@ -345,10 +344,17 @@ function roleLabel(role: string): string {
  * 规则与后端一致，这里只是提前把不可用的控件置灰，免得点下去才报错：
  * root 的身份谁都改不了；只有 root 能授予或撤销管理员。
  */
+/**
+ * 能不能改这个人的角色。
+ *
+ * 管理员之间是平级的，所以任何管理员都能改别人的角色。两个例外：
+ * root 动不了（要转让得走别的路），以及自己——把自己降级会当场失去
+ * 管理权限，多半是误操作。
+ */
 function canChangeRole(member: AdminUser): boolean {
   if (member.role === 'root') return false
   if (member.id === user.value?.id) return false
-  return isRoot.value
+  return true
 }
 
 function inviteState(invite: Invite): { text: string; tone: string } {
@@ -428,7 +434,7 @@ onMounted(async () => {
                 class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
               >
                 <option value="member">成员</option>
-                <option v-if="isRoot" value="admin">管理员</option>
+                <option value="admin">管理员</option>
               </select>
             </div>
           </div>
@@ -438,7 +444,7 @@ onMounted(async () => {
           </div>
           <Button size="sm" @click="createInvite">生成</Button>
           <p class="text-xs text-muted-foreground">
-            人数和时间谁先到谁生效。只有 root 能生成管理员邀请码。
+            人数和时间谁先到谁生效。管理员之间平级，可以互相任命；root 不能通过邀请码授予。
           </p>
         </CardContent>
       </Card>
@@ -476,6 +482,16 @@ onMounted(async () => {
               <span class="text-xs text-muted-foreground">
                 {{ invite.use_count }}/{{ invite.max_uses }} 人 ·
                 {{ invite.grants_role === 'admin' ? '管理员' : '成员' }}
+              </span>
+
+              <!--
+                创建者。码被转发或发错人时，得知道找谁问。
+                姓名可能重名，所以带上学号——名单里两个人同名的概率不低。
+              -->
+              <span v-if="invite.created_by_name" class="shrink-0 text-xs text-muted-foreground/70">
+                {{ invite.created_by_name }}
+                <span class="font-mono text-[10px]">{{ invite.created_by_student_id }}</span>
+                创建
               </span>
 
               <span v-if="invite.note" class="truncate text-xs text-muted-foreground/70">
@@ -595,7 +611,7 @@ onMounted(async () => {
                 class="h-9 rounded-md border border-input bg-background px-2 text-xs"
               >
                 <option value="member">成员</option>
-                <option v-if="isRoot" value="admin">管理员</option>
+                <option value="admin">管理员</option>
               </select>
             </div>
             <Input v-model="createForm.admin_note" placeholder="备注（可选）" class="h-9 text-xs" />
