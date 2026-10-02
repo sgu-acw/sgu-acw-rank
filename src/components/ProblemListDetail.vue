@@ -15,11 +15,13 @@ import {
   ChevronRight,
   FolderOpen,
   Loader2,
+  Plus,
 } from 'lucide-vue-next'
+import ProblemAdder from './ProblemAdder.vue'
 import ProblemRow from './ProblemRow.vue'
 import { Alert } from './ui/alert'
 import { Button } from './ui/button'
-import { Card, CardContent } from './ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import {
   ApiError,
   problemListApi,
@@ -53,6 +55,13 @@ const canManage = computed(() => !!user.value && user.value.role !== 'member')
 //: 正在改备注的题目 id。
 const editingNoteId = ref<number | null>(null)
 const noteDraft = ref('')
+
+//: 加题表单是否展开。默认收起，免得只想看题的人被表单挡住。
+const showAdder = ref(false)
+
+async function onAdded() {
+  await load()
+}
 
 function startEditNote(problem: ProblemEntry) {
   editingNoteId.value = problem.id
@@ -130,6 +139,19 @@ function go(path: string) {
   window.location.href = path
 }
 
+/**
+ * 返回按钮去哪。
+ *
+ * 从合集点进来的题单，返回该回到那个合集——直接扔回顶层列表会让人
+ * 丢掉刚才的位置，想再看下一个子题单还得重新找一遍。
+ */
+const backTarget = computed(() => {
+  if (data.value?.collection_id) {
+    return { href: `/problems/view?id=${data.value.collection_id}`, label: '合集' }
+  }
+  return { href: '/problems', label: '题单' }
+})
+
 onMounted(async () => {
   const raw = new URLSearchParams(window.location.search).get('id')
   const parsed = Number(raw)
@@ -149,10 +171,10 @@ onMounted(async () => {
   <div class="space-y-4">
     <button
       class="inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
-      @click="go('/problems')"
+      @click="go(backTarget.href)"
     >
       <ChevronLeft class="h-3.5 w-3.5" />
-      题单
+      {{ backTarget.label }}
     </button>
 
     <Alert v-if="error" variant="destructive" class="flex items-start gap-2">
@@ -220,7 +242,7 @@ onMounted(async () => {
           v-for="child in data.children"
           :key="child.id"
           class="group flex w-full items-center gap-3 rounded-lg border border-border/50 bg-card px-4 py-3 text-left transition-colors hover:border-border hover:bg-muted/30 active:scale-[0.995]"
-          @click="go(`/problems/${child.id}`)"
+          @click="go(`/problems/view?id=${child.id}`)"
         >
           <div class="min-w-0 flex-1">
             <div class="flex flex-wrap items-baseline gap-x-2">
@@ -248,6 +270,21 @@ onMounted(async () => {
 
       <!-- 题单：题目清单 -->
       <Card v-else>
+        <!--
+          管理员可以直接在这里加题。之前只有管理页能加，从合集点进题单
+          看到缺题也没法补，得先退出去找到那个题单。
+        -->
+        <CardHeader v-if="canManage" class="flex flex-row items-center justify-between gap-2 pb-3">
+          <CardTitle class="text-sm font-medium">题目</CardTitle>
+          <Button variant="outline" size="sm" @click="showAdder = !showAdder">
+            <Plus class="mr-1 h-3.5 w-3.5" />
+            加题
+          </Button>
+        </CardHeader>
+        <CardContent v-if="canManage && showAdder" class="border-b border-border/40 pb-4">
+          <ProblemAdder :list-id="listId" @added="onAdded" />
+        </CardContent>
+
         <CardContent class="p-0">
           <p v-if="!data.problems.length" class="p-6 text-center text-sm text-muted-foreground">
             这个题单里还没有题目。
