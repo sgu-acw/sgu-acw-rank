@@ -14,7 +14,9 @@ import {
   ArrowDown,
   ArrowUp,
   Check,
+  ChevronDown,
   ChevronLeft,
+  ExternalLink,
   Loader2,
   Pencil,
   Plus,
@@ -22,6 +24,7 @@ import {
   Trash2,
   X,
 } from 'lucide-vue-next'
+import ProblemRow from './ProblemRow.vue'
 import { Alert } from './ui/alert'
 import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
@@ -33,6 +36,8 @@ import {
   PROBLEM_KEY_HINT,
   problemListApi,
   type Platform,
+  type ProblemEntry,
+  type ProblemListDetail,
   type ProblemListSummary,
 } from '../lib/api'
 
@@ -71,6 +76,19 @@ const lookupState = ref<
 >(null)
 
 const refreshing = ref(false)
+
+/**
+ * 展开的题单 id → 它的题目列表。
+ *
+ * 单独拉一次详情，而不是让列表接口带上题目——列表页只需要题数，把每道题
+ * 都塞进列表响应会让首页变慢。点开哪个拉哪个。
+ */
+const expanded = ref<Record<number, ProblemEntry[]>>({})
+const expanding = ref<number | null>(null)
+
+//: 正在改备注的题目 id。
+const editingNoteId = ref<number | null>(null)
+const editNote = ref('')
 
 const collections = computed(() => lists.value.filter((l) => l.kind === 'collection'))
 /** 不属于任何合集的题单。合集内的那些在各自合集下面显示，不重复列。 */
@@ -253,6 +271,97 @@ async function addProblem(listId: number) {
     error.value = err instanceof ApiError ? err.message : '添加失败'
   } finally {
     adding.value = false
+  }
+}
+
+/**
+ * 展开或收起一个题单的题目列表。
+ *
+ * 每次展开都重新拉，不缓存——管理页上刚改完就得看到结果，用旧数据
+ * 会让人以为改动没生效。
+ */
+async function toggleProblems(listId: number) {
+  if (expanded.value[listId]) {
+    const next = { ...expanded.value }
+    delete next[listId]
+    expanded.value = next
+    return
+  }
+
+  expanding.value = listId
+  try {
+    const result: ProblemListDetail = await problemListApi.get(listId)
+    expanded.value = { ...expanded.value, [listId]: result.problems }
+  } catch (err) {
+    error.value = err instanceof ApiError ? err.message : '读取题目失败'
+  } finally {
+    expanding.value = null
+  }
+}
+
+async function refreshProblems(listId: number) {
+  try {
+    const result = await problemListApi.get(listId)
+    expanded.value = { ...expanded.value, [listId]: result.problems }
+  } catch {
+    /* 刷新失败就保留原样，下一次操作还会再拉 */
+  }
+}
+
+async function removeProblem(listId: number, problem: ProblemEntry) {
+  if (!window.confirm(`从题单里移除「${problem.name || problem.key}」？`)) return
+  try {
+    await problemListApi.removeProblem(listId, problem.id)
+    await refreshProblems(listId)
+    await load()
+    flash('已移除')
+  } catch (err) {
+    error.value = err instanceof ApiError ? err.message : '移除失败'
+  }
+}
+
+function startEditNote(problem: ProblemEntry) {
+  editingNoteId.value = problem.id
+  editNote.value = problem.note
+}
+
+async function saveNote(listId: number, problem: ProblemEntry) {
+  try {
+    await problemListApi.updateProblem(listId, problem.id, { note: editNote.value.trim() })
+    editingNoteId.value = null
+    await refreshProblems(listId)
+    flash('已保存')
+  } catch (err) {
+    error.value = err instanceof ApiError ? err.message : '保存失败'
+  }
+}
+
+/**
+ * 题目在题单内上移或下移。
+ *
+ * 后端收的是完整的 id 顺序，所以先算出新顺序再整串发过去。
+ */
+async function moveProblem(listId: number, index: number, delta: number) {
+  const items = expanded.value[listId]
+  if (!items) return
+  const target = index + delta
+  if (target < 0 || target >= items.length) return
+
+  const reordered = [...items]
+  const [moved] = reordered.splice(index, 1)
+  reordered.splice(target, 0, moved)
+  // 先本地更新，界面立刻有反应；失败再拉回真实状态。
+  expanded.value = { ...expanded.value, [listId]: reordered }
+
+  try {
+    const saved = await problemListApi.reorderProblems(
+      listId,
+      reordered.map((p) => p.id),
+    )
+    expanded.value = { ...expanded.value, [listId]: saved }
+  } catch (err) {
+    error.value = err instanceof ApiError ? err.message : '排序失败'
+    await refreshProblems(listId)
   }
 }
 
@@ -546,7 +655,18 @@ onMounted(load)
                 >
                   {{ item.title }}
                 </a>
-                <span class="text-xs text-muted-foreground">{{ item.total_problems }} 题</span>
+                <button
+                  class="inline-flex items-center gap-0.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
+                  @click="toggleProblems(item.id)"
+                >
+                  {{ item.total_problems }} 题
+                  <Loader2 v-if="expanding === item.id" class="h-3 w-3" />
+                  <ChevronDown
+                    v-else
+                    class="h-3 w-3 transition-transform"
+                    :class="expanded[item.id] && 'rotate-180'"
+                  />
+                </button>
                 <div class="ml-auto flex shrink-0 items-center gap-1">
                   <Button
                     variant="ghost"
@@ -633,6 +753,32 @@ onMounted(load)
               </div>
 
               <Input v-model="newNote" placeholder="备注（可选）" class="h-9 text-sm" />
+            </div>
+
+            <!-- 展开的题目列表。加完题就能在这里改备注、调顺序、移除。 -->
+            <div v-if="expanded[item.id]" class="rounded-md border border-border/40">
+              <p v-if="!expanded[item.id].length" class="p-3 text-xs text-muted-foreground">
+                这个题单里还没有题目。
+              </p>
+              <div v-else class="divide-y divide-border/40">
+                <ProblemRow
+                  v-for="(problem, pIndex) in expanded[item.id]"
+                  :key="problem.id"
+                  :problem="problem"
+                  :show-progress="false"
+                  editable
+                  :editing-note="editingNoteId === problem.id"
+                  :note-draft="editNote"
+                  :can-move-up="pIndex > 0"
+                  :can-move-down="pIndex < expanded[item.id].length - 1"
+                  @update:note-draft="editNote = $event"
+                  @move="(delta) => moveProblem(item.id, pIndex, delta)"
+                  @edit-note="startEditNote(problem)"
+                  @save-note="saveNote(item.id, problem)"
+                  @cancel-note="editingNoteId = null"
+                  @remove="removeProblem(item.id, problem)"
+                />
+              </div>
             </div>
           </div>
         </div>

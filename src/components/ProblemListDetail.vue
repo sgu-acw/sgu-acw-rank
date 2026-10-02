@@ -13,13 +13,19 @@ import {
   AlertCircle,
   ChevronLeft,
   ChevronRight,
-  ExternalLink,
   FolderOpen,
   Loader2,
 } from 'lucide-vue-next'
+import ProblemRow from './ProblemRow.vue'
 import { Alert } from './ui/alert'
+import { Button } from './ui/button'
 import { Card, CardContent } from './ui/card'
-import { ApiError, PLATFORM_META, problemListApi, type ProblemListDetail } from '../lib/api'
+import {
+  ApiError,
+  problemListApi,
+  type ProblemEntry,
+  type ProblemListDetail,
+} from '../lib/api'
 import { useAuth } from '../lib/auth'
 
 const { user, ensureLoaded } = useAuth()
@@ -37,8 +43,64 @@ const listId = ref(0)
 const data = ref<ProblemListDetail | null>(null)
 const loading = ref(true)
 const error = ref('')
+/** 题单不存在（而不是加载失败）。两种情况的界面不一样。 */
+const notFound = ref(false)
 
 const showProgress = computed(() => !!user.value)
+/** 管理员在详情页也能直接改题目，不用跳到管理页。 */
+const canManage = computed(() => !!user.value && user.value.role !== 'member')
+
+//: 正在改备注的题目 id。
+const editingNoteId = ref<number | null>(null)
+const noteDraft = ref('')
+
+function startEditNote(problem: ProblemEntry) {
+  editingNoteId.value = problem.id
+  noteDraft.value = problem.note
+}
+
+async function saveNote(problem: ProblemEntry) {
+  try {
+    await problemListApi.updateProblem(listId.value, problem.id, { note: noteDraft.value.trim() })
+    editingNoteId.value = null
+    await load()
+  } catch (err) {
+    error.value = err instanceof ApiError ? err.message : '保存失败'
+  }
+}
+
+async function removeProblem(problem: ProblemEntry) {
+  if (!window.confirm(`从题单里移除「${problem.name || problem.key}」？`)) return
+  try {
+    await problemListApi.removeProblem(listId.value, problem.id)
+    await load()
+  } catch (err) {
+    error.value = err instanceof ApiError ? err.message : '移除失败'
+  }
+}
+
+/** 上移或下移一道题。后端收完整顺序，所以先算好新顺序再整串发。 */
+async function moveProblem(index: number, delta: number) {
+  if (!data.value) return
+  const target = index + delta
+  if (target < 0 || target >= data.value.problems.length) return
+
+  const reordered = [...data.value.problems]
+  const [moved] = reordered.splice(index, 1)
+  reordered.splice(target, 0, moved)
+  data.value.problems = reordered
+
+  try {
+    const saved = await problemListApi.reorderProblems(
+      listId.value,
+      reordered.map((p) => p.id),
+    )
+    data.value.problems = saved
+  } catch (err) {
+    error.value = err instanceof ApiError ? err.message : '排序失败'
+    await load()
+  }
+}
 const isCollection = computed(() => data.value?.kind === 'collection')
 
 function percent(done: number, total: number): number {
@@ -46,14 +108,6 @@ function percent(done: number, total: number): number {
   return Math.round((done / total) * 100)
 }
 
-/** 难度的显示方式各平台不同：CF 是 rating 数字，洛谷是 1~7 的等级。 */
-function difficultyLabel(platform: string, rating: number | null): string {
-  if (rating == null) return ''
-  if (platform === 'luogu') {
-    return ['暂无评定', '入门', '普及−', '普及/提高−', '普及+/提高', '提高+/省选−', '省选/NOI−', 'NOI/NOI+/CTSC'][rating] ?? `等级 ${rating}`
-  }
-  return String(rating)
-}
 
 async function load() {
   loading.value = true
@@ -61,7 +115,12 @@ async function load() {
   try {
     data.value = await problemListApi.get(listId.value)
   } catch (err) {
-    error.value = err instanceof ApiError ? err.message : '加载失败，请稍后重试'
+    // 404 和「网络坏了」是两回事：前者是这个题单没有，后者是等一下就好。
+    if (err instanceof ApiError && err.status === 404) {
+      notFound.value = true
+    } else {
+      error.value = err instanceof ApiError ? err.message : '加载失败，请稍后重试'
+    }
   } finally {
     loading.value = false
   }
@@ -75,7 +134,7 @@ onMounted(async () => {
   const raw = new URLSearchParams(window.location.search).get('id')
   const parsed = Number(raw)
   if (!raw || !Number.isFinite(parsed)) {
-    error.value = '题单不存在'
+    notFound.value = true
     loading.value = false
     return
   }
@@ -105,6 +164,17 @@ onMounted(async () => {
       <Loader2 class="h-4 w-4 animate-spin" />
       正在读取…
     </div>
+
+    <!--
+      题单不存在。给一条明确的出路，别让人卡在空页面上——
+      链接可能是旧的，或者题单已经被删了。
+    -->
+    <Card v-else-if="notFound">
+      <CardContent class="space-y-3 py-10 text-center">
+        <p class="text-sm text-muted-foreground">这个题单不存在，可能已经被删了。</p>
+        <Button size="sm" @click="go('/problems')">看看其他题单</Button>
+      </CardContent>
+    </Card>
 
     <template v-else-if="data">
       <!-- 头部：标题、描述、完成度 -->
@@ -184,77 +254,23 @@ onMounted(async () => {
           </p>
 
           <div v-else class="divide-y divide-border/40">
-            <div
-              v-for="problem in data.problems"
+            <ProblemRow
+              v-for="(problem, index) in data.problems"
               :key="problem.id"
-              class="flex items-center gap-3 px-4 py-3"
-            >
-              <!-- 完成状态。未登录时留出等宽占位，免得整列跳动。 -->
-              <span
-                v-if="showProgress"
-                class="flex h-4 w-4 shrink-0 items-center justify-center rounded-full border text-[10px]"
-                :class="
-                  problem.done
-                    ? 'border-emerald-600/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-500'
-                    : 'border-border text-transparent'
-                "
-                :title="problem.done ? '已完成' : '未完成'"
-              >
-                ✓
-              </span>
-
-              <div class="min-w-0 flex-1">
-                <div class="flex flex-wrap items-baseline gap-x-2">
-                  <a
-                    :href="problem.url"
-                    target="_blank"
-                    rel="noreferrer"
-                    class="truncate text-sm font-medium underline-offset-4 transition-colors hover:text-primary hover:underline"
-                  >
-                    {{ problem.name || problem.key }}
-                  </a>
-                  <span class="shrink-0 font-mono text-[11px] text-muted-foreground/60">
-                    {{ problem.key }}
-                  </span>
-                  <span class="shrink-0 text-[11px] text-muted-foreground/70">
-                    {{ PLATFORM_META[problem.platform]?.label ?? problem.platform }}
-                  </span>
-                  <span
-                    v-if="difficultyLabel(problem.platform, problem.rating)"
-                    class="shrink-0 rounded border border-border/40 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground"
-                  >
-                    {{ difficultyLabel(problem.platform, problem.rating) }}
-                  </span>
-                </div>
-
-                <p v-if="problem.missing_reason" class="mt-0.5 text-[11px] text-amber-600/80 dark:text-amber-500/80">
-                  {{ problem.missing_reason }}
-                </p>
-                <p v-else-if="problem.note" class="mt-0.5 text-[11px] text-muted-foreground/70">
-                  {{ problem.note }}
-                </p>
-
-                <div v-if="problem.tags.length" class="mt-1 flex flex-wrap gap-1">
-                  <span
-                    v-for="tag in problem.tags"
-                    :key="tag"
-                    class="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground"
-                  >
-                    {{ tag }}
-                  </span>
-                </div>
-              </div>
-
-              <a
-                :href="problem.url"
-                target="_blank"
-                rel="noreferrer"
-                class="shrink-0 rounded p-1.5 text-muted-foreground/40 transition-colors hover:bg-muted hover:text-foreground"
-                title="去平台上做这道题"
-              >
-                <ExternalLink class="h-3.5 w-3.5" />
-              </a>
-            </div>
+              :problem="problem"
+              :show-progress="showProgress"
+              :editable="canManage"
+              :editing-note="editingNoteId === problem.id"
+              :note-draft="noteDraft"
+              :can-move-up="index > 0"
+              :can-move-down="index < data.problems.length - 1"
+              @update:note-draft="noteDraft = $event"
+              @move="(delta) => moveProblem(index, delta)"
+              @edit-note="startEditNote(problem)"
+              @save-note="saveNote(problem)"
+              @cancel-note="editingNoteId = null"
+              @remove="removeProblem(problem)"
+            />
           </div>
         </CardContent>
       </Card>
