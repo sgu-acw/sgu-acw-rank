@@ -361,7 +361,12 @@ onBeforeUnmount(() => {
 
       <!-- 题单：拖拽排序题目 -->
       <Card v-else>
-        <CardHeader class="flex flex-row items-center justify-between gap-2 pb-3">
+        <!--
+          space-y-0 去掉 CardHeader 默认的 space-y-1.5（竖排的间距，横排时
+          会把右边的按钮推下去）；py-3 让上下 padding 对称（默认 p-6 只改
+          pb-3 会变成上 24 下 12，内容偏下）。
+        -->
+        <CardHeader class="flex flex-row items-center justify-between gap-2 space-y-0 py-3">
           <CardTitle class="text-sm font-medium">题目（可拖动排序）</CardTitle>
           <Button variant="outline" size="sm" @click="showAdder = !showAdder">
             <Plus class="mr-1 h-3.5 w-3.5" />

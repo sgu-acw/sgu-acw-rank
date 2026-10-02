@@ -231,13 +231,12 @@ onMounted(async () => {
         <!--
           这一串覆盖 class 每一个都不能少：
 
-          * ``space-y-1.5`` 要去掉。CardHeader 默认是竖排（flex-col
-            space-y-1.5），改成横排之后那个 space-y 还在，会给第二个子元素
-            （右边的按钮）加 6px 的 margin-top，把它往下推。
-          * ``items-center`` 就够了。试过 items-baseline，但那是在有 margin
-            偏移的情况下调的，去掉 space-y 之后反而不准。
+          * ``space-y-0`` 去掉 CardHeader 默认的 space-y-1.5（它会给第二个
+            子元素加 margin-top，把按钮往下推）。
+          * ``py-3`` 让上下 padding 对称（CardHeader 默认 p-6，之前只改了
+            pb-3，上 24 下 12，内容偏下）。
         -->
-        <CardHeader class="flex flex-row items-center justify-between gap-2 space-y-0 pb-3">
+        <CardHeader class="flex flex-row items-center justify-between gap-2 space-y-0 py-3">
           <CardTitle class="text-sm font-medium">
             完成度排行
             <span class="ml-1 font-normal text-muted-foreground">
