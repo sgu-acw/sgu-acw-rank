@@ -12,13 +12,13 @@
  * 桌面端（md 以上）整个隐藏，那边有侧边栏。
  */
 import { ref, onMounted } from 'vue'
-import { Home, BarChart3, Activity, BookOpen, User } from 'lucide-vue-next'
+import { Home, ListChecks, Activity, BookOpen, User } from 'lucide-vue-next'
 
 const currentPath = ref('')
 
 const tabs = [
   { title: '首页', route: '/', icon: Home },
-  { title: '练习', route: '/practice', icon: BarChart3 },
+  { title: '题单', route: '/problems', icon: ListChecks },
   { title: '状态', route: '/status', icon: Activity },
   { title: '博客', route: '/blog', icon: BookOpen },
 ]

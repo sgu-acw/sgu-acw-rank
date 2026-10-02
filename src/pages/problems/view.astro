@@ -1,0 +1,15 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ProblemListDetail from '../../components/ProblemListDetail.vue';
+---
+
+<BaseLayout title="SGU ACW - 题单">
+  <div class="mx-auto max-w-3xl px-4 py-8 md:px-6">
+    <!--
+      用查询参数而不是 /problems/3 这样的路径：本站是纯静态输出，构建时
+      不知道有哪些题单 id，动态路由会要求 getStaticPaths。查询参数没有这个
+      问题，代价只是 URL 略长。与成员资料页的做法一致。
+    -->
+    <ProblemListDetail client:only="vue" />
+  </div>
+</BaseLayout>

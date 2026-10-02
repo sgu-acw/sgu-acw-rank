@@ -211,6 +211,19 @@ export const accountsApi = {
 // 每日练习量
 // --------------------------------------------------------------------------- //
 
+/**
+ * 各平台的题号写法。用于题单管理里填题号时的提示。
+ *
+ * 与 idHint 分开：那是绑定账号时填 handle 的提示（「handle，如 tourist」），
+ * 拿来提示题号会把人引到错误的地方。
+ */
+export const PROBLEM_KEY_HINT: Record<Platform, string> = {
+  codeforces: '题号，如 1004A',
+  atcoder: '题号，如 abc300_a',
+  luogu: '题号，如 P1001',
+  nowcoder: '题号，如 nowcoder:A+B Problem',
+}
+
 export interface PracticeDay {
   date: string
   count: number
@@ -486,4 +499,133 @@ export function isStudentIdShaped(value: string): boolean {
 
 export function normalizeStudentId(value: string): string {
   return value.trim().toUpperCase()
+}
+
+// --------------------------------------------------------------------------- //
+// 题单
+// --------------------------------------------------------------------------- //
+
+/** 题单的两种形态。合集装题单，题单装题目。 */
+export type ProblemListKind = 'collection' | 'list'
+
+export interface ProblemEntry {
+  id: number
+  platform: Platform
+  key: string
+  position: number
+  note: string
+  /** 以下来自题目缓存。抓不到时 name 为空，missing_reason 说明原因。 */
+  name: string
+  rating: number | null
+  tags: string[]
+  url: string
+  missing_reason: string
+  /** 当前查看的人过了没有。未登录时是 null——进度是个人数据。 */
+  done: boolean | null
+}
+
+export interface ProblemListSummary {
+  id: number
+  kind: ProblemListKind
+  title: string
+  description: string
+  collection_id: number | null
+  position: number
+  created_at: string
+  updated_at: string
+  /** 题目数（题单）或子题单数（合集）。 */
+  item_count: number
+  done_count: number
+  /** 合集是它下面所有题单的题数合计。 */
+  total_problems: number
+}
+
+export interface ProblemListDetail extends ProblemListSummary {
+  problems: ProblemEntry[]
+  children: ProblemListSummary[]
+}
+
+export interface ProblemLookup {
+  platform: Platform
+  key: string
+  name: string
+  rating: number | null
+  tags: string[]
+  url: string
+  missing_reason: string
+  cached: boolean
+}
+
+export const problemListApi = {
+  /**
+   * 默认返回顶层：所有合集，加上不属于任何合集的题单。
+   *
+   * `include_nested` 会连合集内部的题单一起返回，管理页需要——否则管理员
+   * 看不到已经放进合集的题单，也就没法给它们加题。
+   */
+  list: (
+    params: {
+      collection_id?: number | null
+      kind?: ProblemListKind | null
+      include_nested?: boolean
+    } = {},
+  ) => {
+    const search = new URLSearchParams()
+    if (params.collection_id != null) search.set('collection_id', String(params.collection_id))
+    if (params.kind) search.set('kind', params.kind)
+    if (params.include_nested) search.set('include_nested', 'true')
+    const qs = search.toString()
+    return api.get<ProblemListSummary[]>(`/problem-lists${qs ? `?${qs}` : ''}`)
+  },
+
+  get: (id: number) => api.get<ProblemListDetail>(`/problem-lists/${id}`),
+
+  create: (payload: {
+    kind: ProblemListKind
+    title: string
+    description?: string
+    collection_id?: number | null
+    admin_note?: string
+  }) => api.post<ProblemListSummary>('/problem-lists', payload),
+
+  update: (
+    id: number,
+    payload: {
+      title?: string
+      description?: string
+      admin_note?: string
+      collection_id?: number | null
+      set_collection?: boolean
+    },
+  ) => api.patch<ProblemListSummary>(`/problem-lists/${id}`, payload),
+
+  remove: (id: number) => api.delete<void>(`/problem-lists/${id}`),
+
+  reorder: (ids: number[]) =>
+    api.post<ProblemListSummary[]>('/problem-lists/reorder', { ids }),
+
+  /** 按题号查题目信息，用于输入时预览。 */
+  lookup: (platform: Platform, key: string) =>
+    api.get<ProblemLookup>(
+      `/problem-lists/lookup/problem?platform=${platform}&key=${encodeURIComponent(key)}`,
+    ),
+
+  /** 整批刷新 CF 题库。一次拿回一万多题。 */
+  refreshCodeforces: () =>
+    api.post<{ total: number; added: number; updated: number }>(
+      '/problem-lists/refresh-codeforces',
+      {},
+    ),
+
+  addProblem: (listId: number, payload: { platform: Platform; key: string; note?: string }) =>
+    api.post<ProblemEntry>(`/problem-lists/${listId}/problems`, payload),
+
+  updateProblem: (listId: number, itemId: number, payload: { note?: string }) =>
+    api.patch<ProblemEntry>(`/problem-lists/${listId}/problems/${itemId}`, payload),
+
+  removeProblem: (listId: number, itemId: number) =>
+    api.delete<void>(`/problem-lists/${listId}/problems/${itemId}`),
+
+  reorderProblems: (listId: number, ids: number[]) =>
+    api.post<ProblemEntry[]>(`/problem-lists/${listId}/problems/reorder`, { ids }),
 }
