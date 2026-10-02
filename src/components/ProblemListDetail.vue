@@ -15,17 +15,13 @@ import {
   ChevronRight,
   FolderOpen,
   Loader2,
-  Plus,
 } from 'lucide-vue-next'
-import ProblemAdder from './ProblemAdder.vue'
 import ProblemRow from './ProblemRow.vue'
 import { Alert } from './ui/alert'
-import { Button } from './ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
+import { Card, CardContent } from './ui/card'
 import {
   ApiError,
   problemListApi,
-  type ProblemEntry,
   type ProblemListDetail,
 } from '../lib/api'
 import { useAuth } from '../lib/auth'
@@ -49,92 +45,6 @@ const error = ref('')
 const notFound = ref(false)
 
 const showProgress = computed(() => !!user.value)
-/** 管理员在详情页也能直接改题目，不用跳到管理页。 */
-const canManage = computed(() => !!user.value && user.value.role !== 'member')
-
-//: 正在改备注的题目 id。
-const editingNoteId = ref<number | null>(null)
-const noteDraft = ref('')
-
-//: 加题表单是否展开。默认收起，免得只想看题的人被表单挡住。
-const showAdder = ref(false)
-
-async function onAdded() {
-  await load()
-}
-
-function startEditNote(problem: ProblemEntry) {
-  editingNoteId.value = problem.id
-  noteDraft.value = problem.note
-}
-
-async function saveNote(problem: ProblemEntry) {
-  try {
-    await problemListApi.updateProblem(listId.value, problem.id, { note: noteDraft.value.trim() })
-    editingNoteId.value = null
-    await load()
-  } catch (err) {
-    error.value = err instanceof ApiError ? err.message : '保存失败'
-  }
-}
-
-async function removeProblem(problem: ProblemEntry) {
-  if (!window.confirm(`从题单里移除「${problem.name || problem.key}」？`)) return
-  try {
-    await problemListApi.removeProblem(listId.value, problem.id)
-    await load()
-  } catch (err) {
-    error.value = err instanceof ApiError ? err.message : '移除失败'
-  }
-}
-
-/** 上移或下移一道题。后端收完整顺序，所以先算好新顺序再整串发。 */
-async function moveProblem(index: number, delta: number) {
-  if (!data.value) return
-  const target = index + delta
-  if (target < 0 || target >= data.value.problems.length) return
-
-  const reordered = [...data.value.problems]
-  const [moved] = reordered.splice(index, 1)
-  reordered.splice(target, 0, moved)
-  data.value.problems = reordered
-
-  try {
-    const saved = await problemListApi.reorderProblems(
-      listId.value,
-      reordered.map((p) => p.id),
-    )
-    data.value.problems = saved
-  } catch (err) {
-    error.value = err instanceof ApiError ? err.message : '排序失败'
-    await load()
-  }
-}
-const isCollection = computed(() => data.value?.kind === 'collection')
-
-function percent(done: number, total: number): number {
-  if (total <= 0) return 0
-  return Math.round((done / total) * 100)
-}
-
-
-async function load() {
-  loading.value = true
-  error.value = ''
-  try {
-    data.value = await problemListApi.get(listId.value)
-  } catch (err) {
-    // 404 和「网络坏了」是两回事：前者是这个题单没有，后者是等一下就好。
-    if (err instanceof ApiError && err.status === 404) {
-      notFound.value = true
-    } else {
-      error.value = err instanceof ApiError ? err.message : '加载失败，请稍后重试'
-    }
-  } finally {
-    loading.value = false
-  }
-}
-
 function go(path: string) {
   window.location.href = path
 }
@@ -270,21 +180,6 @@ onMounted(async () => {
 
       <!-- 题单：题目清单 -->
       <Card v-else>
-        <!--
-          管理员可以直接在这里加题。之前只有管理页能加，从合集点进题单
-          看到缺题也没法补，得先退出去找到那个题单。
-        -->
-        <CardHeader v-if="canManage" class="flex flex-row items-center justify-between gap-2 pb-3">
-          <CardTitle class="text-sm font-medium">题目</CardTitle>
-          <Button variant="outline" size="sm" @click="showAdder = !showAdder">
-            <Plus class="mr-1 h-3.5 w-3.5" />
-            加题
-          </Button>
-        </CardHeader>
-        <CardContent v-if="canManage && showAdder" class="border-b border-border/40 pb-4">
-          <ProblemAdder :list-id="listId" @added="onAdded" />
-        </CardContent>
-
         <CardContent class="p-0">
           <p v-if="!data.problems.length" class="p-6 text-center text-sm text-muted-foreground">
             这个题单里还没有题目。
@@ -292,21 +187,10 @@ onMounted(async () => {
 
           <div v-else class="divide-y divide-border/40">
             <ProblemRow
-              v-for="(problem, index) in data.problems"
+              v-for="problem in data.problems"
               :key="problem.id"
               :problem="problem"
               :show-progress="showProgress"
-              :editable="canManage"
-              :editing-note="editingNoteId === problem.id"
-              :note-draft="noteDraft"
-              :can-move-up="index > 0"
-              :can-move-down="index < data.problems.length - 1"
-              @update:note-draft="noteDraft = $event"
-              @move="(delta) => moveProblem(index, delta)"
-              @edit-note="startEditNote(problem)"
-              @save-note="saveNote(problem)"
-              @cancel-note="editingNoteId = null"
-              @remove="removeProblem(problem)"
             />
           </div>
         </CardContent>

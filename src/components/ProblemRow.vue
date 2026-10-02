@@ -6,7 +6,7 @@
  * 开关控制。两边的显示部分完全一样——题名、题号、平台、难度、标签——
  * 分开写迟早会长歪。
  */
-import { ArrowDown, ArrowUp, ExternalLink, Pencil, Trash2, X, Check } from 'lucide-vue-next'
+import { Check, ExternalLink, Pencil, Trash2, X } from 'lucide-vue-next'
 import { Input } from './ui/input'
 import { Button } from './ui/button'
 import { PLATFORM_META, type ProblemEntry } from '../lib/api'
@@ -21,21 +21,16 @@ const props = withDefaults(
     /** 编辑中的备注，由父组件控制。 */
     editingNote?: boolean
     noteDraft?: string
-    canMoveUp?: boolean
-    canMoveDown?: boolean
   }>(),
   {
     showProgress: true,
     editable: false,
     editingNote: false,
     noteDraft: '',
-    canMoveUp: false,
-    canMoveDown: false,
   },
 )
 
 const emit = defineEmits<{
-  move: [delta: number]
   editNote: []
   saveNote: []
   cancelNote: []
@@ -142,20 +137,11 @@ function difficultyLabel(platform: string, rating: number | null): string {
       </div>
     </div>
 
-    <!-- 管理按钮 -->
+    <!--
+      管理按钮。排序靠拖拽，所以没有上移下移——两套并排会让人不知道
+      该用哪个。
+    -->
     <div v-if="editable" class="flex shrink-0 items-center gap-0.5">
-      <Button variant="ghost" size="sm" :disabled="!canMoveUp" title="上移" @click="emit('move', -1)">
-        <ArrowUp class="h-3.5 w-3.5" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="sm"
-        :disabled="!canMoveDown"
-        title="下移"
-        @click="emit('move', 1)"
-      >
-        <ArrowDown class="h-3.5 w-3.5" />
-      </Button>
       <Button variant="ghost" size="sm" title="改备注" @click="emit('editNote')">
         <Pencil class="h-3.5 w-3.5" />
       </Button>

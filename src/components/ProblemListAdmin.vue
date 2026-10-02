@@ -491,7 +491,7 @@ onMounted(load)
               </template>
               <template v-else>
                 <a
-                  :href="`/problems/view?id=${item.id}`"
+                  :href="`/problems/edit?id=${item.id}`"
                   class="text-sm font-medium hover:text-primary"
                 >
                   {{ item.title }}
@@ -548,7 +548,7 @@ onMounted(load)
                 class="flex flex-wrap items-center gap-2 py-1"
               >
                 <a
-                  :href="`/problems/view?id=${child.id}`"
+                  :href="`/problems/edit?id=${child.id}`"
                   class="text-xs font-medium hover:text-primary"
                 >
                   {{ child.title }}
@@ -650,7 +650,7 @@ onMounted(load)
               </template>
               <template v-else>
                 <a
-                  :href="`/problems/view?id=${item.id}`"
+                  :href="`/problems/edit?id=${item.id}`"
                   class="text-sm font-medium hover:text-primary"
                 >
                   {{ item.title }}
