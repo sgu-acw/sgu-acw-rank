@@ -229,15 +229,15 @@ onMounted(async () => {
       -->
       <Card v-if="!isCollection && rank?.entries.length">
         <!--
-          标题用 items-baseline 对齐，而不是 items-center。
+          这一串覆盖 class 每一个都不能少：
 
-          items-center 按盒子居中，但中文在行盒里的视觉重心偏上：14px 的字
-          放在 14px 的行盒里，盒子中心比文字看起来的中心低约 3px。右边那个
-          36px 高的按钮也是按盒子居中的，两者就差了这 3px。
-
-          改成基线对齐：标题和按钮的文字坐在同一条基线上，看起来就是齐的。
+          * ``space-y-1.5`` 要去掉。CardHeader 默认是竖排（flex-col
+            space-y-1.5），改成横排之后那个 space-y 还在，会给第二个子元素
+            （右边的按钮）加 6px 的 margin-top，把它往下推。
+          * ``items-center`` 就够了。试过 items-baseline，但那是在有 margin
+            偏移的情况下调的，去掉 space-y 之后反而不准。
         -->
-        <CardHeader class="flex flex-row items-baseline justify-between gap-2 pb-3">
+        <CardHeader class="flex flex-row items-center justify-between gap-2 space-y-0 pb-3">
           <CardTitle class="text-sm font-medium">
             完成度排行
             <span class="ml-1 font-normal text-muted-foreground">
