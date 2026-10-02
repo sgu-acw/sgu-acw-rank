@@ -232,7 +232,8 @@ export const PROBLEM_KEY_HINT: Record<Platform, string> = {
   codeforces: '题号，如 1004A',
   atcoder: '题号，如 abc300_a',
   luogu: '题号，如 P1001',
-  nowcoder: '题号，如 nowcoder:A+B Problem',
+  // 牛客填数字就行，竞赛站的题目 id。主站的题是 uuid，很少手填。
+  nowcoder: '题号，如 233234',
 }
 
 export interface PracticeDay {
