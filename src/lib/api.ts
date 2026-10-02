@@ -155,10 +155,20 @@ export type Platform = 'codeforces' | 'atcoder' | 'luogu' | 'nowcoder'
 /**
  * 各平台填签名的位置。成员看到「去填码」时得知道去哪填，所以把入口和
  * 字段名都写在这里。
+ *
+ * settingsUrl 是函数而不是固定字符串：洛谷改签名在个人主页
+ * （``/user/{uid}``），uid 因人而异，写死一个地址会把所有人带到设置页，
+ * 而那一页根本没有签名输入框。
  */
 export const PLATFORM_META: Record<
   Platform,
-  { label: string; field: string; hint?: string; settingsUrl: string; idHint: string }
+  {
+    label: string
+    field: string
+    hint?: string
+    settingsUrl: (identifier: string) => string
+    idHint: string
+  }
 > = {
   codeforces: {
     label: 'Codeforces',
@@ -166,25 +176,26 @@ export const PLATFORM_META: Record<
     // 填不进任意文本。名字、姓氏、城市都是自由文本。
     field: '姓氏',
     hint: '「组织」是个选择器，填不了任意文本。请填在「姓氏（英文）」里；已经写过姓氏的话，填在「城市」里也一样。',
-    settingsUrl: 'https://codeforces.com/settings/social',
+    settingsUrl: () => 'https://codeforces.com/settings/social',
     idHint: 'handle，如 tourist',
   },
   atcoder: {
     label: 'AtCoder',
     field: 'Affiliation',
-    settingsUrl: 'https://atcoder.jp/settings',
+    settingsUrl: () => 'https://atcoder.jp/settings',
     idHint: '用户名，如 tourist',
   },
   luogu: {
     label: '洛谷',
     field: '个性签名',
-    settingsUrl: 'https://www.luogu.com.cn/user/setting',
+    // 洛谷的签名在个人主页上改，不在设置页。identifier 存的就是数字 uid。
+    settingsUrl: (identifier: string) => `https://www.luogu.com.cn/user/${identifier}`,
     idHint: '用户名或数字 uid',
   },
   nowcoder: {
     label: '牛客',
     field: '个人简介',
-    settingsUrl: 'https://ac.nowcoder.com/acm/contest/profile',
+    settingsUrl: () => 'https://ac.nowcoder.com/acm/contest/profile',
     idHint: '数字 uid',
   },
 }

@@ -254,7 +254,7 @@ onUnmounted(() => {
               <p class="text-xs text-muted-foreground">
                 把下面这串填进
                 <a
-                  :href="PLATFORM_META[account.platform].settingsUrl"
+                  :href="PLATFORM_META[account.platform].settingsUrl(account.identifier)"
                   target="_blank"
                   rel="noreferrer"
                   class="inline-flex items-center gap-0.5 text-primary hover:underline"
