@@ -206,7 +206,7 @@ onMounted(() => ensureLoaded())
               <span
                 v-for="day in trend.days"
                 :key="day.date"
-                class="flex-1 rounded-sm transition-all duration-150 hover:bg-primary"
+                class="flex-1 rounded-sm transition-colors duration-150 hover:bg-primary"
                 :class="day.count > 0 ? 'bg-primary/70' : 'bg-muted'"
                 :style="{
                   height: day.count > 0 ? `${Math.max(4, (day.count / maxDaily) * 48)}px` : '2px',

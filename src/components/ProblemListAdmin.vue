@@ -15,7 +15,6 @@ import {
   ArrowUp,
   Check,
   ChevronDown,
-  ChevronLeft,
   Loader2,
   Pencil,
   Plus,
@@ -23,12 +22,12 @@ import {
   Trash2,
   X,
 } from 'lucide-vue-next'
+import AdminWorkspaceNav from './AdminWorkspaceNav.vue'
 import ProblemRow from './ProblemRow.vue'
 import { Alert } from './ui/alert'
 import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Input } from './ui/input'
-import { Separator } from './ui/separator'
 import {
   ApiError,
   PLATFORM_META,
@@ -377,40 +376,22 @@ async function refreshCodeforces() {
   }
 }
 
-function go(path: string) {
-  window.location.href = path
-}
-
 onMounted(load)
 </script>
 
 <template>
-  <div class="space-y-4">
-    <button
-      class="inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
-      @click="go('/problems')"
-    >
-      <ChevronLeft class="h-3.5 w-3.5" />
-      题单
-    </button>
+  <div class="space-y-6">
+    <AdminWorkspaceNav active="problems" />
 
-    <div class="flex flex-wrap items-start justify-between gap-3">
-      <div>
-        <h1 class="text-lg font-semibold tracking-tight">管理题单</h1>
-        <p class="mt-0.5 text-xs text-muted-foreground">
-          合集装题单，题单装题目。只允许两层。
-        </p>
-      </div>
-      <div class="flex gap-2">
-        <Button variant="outline" size="sm" :disabled="refreshing" @click="refreshCodeforces">
-          <RefreshCw class="mr-1 h-3.5 w-3.5" :class="refreshing && 'animate-spin'" />
-          刷新 CF 题库
-        </Button>
-        <Button size="sm" @click="showCreate = !showCreate">
-          <Plus class="mr-1 h-3.5 w-3.5" />
-          新建
-        </Button>
-      </div>
+    <div class="flex flex-wrap items-center justify-end gap-2">
+      <Button variant="outline" size="sm" :disabled="refreshing" @click="refreshCodeforces">
+        <RefreshCw class="mr-1.5 h-3.5 w-3.5" :class="refreshing && 'animate-spin'" />
+        刷新 CF 题库
+      </Button>
+      <Button size="sm" @click="showCreate = !showCreate">
+        <Plus class="mr-1.5 h-3.5 w-3.5" />
+        {{ showCreate ? '收起' : '新建题单' }}
+      </Button>
     </div>
 
     <Alert v-if="error" variant="destructive" class="flex items-start gap-2">

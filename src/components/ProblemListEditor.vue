@@ -13,7 +13,6 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import Sortable from 'sortablejs'
 import {
   AlertCircle,
-  ArrowLeft,
   Check,
   GripVertical,
   Loader2,
@@ -21,6 +20,7 @@ import {
 } from 'lucide-vue-next'
 import ProblemAdder from './ProblemAdder.vue'
 import ProblemRow from './ProblemRow.vue'
+import AdminWorkspaceNav from './AdminWorkspaceNav.vue'
 import { Alert } from './ui/alert'
 import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
@@ -252,14 +252,8 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div ref="rootEl" class="space-y-4">
-    <button
-      class="inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
-      @click="go('/problems/admin')"
-    >
-      <ArrowLeft class="h-3.5 w-3.5" />
-      管理题单
-    </button>
+  <div ref="rootEl" class="space-y-6">
+    <AdminWorkspaceNav active="problems" />
 
     <Alert v-if="error" variant="destructive" class="flex items-start gap-2">
       <AlertCircle class="h-4 w-4 shrink-0 translate-y-0.5" />

@@ -5,8 +5,8 @@
  * 页面本身是公开的（静态站无法在服务端拦人），靠 /auth/me 的结果决定显示
  * 什么。未登录时提示去登录，而不是跳转，这样链接可以安全地分享。
  */
-import { computed, onMounted, ref } from 'vue'
-import { LogOut, Loader2, Settings } from 'lucide-vue-next'
+import { computed, onMounted } from 'vue'
+import { LogOut, Loader2 } from 'lucide-vue-next'
 import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Separator } from './ui/separator'
@@ -15,7 +15,7 @@ import PasswordForm from './PasswordForm.vue'
 import { useAuth } from '../lib/auth'
 import { formatEnrollYear } from '../lib/format'
 
-const { user, loading, ready, isAdmin, ensureLoaded, logout } = useAuth()
+const { user, loading, ready, ensureLoaded, logout } = useAuth()
 
 onMounted(() => {
   ensureLoaded()
@@ -132,12 +132,5 @@ function go(path: string) {
 
   <div v-if="ready && user" class="mt-4">
     <PasswordForm />
-  </div>
-
-  <div v-if="ready && user && isAdmin" class="mt-4">
-    <Button variant="outline" class="w-full" @click="go('/admin')">
-      <Settings class="mr-2 h-4 w-4" />
-      进入管理页
-    </Button>
   </div>
 </template>

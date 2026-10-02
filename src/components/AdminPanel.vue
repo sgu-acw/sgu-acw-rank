@@ -6,12 +6,12 @@
  * 后端——这里只是不给无权的人显示入口，每个请求失败都会照常提示。
  */
 import { computed, onMounted, ref, watch } from 'vue'
-import { AlertCircle, Check, Copy, Link2, Loader2, Plus, Search, Trash2 } from 'lucide-vue-next'
+import { AlertCircle, Check, ChevronDown, Copy, Link2, Loader2, MoreHorizontal, Pencil, Plus, Search, SlidersHorizontal, Trash2, X } from 'lucide-vue-next'
+import AdminWorkspaceNav from './AdminWorkspaceNav.vue'
 import { Alert } from './ui/alert'
 import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Input } from './ui/input'
-import { Separator } from './ui/separator'
 import {
   ApiError,
   adminApi,
@@ -60,6 +60,9 @@ const form = ref({
 
 // 新建成员的表单
 const showCreate = ref(false)
+const showInviteCreate = ref(false)
+const showAdvancedFilters = ref(false)
+const activeSection = ref<'members' | 'invites'>('members')
 const creating = ref(false)
 const createForm = ref({
   student_id: '',
@@ -69,7 +72,8 @@ const createForm = ref({
   admin_note: '',
 })
 
-// 成员编辑：只保存正在编辑的那一行的备注，避免整表联动。
+// 成员资料编辑草稿：一次只展开一行，统一保存姓名、备注和学院/专业覆盖。
+const editingMemberId = ref<number | null>(null)
 const editingNote = ref<Record<number, string>>({})
 const editingName = ref<Record<number, string>>({})
 //: 学院名/专业名的人工覆盖。空串表示恢复成按学号查表。
@@ -92,7 +96,8 @@ const hasFilters = computed(
     !!filters.value.status ||
     filters.value.enroll_year !== null ||
     !!filters.value.college_code ||
-    filters.value.has_account !== null,
+    filters.value.has_account !== null ||
+    filters.value.sort !== 'enroll_year',
 )
 
 function flash(message: string) {
@@ -166,6 +171,8 @@ function clearFilters() {
   filters.value.enroll_year = null
   filters.value.college_code = ''
   filters.value.has_account = null
+  filters.value.sort = 'enroll_year'
+  showAdvancedFilters.value = false
 }
 
 function goPage(next: number) {
@@ -233,6 +240,7 @@ async function createInvite() {
     invites.value = [created, ...invites.value]
     flash(`已创建邀请码 ${created.code}`)
     if (stats.value) stats.value.usable_invite_count += 1
+    showInviteCreate.value = false
   } catch (err) {
     error.value = err instanceof ApiError ? err.message : '创建失败'
   }
@@ -273,6 +281,22 @@ const copyCode = (code: string) => copyText(code, code)
 /** 复制整条链接，用于发到群里。 */
 const copyLink = (code: string) => copyText(inviteLink(code), `link:${code}`)
 
+function startEditMember(target: AdminUser) {
+  editingMemberId.value = target.id
+  editingName.value[target.id] = target.display_name
+  editingNote.value[target.id] = target.admin_note ?? ''
+  editingCollege.value[target.id] = target.college_name ?? ''
+  editingMajor.value[target.id] = target.major_name ?? ''
+}
+
+function cancelEditMember(target: AdminUser) {
+  delete editingNote.value[target.id]
+  delete editingName.value[target.id]
+  delete editingCollege.value[target.id]
+  delete editingMajor.value[target.id]
+  editingMemberId.value = null
+}
+
 async function saveNote(target: AdminUser) {
   const payload: {
     admin_note?: string
@@ -301,6 +325,7 @@ async function saveNote(target: AdminUser) {
     delete editingName.value[target.id]
     delete editingCollege.value[target.id]
     delete editingMajor.value[target.id]
+    editingMemberId.value = null
     flash('已保存')
   } catch (err) {
     error.value = err instanceof ApiError ? err.message : '保存失败'
@@ -339,13 +364,7 @@ function roleLabel(role: string): string {
   return role === 'root' ? 'root' : role === 'admin' ? '管理员' : '成员'
 }
 
-/** 当前登录者能否改动这个人的身份。
- *
- * 规则与后端一致，这里只是提前把不可用的控件置灰，免得点下去才报错：
- * root 的身份谁都改不了；只有 root 能授予或撤销管理员。
- */
-/**
- * 能不能改这个人的角色。
+/** 能不能改这个人的角色。
  *
  * 管理员之间是平级的，所以任何管理员都能改别人的角色。两个例外：
  * root 动不了（要转让得走别的路），以及自己——把自己降级会当场失去
@@ -372,12 +391,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="space-y-4">
-    <div>
-      <h1 class="text-lg font-semibold tracking-tight">管理</h1>
-      <p class="mt-0.5 text-xs text-muted-foreground">邀请码、成员与备注。</p>
-    </div>
-
+  <div class="space-y-6">
     <div v-if="loading" class="flex items-center gap-2 py-8 text-sm text-muted-foreground">
       <Loader2 class="h-4 w-4 animate-spin" />
       正在读取…
@@ -389,6 +403,7 @@ onMounted(async () => {
     </Alert>
 
     <template v-else>
+      <AdminWorkspaceNav active="people" />
       <Alert v-if="error" variant="destructive" class="flex items-start gap-2">
         <AlertCircle class="h-4 w-4 shrink-0 translate-y-0.5" />
         <span class="text-sm">{{ error }}</span>
@@ -398,24 +413,52 @@ onMounted(async () => {
         <span class="text-sm">{{ notice }}</span>
       </Alert>
 
-      <div v-if="stats" class="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Card v-for="item in [
-          { label: '成员', value: stats.user_count },
-          { label: '在用', value: stats.active_count },
-          { label: '管理员', value: stats.admin_count },
-          { label: '可用邀请码', value: stats.usable_invite_count },
-        ]" :key="item.label">
-          <CardContent class="p-4">
+      <Card v-if="stats">
+        <CardContent class="grid grid-cols-2 divide-y divide-border/50 p-0 sm:grid-cols-4 sm:divide-x sm:divide-y-0">
+          <div v-for="item in [
+            { label: '成员', value: stats.user_count },
+            { label: '在用', value: stats.active_count },
+            { label: '管理员', value: stats.admin_count },
+            { label: '可用邀请码', value: stats.usable_invite_count },
+          ]" :key="item.label" class="px-4 py-3">
             <p class="text-xs text-muted-foreground">{{ item.label }}</p>
-            <p class="mt-1 font-mono text-xl font-semibold">{{ item.value }}</p>
-          </CardContent>
-        </Card>
+            <p class="mt-1 font-mono text-xl font-semibold tabular-nums">{{ item.value }}</p>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div class="flex flex-wrap items-center gap-1 border-b border-border/50" role="group" aria-label="管理内容分区">
+        <button
+          type="button"
+          :aria-pressed="activeSection === 'members'"
+          class="relative min-h-11 px-3 text-sm font-medium transition-colors"
+          :class="activeSection === 'members' ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'"
+          @click="activeSection = 'members'"
+        >
+          成员
+          <span v-if="activeSection === 'members'" class="absolute inset-x-3 bottom-0 h-0.5 rounded-full bg-primary" />
+        </button>
+        <button
+          type="button"
+          :aria-pressed="activeSection === 'invites'"
+          class="relative min-h-11 px-3 text-sm font-medium transition-colors"
+          :class="activeSection === 'invites' ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'"
+          @click="activeSection = 'invites'"
+        >
+          邀请码
+          <span v-if="stats" class="ml-1.5 rounded-full bg-muted px-1.5 py-0.5 text-[10px] tabular-nums text-muted-foreground">
+            {{ stats.usable_invite_count }} 可用
+          </span>
+          <span v-if="activeSection === 'invites'" class="absolute inset-x-3 bottom-0 h-0.5 rounded-full bg-primary" />
+        </button>
       </div>
 
-      <!-- 邀请码 -->
-      <Card>
+      <section v-if="activeSection === 'invites'" class="admin-section-content space-y-4">
+      <!-- 表单默认收起，先展示现有邀请码；新建时再展开。 -->
+      <Card v-if="showInviteCreate" class="admin-section-content">
         <CardHeader class="pb-3">
-          <CardTitle class="text-sm font-medium">新建邀请码</CardTitle>
+          <CardTitle class="text-sm font-medium">创建邀请码</CardTitle>
+          <p class="mt-1 text-xs text-muted-foreground">先设人数和有效期，生成后可复制邀请码或邀请链接。</p>
         </CardHeader>
         <CardContent class="space-y-4">
           <div class="grid gap-3 sm:grid-cols-3">
@@ -451,12 +494,21 @@ onMounted(async () => {
 
       <Card>
         <CardHeader class="pb-3">
-          <CardTitle class="text-sm font-medium">邀请码</CardTitle>
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <CardTitle class="text-sm font-medium">邀请码</CardTitle>
+              <p class="mt-1 text-xs text-muted-foreground">复制邀请码或邀请链接，发给要加入工作坊的成员。</p>
+            </div>
+            <Button size="sm" variant="outline" @click="showInviteCreate = !showInviteCreate">
+              <Plus class="mr-1.5 h-3.5 w-3.5" />
+              {{ showInviteCreate ? '收起表单' : '新建邀请码' }}
+            </Button>
+          </div>
         </CardHeader>
         <CardContent class="p-0">
           <div v-if="!invites.length" class="p-4 text-sm text-muted-foreground">还没有邀请码。</div>
           <div v-else class="divide-y divide-border/40">
-            <div v-for="invite in invites" :key="invite.id" class="flex items-center gap-3 px-4 py-2.5">
+            <div v-for="invite in invites" :key="invite.id" class="flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3">
               <button
                 class="flex items-center gap-1.5 font-mono text-sm hover:text-primary"
                 title="点击复制邀请码"
@@ -494,7 +546,7 @@ onMounted(async () => {
                 创建
               </span>
 
-              <span v-if="invite.note" class="truncate text-xs text-muted-foreground/70">
+              <span v-if="invite.note" class="max-w-56 truncate text-xs text-muted-foreground/70">
                 {{ invite.note }}
               </span>
 
@@ -511,7 +563,9 @@ onMounted(async () => {
           </div>
         </CardContent>
       </Card>
+        </section>
 
+      <section v-else class="admin-section-content space-y-4">
       <!-- 成员 -->
       <Card>
         <CardHeader class="pb-3">
@@ -524,7 +578,7 @@ onMounted(async () => {
             </CardTitle>
             <Button size="sm" @click="showCreate = !showCreate">
               <Plus class="mr-1 h-3.5 w-3.5" />
-              新建
+              新建成员
             </Button>
           </div>
         </CardHeader>
@@ -560,42 +614,63 @@ onMounted(async () => {
               <option value="disabled">已停用</option>
             </select>
 
-            <select
-              v-model="filters.enroll_year"
-              class="h-9 rounded-md border border-input bg-background px-2 text-xs"
+            <Button
+            :aria-expanded="showAdvancedFilters"
+            aria-controls="member-advanced-filters"
+            variant="ghost"
+            size="sm"
+            @click="showAdvancedFilters = !showAdvancedFilters"
             >
-              <option :value="null">全部年级</option>
-              <option v-for="year in page?.enroll_years ?? []" :key="year" :value="year">
-                {{ year }} 级
-              </option>
-            </select>
-
-            <select
-              v-model="filters.has_account"
-              class="h-9 rounded-md border border-input bg-background px-2 text-xs"
-            >
-              <option :value="null">全部</option>
-              <option :value="true">已绑账号</option>
-              <option :value="false">未绑账号</option>
-            </select>
-
-            <select
-              v-model="filters.sort"
-              class="h-9 rounded-md border border-input bg-background px-2 text-xs"
-            >
-              <option value="enroll_year">按年级</option>
-              <option value="student_id">按学号</option>
-              <option value="display_name">按姓名</option>
-              <option value="created_at">按注册时间</option>
-            </select>
+              <SlidersHorizontal class="mr-1.5 h-3.5 w-3.5" />
+              更多筛选
+              <ChevronDown class="ml-1 h-3.5 w-3.5 transition-transform duration-150" :class="showAdvancedFilters && 'rotate-180'" />
+            </Button>
 
             <Button v-if="hasFilters" variant="ghost" size="sm" @click="clearFilters">
-              清除
+              清除筛选
             </Button>
           </div>
 
+          <div v-if="showAdvancedFilters" id="member-advanced-filters" class="admin-section-content grid gap-2 rounded-lg bg-muted/30 p-3 sm:grid-cols-3">
+            <label class="space-y-1 text-[11px] font-medium text-muted-foreground">
+              年级
+              <select
+                v-model="filters.enroll_year"
+                class="h-9 w-full rounded-md border border-input bg-background px-2 text-xs text-foreground"
+              >
+                <option :value="null">全部年级</option>
+                <option v-for="year in page?.enroll_years ?? []" :key="year" :value="year">
+                  {{ year }} 级
+                </option>
+              </select>
+            </label>
+            <label class="space-y-1 text-[11px] font-medium text-muted-foreground">
+              平台账号
+              <select
+                v-model="filters.has_account"
+                class="h-9 w-full rounded-md border border-input bg-background px-2 text-xs text-foreground"
+              >
+                <option :value="null">全部成员</option>
+                <option :value="true">已绑定</option>
+                <option :value="false">未绑定</option>
+              </select>
+            </label>
+            <label class="space-y-1 text-[11px] font-medium text-muted-foreground">
+              排序方式
+              <select
+                v-model="filters.sort"
+                class="h-9 w-full rounded-md border border-input bg-background px-2 text-xs text-foreground"
+              >
+                <option value="enroll_year">按年级</option>
+                <option value="student_id">按学号</option>
+                <option value="display_name">按姓名</option>
+                <option value="created_at">按注册时间</option>
+              </select>
+            </label>
+          </div>
+
           <!-- 新建成员 -->
-          <div v-if="showCreate" class="space-y-2 rounded-md border border-border/40 p-3">
+          <div v-if="showCreate" class="admin-section-content space-y-2 rounded-md border border-border/40 p-3">
             <p class="text-xs font-medium">新建成员（不需要邀请码）</p>
             <div class="grid gap-2 sm:grid-cols-2">
               <Input v-model="createForm.student_id" placeholder="学号" class="h-9 font-mono text-xs" />
@@ -658,86 +733,111 @@ onMounted(async () => {
                   已停用
                 </span>
 
-                <div class="ml-auto flex shrink-0 gap-1">
+                <div class="ml-auto flex shrink-0 items-center gap-1">
                   <Button
-                    v-if="member.role !== 'root'"
-                    variant="ghost"
+                    variant="outline"
                     size="sm"
-                    @click="toggleStatus(member)"
+                    @click="editingMemberId === member.id ? cancelEditMember(member) : startEditMember(member)"
                   >
-                    {{ member.status === 'active' ? '停用' : '启用' }}
+                    <Pencil class="mr-1.5 h-3.5 w-3.5" />
+                    {{ editingMemberId === member.id ? '取消编辑' : '编辑资料' }}
                   </Button>
-                  <Button variant="ghost" size="sm" @click="resetPassword(member)">
-                    重置密码
-                  </Button>
-                  <Button
-                    v-if="member.role !== 'root' && member.id !== user?.id"
-                    variant="ghost"
-                    size="sm"
-                    @click="deleteUser(member)"
-                  >
-                    <Trash2 class="h-3.5 w-3.5" />
-                  </Button>
+                  <details class="group relative">
+                    <summary class="flex h-9 cursor-pointer list-none items-center gap-1.5 rounded-md px-2.5 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground [&::-webkit-details-marker]:hidden">
+                      <MoreHorizontal class="h-4 w-4" />
+                      更多
+                    </summary>
+                    <div class="absolute right-0 top-full z-30 mt-1 w-40 rounded-lg border border-border/60 bg-popover p-1 shadow-lg">
+                      <Button
+                        v-if="member.role !== 'root'"
+                        variant="ghost"
+                        size="sm"
+                        class="w-full justify-start"
+                        @click="toggleStatus(member)"
+                      >
+                        {{ member.status === 'active' ? '停用账号' : '启用账号' }}
+                      </Button>
+                      <Button variant="ghost" size="sm" class="w-full justify-start" @click="resetPassword(member)">
+                        重置密码
+                      </Button>
+                      <Button
+                        v-if="member.role !== 'root' && member.id !== user?.id"
+                        variant="ghost"
+                        size="sm"
+                        class="w-full justify-start text-destructive hover:text-destructive"
+                        @click="deleteUser(member)"
+                      >
+                        <Trash2 class="mr-2 h-3.5 w-3.5" />
+                        删除成员
+                      </Button>
+                    </div>
+                  </details>
                 </div>
               </div>
 
-              <!--
-                姓名与备注。都是仅管理员可见可改。
+              <p v-if="editingMemberId !== member.id" class="pl-0.5 text-xs text-muted-foreground">
+                {{ [member.college_name, member.major_name, member.class_no ? `${member.class_no} 班` : ''].filter(Boolean).join(' · ') || '学院信息未设置' }}
+              </p>
 
-                窄屏下换行堆叠：这几个输入框加起来近 700px，390px 的屏幕上
-                横着排会全部挤在一起。
-              -->
-              <div class="flex flex-wrap items-center gap-2">
-                <Input
-                  :model-value="editingName[member.id] ?? member.display_name"
-                  placeholder="姓名"
-                  class="h-9 w-full text-sm sm:h-8 sm:w-32 sm:text-xs"
-                  @update:model-value="(v: string) => (editingName[member.id] = v)"
-                />
-                <Input
-                  :model-value="editingNote[member.id] ?? member.admin_note"
-                  placeholder="备注（仅管理员可见）"
-                  class="h-9 w-full text-sm sm:h-8 sm:flex-1 sm:text-xs"
-                  @update:model-value="(v: string) => (editingNote[member.id] = v)"
-                />
-
-                <!-- 身份。只有 root 能改，且改不了 root 自己和自己的。 -->
-                <select
-                  v-if="canChangeRole(member)"
-                  :value="member.role"
-                  class="h-9 w-full shrink-0 rounded-md border border-input bg-background px-2 text-sm sm:h-8 sm:w-auto sm:text-xs"
-                  @change="(e: Event) => changeRole(member, (e.target as HTMLSelectElement).value)"
-                >
-                  <option value="member">成员</option>
-                  <option value="admin">管理员</option>
-                </select>
-
-                <Input
-                  :model-value="editingCollege[member.id] ?? member.college_name ?? ''"
-                  placeholder="学院（可改）"
-                  class="h-9 w-full text-sm sm:h-8 sm:w-44 sm:text-xs"
-                  @update:model-value="(v: string) => (editingCollege[member.id] = v)"
-                />
-                <Input
-                  :model-value="editingMajor[member.id] ?? member.major_name ?? ''"
-                  placeholder="专业（可改）"
-                  class="h-9 w-full text-sm sm:h-8 sm:w-40 sm:text-xs"
-                  @update:model-value="(v: string) => (editingMajor[member.id] = v)"
-                />
-
-                <Button
-                  v-if="
-                    editingNote[member.id] !== undefined ||
-                    editingName[member.id] !== undefined ||
-                    editingCollege[member.id] !== undefined ||
-                    editingMajor[member.id] !== undefined
-                  "
-                  size="sm"
-                  :disabled="savingNote === member.id"
-                  @click="saveNote(member)"
-                >
-                  保存
-                </Button>
+              <div v-if="editingMemberId === member.id" class="admin-section-content space-y-3 rounded-lg border border-border/50 bg-muted/20 p-3">
+                <div class="grid gap-2 sm:grid-cols-2">
+                  <label class="space-y-1 text-xs font-medium text-muted-foreground">
+                    姓名
+                    <Input
+                      :model-value="editingName[member.id] ?? member.display_name"
+                      class="h-9 text-sm text-foreground"
+                      @update:model-value="(v: string) => (editingName[member.id] = v)"
+                    />
+                  </label>
+                  <label class="space-y-1 text-xs font-medium text-muted-foreground">
+                    管理员备注
+                    <Input
+                      :model-value="editingNote[member.id] ?? member.admin_note"
+                      placeholder="仅管理员可见"
+                      class="h-9 text-sm text-foreground"
+                      @update:model-value="(v: string) => (editingNote[member.id] = v)"
+                    />
+                  </label>
+                  <label class="space-y-1 text-xs font-medium text-muted-foreground">
+                    学院名称
+                    <Input
+                      :model-value="editingCollege[member.id] ?? member.college_name ?? ''"
+                      placeholder="留空使用学号解析值"
+                      class="h-9 text-sm text-foreground"
+                      @update:model-value="(v: string) => (editingCollege[member.id] = v)"
+                    />
+                  </label>
+                  <label class="space-y-1 text-xs font-medium text-muted-foreground">
+                    专业名称
+                    <Input
+                      :model-value="editingMajor[member.id] ?? member.major_name ?? ''"
+                      placeholder="留空使用学号解析值"
+                      class="h-9 text-sm text-foreground"
+                      @update:model-value="(v: string) => (editingMajor[member.id] = v)"
+                    />
+                  </label>
+                  <label v-if="canChangeRole(member)" class="space-y-1 text-xs font-medium text-muted-foreground">
+                    账号身份
+                    <select
+                      :value="member.role"
+                      class="h-9 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground"
+                      @change="(e: Event) => changeRole(member, (e.target as HTMLSelectElement).value)"
+                    >
+                      <option value="member">成员</option>
+                      <option value="admin">管理员</option>
+                    </select>
+                  </label>
+                </div>
+                <div class="flex justify-end gap-2">
+                  <Button variant="ghost" size="sm" @click="cancelEditMember(member)">
+                    <X class="mr-1 h-3.5 w-3.5" />
+                    取消
+                  </Button>
+                  <Button size="sm" :disabled="savingNote === member.id" @click="saveNote(member)">
+                    <Loader2 v-if="savingNote === member.id" class="mr-1 h-3.5 w-3.5 animate-spin" />
+                    保存修改
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
@@ -763,11 +863,35 @@ onMounted(async () => {
           </div>
         </CardContent>
       </Card>
+        </section>
 
-      <Separator />
-      <p class="text-xs text-muted-foreground">
-        没有自助找回密码：账号以学号为名、没有绑定邮箱，忘记密码只能由管理员重置。
+      <p class="text-xs leading-relaxed text-muted-foreground">
+        忘记密码只能由管理员重置：账号以学号为名，没有绑定邮箱，无法自助找回。
       </p>
     </template>
   </div>
 </template>
+
+<style scoped>
+.admin-section-content {
+  animation: admin-section-enter 150ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+@keyframes admin-section-enter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-section-content {
+    animation: none;
+  }
+}
+</style>

@@ -13,7 +13,7 @@ import { AlertCircle, BarChart3, Loader2, LogIn, RefreshCw, TrendingUp } from 'l
 import { Alert } from './ui/alert'
 import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
-import { ApiError, PLATFORM_META, practiceApi, type Dashboard, type Platform } from '../lib/api'
+import { ApiError, practiceApi, type Dashboard } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { formatEnrollYear } from '../lib/format'
 import WorkshopStatusCard from './WorkshopStatusCard.vue'
@@ -113,13 +113,8 @@ onMounted(async () => {
         <span class="text-sm">{{ notice }}</span>
       </Alert>
 
-      <!-- 工作坊开没开门。放在最上面，因为它是每天都会被看一眼的信息。 -->
-      <WorkshopStatusCard />
-
-      <!-- 每日一题。也是每天都看一眼的东西，放在个人数据前面。 -->
-      <DailyProblem />
-
-      <div v-if="data" class="space-y-3">
+      <div v-if="data" class="grid gap-5 lg:grid-cols-[minmax(0,1.55fr)_minmax(18rem,0.85fr)]">
+        <section class="min-w-0 space-y-4">
         <!-- 抬头。姓名与操作放在一行，练习日退成脚注。 -->
         <div class="flex flex-wrap items-start justify-between gap-3">
           <div>
@@ -153,10 +148,10 @@ onMounted(async () => {
           </Button>
         </div>
 
-        <!--
-          四个数字放在一张卡里，用分隔线切分。
-          拆成四张独立卡片会让它们看起来是四件不相干的事，而它们其实是一组。
-        -->
+        <!-- 今日最明确的训练动作，放在数字摘要之前。 -->
+        <DailyProblem compact />
+
+        <!-- 今日/近况汇总。四个数字放在一张卡里，用分隔线切分。 -->
         <Card>
           <CardContent class="grid grid-cols-2 divide-y divide-border/40 p-0 sm:grid-cols-4 sm:divide-x sm:divide-y-0">
             <div v-for="stat in [
@@ -213,18 +208,22 @@ onMounted(async () => {
             </div>
           </CardContent>
         </Card>
+        </section>
 
-        <!-- 平台账号 -->
-        <Card>
-          <CardHeader class="pb-3">
-            <div class="flex items-center justify-between">
-              <CardTitle class="text-sm font-medium">平台账号</CardTitle>
-              <a href="/me" class="text-xs text-muted-foreground hover:text-primary">
-                管理 →
-              </a>
-            </div>
-          </CardHeader>
-          <CardContent class="p-0">
+        <aside class="min-w-0 space-y-4">
+          <WorkshopStatusCard />
+
+          <!-- 平台账号状态收进侧栏，不再与每日训练主线争夺注意力。 -->
+          <Card>
+            <CardHeader class="pb-3">
+              <div class="flex items-center justify-between">
+                <CardTitle class="text-sm font-medium">平台账号</CardTitle>
+                <a href="/me" class="text-xs text-muted-foreground hover:text-primary">
+                  管理 →
+                </a>
+              </div>
+            </CardHeader>
+            <CardContent class="p-0">
             <div v-if="!data.accounts.length" class="p-4 text-sm text-muted-foreground">
               还没有绑定账号。绑定后才会出现在榜单上。
             </div>
@@ -254,7 +253,8 @@ onMounted(async () => {
               </div>
             </div>
           </CardContent>
-        </Card>
+          </Card>
+        </aside>
       </div>
     </template>
   </div>

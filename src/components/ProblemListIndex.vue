@@ -8,7 +8,7 @@
  * 未登录时不显示进度条：谁能过哪些题是个人数据，不该公开给所有人看。
  */
 import { computed, onMounted, ref } from 'vue'
-import { AlertCircle, ChevronRight, FolderOpen, ListChecks, Loader2, Plus } from 'lucide-vue-next'
+import { AlertCircle, ChevronRight, FolderOpen, ListChecks, Loader2, Settings } from 'lucide-vue-next'
 import { Alert } from './ui/alert'
 import { Button } from './ui/button'
 import { Card, CardContent } from './ui/card'
@@ -68,10 +68,10 @@ onMounted(async () => {
       <Button
         v-if="user && user.role !== 'member'"
         size="sm"
-        @click="go('/problems/admin')"
+        @click="go('/admin')"
       >
-        <Plus class="mr-1 h-3.5 w-3.5" />
-        管理题单
+        <Settings class="mr-1 h-3.5 w-3.5" />
+        管理工作台
       </Button>
     </div>
 

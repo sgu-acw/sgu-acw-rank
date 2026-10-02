@@ -9,7 +9,7 @@
  * 三道题全站统一：抽签只由日期决定，与「谁在看」无关。
  */
 import { computed, onMounted, onUnmounted, ref } from 'vue'
-import { Check, ExternalLink, Loader2, RefreshCw, Shuffle } from 'lucide-vue-next'
+import { Check, ChevronRight, ExternalLink, Loader2, RefreshCw, Shuffle } from 'lucide-vue-next'
 import { Alert } from './ui/alert'
 import { Button } from './ui/button'
 import { Card, CardContent } from './ui/card'
@@ -21,6 +21,8 @@ import {
   type DailyProblemEntry,
 } from '../lib/api'
 import { useAuth } from '../lib/auth'
+
+const props = withDefaults(defineProps<{ compact?: boolean }>(), { compact: false })
 
 const { user, ensureLoaded } = useAuth()
 
@@ -145,7 +147,7 @@ function membersSolved(entry: DailyProblemEntry): string {
           而其他人还在做原来那套。
         -->
         <Button
-          v-if="isAdmin && board"
+          v-if="!props.compact && isAdmin && board"
           variant="ghost"
           size="sm"
           :disabled="redrawing"
@@ -163,7 +165,7 @@ function membersSolved(entry: DailyProblemEntry): string {
             管理员
           </span>
         </Button>
-        <Button variant="ghost" size="sm" :disabled="loading" @click="load">
+        <Button v-if="!props.compact" variant="ghost" size="sm" :disabled="loading" @click="load">
           <RefreshCw class="mr-1 h-3.5 w-3.5" :class="loading && 'animate-spin'" />
           刷新
         </Button>
@@ -237,7 +239,17 @@ function membersSolved(entry: DailyProblemEntry): string {
       签到排行榜。做对当天的每日一题里任意一道就算签到。
       只列签过到的人——一次没签过不是「0 天」，更接近「没参加」。
     -->
-    <Card v-if="checkin && checkin.entries.length">
+    <a
+      v-if="props.compact && checkin"
+      href="/daily"
+      class="group flex items-center gap-2 rounded-lg px-1 py-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
+    >
+      <span>签到排行</span>
+      <span class="font-mono tabular-nums">{{ checkin.total_members }} 人</span>
+      <ChevronRight class="ml-auto h-3.5 w-3.5 transition-transform duration-150 group-hover:translate-x-0.5" />
+    </a>
+
+    <Card v-if="!props.compact && checkin && checkin.entries.length">
       <CardContent class="p-0">
         <div class="flex items-center justify-between gap-2 px-4 py-3">
           <h3 class="text-sm font-medium">

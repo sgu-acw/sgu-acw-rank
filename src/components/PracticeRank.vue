@@ -130,15 +130,6 @@ const RATING_PLATFORMS = (Object.keys(PLATFORM_META) as Platform[]).map((key) =>
 /** 有任何筛选条件生效时为真，用于决定要不要显示「清除」。 */
 const hasFilters = computed(() => !!college.value || enrollYear.value !== null || !!search.value)
 
-const maxDaily = computed(() => {
-  if (!data.value) return 1
-  let max = 0
-  for (const entry of data.value.entries) {
-    for (const day of entry.days) max = Math.max(max, day.count)
-  }
-  return Math.max(1, max)
-})
-
 /**
  * 窄屏。手机上柱状图要换一种画法。
  */

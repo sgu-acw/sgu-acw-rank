@@ -6,7 +6,7 @@ import {
   getRatingHexColor,
 } from '../lib/cfapi'
 import type { User } from '../lib/interfaces/cfapi'
-import { Card, CardContent } from './ui/card'
+import { Card } from './ui/card'
 import { Avatar } from './ui/avatar'
 import { Separator } from './ui/separator'
 import { Input } from './ui/input'

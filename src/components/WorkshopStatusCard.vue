@@ -9,7 +9,7 @@
  * 其余地方都保持静止，免得抢注意力。
  */
 import { computed } from 'vue'
-import { Activity, ArrowUpRight } from 'lucide-vue-next'
+import { ArrowUpRight } from 'lucide-vue-next'
 import { formatAge, stateDescription, useWorkshopStatus } from '../lib/workshopStatus'
 
 const { data, state } = useWorkshopStatus()

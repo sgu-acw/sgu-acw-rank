@@ -35,17 +35,28 @@ const mounted = ref(false)
 // 侧边栏底部的登录入口。未登录时显示「登录」，已登录时显示姓名并链到个人中心。
 const { user, isAdmin, ensureLoaded } = useAuth()
 
-// 榜单现在由 /practice 承担（练习量 + Rating 两个维度），旧的
-// /codeforces/rank 已删除，所以这里不再有可折叠的分组。
-const navItems = [
-  { title: '首页', route: '/', icon: Home },
-  { title: '博客', route: '/blog', icon: BookOpen },
-  { title: '导航', route: '/nav', icon: Compass },
-  { title: '每日一题', route: '/daily', icon: CalendarCheck },
-  { title: '练习数据', route: '/practice', icon: BarChart3 },
-  { title: '题单', route: '/problems', icon: ListChecks },
-  { title: '工作坊状态', route: '/status', icon: Activity },
-  { title: 'CodeForces 资料', route: '/codeforces/profile', icon: User },
+const navGroups = [
+  {
+    label: '总览',
+    items: [{ title: '首页', route: '/', icon: Home }],
+  },
+  {
+    label: '训练',
+    items: [
+      { title: '每日一题', route: '/daily', icon: CalendarCheck },
+      { title: '题单', route: '/problems', icon: ListChecks },
+      { title: '练习数据', route: '/practice', icon: BarChart3 },
+    ],
+  },
+  {
+    label: '工作坊',
+    items: [
+      { title: '工作坊状态', route: '/status', icon: Activity },
+      { title: '博客', route: '/blog', icon: BookOpen },
+      { title: '导航与资源', route: '/nav', icon: Compass },
+      { title: 'Codeforces 资料', route: '/codeforces/profile', icon: User },
+    ],
+  },
 ]
 
 onMounted(() => {
@@ -55,8 +66,14 @@ onMounted(() => {
   ensureLoaded()
 })
 
+function isAdminRoute(): boolean {
+  return currentPath.value.startsWith('/admin') || currentPath.value.startsWith('/problems/admin') || currentPath.value.startsWith('/problems/edit')
+}
+
 function isActive(route: string): boolean {
-  return currentPath.value === route
+  if (route === '/') return currentPath.value === '/'
+  if (route === '/problems' && (currentPath.value.startsWith('/problems/admin') || currentPath.value.startsWith('/problems/edit'))) return false
+  return currentPath.value === route || currentPath.value.startsWith(`${route}/`)
 }
 
 </script>
@@ -70,36 +87,45 @@ function isActive(route: string): boolean {
     class="fixed left-0 top-14 z-40 hidden w-64 flex-col border-r border-border/50 bg-sidebar md:flex"
     style="height: calc(100vh - 3.5rem)"
   >
-    <nav class="flex h-full flex-col p-4">
-      <div class="space-y-1">
-        <a
-          v-for="item in navItems"
-          :key="item.route"
-          :href="item.route"
-          class="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground active:scale-[0.98]"
-          :class="isActive(item.route) ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'"
-        >
-          <component :is="item.icon" class="h-4 w-4" />
-          {{ item.title }}
-        </a>
+    <nav class="flex h-full flex-col overflow-y-auto px-3 py-5">
+      <div class="space-y-6">
+        <section v-for="group in navGroups" :key="group.label" class="space-y-1">
+          <p class="px-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/55">
+            {{ group.label }}
+          </p>
+          <a
+            v-for="item in group.items"
+            :key="item.route"
+            :href="item.route"
+            :aria-current="isActive(item.route) ? 'page' : undefined"
+            class="group flex min-h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors duration-150 ease-[var(--ease-out)] active:scale-[0.99]"
+            :class="isActive(item.route) ? 'bg-accent text-accent-foreground' : 'text-muted-foreground hover:bg-accent/70 hover:text-foreground'"
+          >
+            <component :is="item.icon" class="h-4 w-4 shrink-0 transition-colors" :class="isActive(item.route) ? 'text-foreground' : 'text-muted-foreground/80 group-hover:text-foreground'" />
+            <span class="truncate">{{ item.title }}</span>
+            <span v-if="isActive(item.route)" class="ml-auto h-1.5 w-1.5 rounded-full bg-primary" aria-hidden="true" />
+          </a>
+        </section>
       </div>
 
-      <!-- 账号入口。mt-auto 把它推到侧边栏底部，与导航项分开。 -->
-      <div v-if="mounted" class="mt-auto space-y-1 pt-4">
+      <!-- 管理入口只保留在侧栏，不再在个人中心重复放一个入口。 -->
+      <div v-if="mounted" class="mt-auto space-y-1 border-t border-border/40 pt-4">
         <a
           v-if="user && isAdmin"
           href="/admin"
-          class="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground active:scale-[0.98]"
-          :class="isActive('/admin') ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'"
+          :aria-current="isAdminRoute() ? 'page' : undefined"
+          class="flex min-h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors duration-150 ease-[var(--ease-out)] active:scale-[0.99]"
+          :class="isAdminRoute() ? 'bg-accent text-accent-foreground' : 'text-muted-foreground hover:bg-accent/70 hover:text-foreground'"
         >
           <Settings class="h-4 w-4 shrink-0" />
-          管理
+          管理工作台
         </a>
         <a
           v-if="user"
           href="/me"
-          class="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground active:scale-[0.98]"
-          :class="isActive('/me') ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'"
+          :aria-current="isActive('/me') ? 'page' : undefined"
+          class="flex min-h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors duration-150 ease-[var(--ease-out)] active:scale-[0.99]"
+          :class="isActive('/me') ? 'bg-accent text-accent-foreground' : 'text-muted-foreground hover:bg-accent/70 hover:text-foreground'"
         >
           <User class="h-4 w-4 shrink-0" />
           <span class="truncate">{{ user.display_name }}</span>
@@ -107,7 +133,7 @@ function isActive(route: string): boolean {
         <a
           v-else
           href="/login"
-          class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+          class="flex min-h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-accent-foreground"
         >
           <LogIn class="h-4 w-4" />
           登录
