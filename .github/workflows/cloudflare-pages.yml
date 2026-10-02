@@ -32,6 +32,17 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # 下面两步都必须单独跑：
+      #
+      # astro build 只打包不检查；astro check 检查类型但**不检查模板里
+      # 调用的函数是否存在**。模板里用了不存在的函数（这次就是把 load()
+      # 删了）只有 eslint 的 vue/no-undef-properties 能抓到。
+      - name: Lint
+        run: pnpm lint
+
+      - name: Type check
+        run: pnpm check
+
       - name: Build
         run: pnpm build
 

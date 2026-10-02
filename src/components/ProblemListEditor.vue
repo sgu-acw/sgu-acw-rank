@@ -15,11 +15,9 @@ import {
   AlertCircle,
   ArrowLeft,
   Check,
-  ChevronDown,
   GripVertical,
   Loader2,
   Plus,
-  Trash2,
 } from 'lucide-vue-next'
 import ProblemAdder from './ProblemAdder.vue'
 import ProblemRow from './ProblemRow.vue'

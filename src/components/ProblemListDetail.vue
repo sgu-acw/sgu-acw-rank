@@ -44,7 +44,33 @@ const error = ref('')
 /** 题单不存在（而不是加载失败）。两种情况的界面不一样。 */
 const notFound = ref(false)
 
+/** 合集进去是一堆子题单，题单进去是题目清单。 */
+const isCollection = computed(() => data.value?.kind === 'collection')
+
 const showProgress = computed(() => !!user.value)
+
+function percent(done: number, total: number): number {
+  if (total <= 0) return 0
+  return Math.round((done / total) * 100)
+}
+
+async function load() {
+  loading.value = true
+  error.value = ''
+  try {
+    data.value = await problemListApi.get(listId.value)
+  } catch (err) {
+    // 404 和「网络坏了」是两回事：前者是这个题单没有，后者是等一下就好。
+    if (err instanceof ApiError && err.status === 404) {
+      notFound.value = true
+    } else {
+      error.value = err instanceof ApiError ? err.message : '加载失败，请稍后重试'
+    }
+  } finally {
+    loading.value = false
+  }
+}
+
 function go(path: string) {
   window.location.href = path
 }

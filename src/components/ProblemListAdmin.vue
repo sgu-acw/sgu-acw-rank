@@ -16,7 +16,6 @@ import {
   Check,
   ChevronDown,
   ChevronLeft,
-  ExternalLink,
   Loader2,
   Pencil,
   Plus,

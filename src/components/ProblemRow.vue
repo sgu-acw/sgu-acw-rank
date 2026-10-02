@@ -11,7 +11,7 @@ import { Input } from './ui/input'
 import { Button } from './ui/button'
 import { PLATFORM_META, type ProblemEntry } from '../lib/api'
 
-const props = withDefaults(
+withDefaults(
   defineProps<{
     problem: ProblemEntry
     /** 显示完成状态。未登录时关掉——进度是个人数据。 */

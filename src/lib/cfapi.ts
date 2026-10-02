@@ -1,3 +1,4 @@
+/* eslint-disable preserve-caught-error -- 这里的 catch 是兜底重试，不是要包装错误 */
 import axios from "axios";
 import type { Submission, User, RatingChange } from "./interfaces/cfapi";
 
