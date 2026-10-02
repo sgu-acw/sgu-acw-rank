@@ -155,7 +155,8 @@ onMounted(() => ensureLoaded())
         v-if="member.college_name || member.major_name || member.class_label"
         class="text-xs text-muted-foreground"
       >
-        {{ [member.college_name, member.major_name, member.class_label].filter(Boolean).join(' · ') }}
+        <!-- 班级简称里已含学院和专业，不再重复。 -->
+        {{ member.class_label || [member.college_name, member.major_name].filter(Boolean).join(' · ') }}
       </p>
 
       <!-- 平台账号 -->

@@ -570,13 +570,25 @@ onMounted(async () => {
                 >
                   {{ formatEnrollYear(entry.enroll_year) }}
                 </span>
+                <!--
+                  只显示班级简称（「信工软工 3 班」），不再重复学院和专业。
+
+                  那个简称里已经含了学院和专业（信工 + 软工），前面再写一遍
+                  「信息工程学院 · 软件工程」是同一件事说两遍，整行又长又挤。
+                -->
                 <span
-                  v-if="entry.college_name"
+                  v-if="entry.class_label"
+                  class="w-full text-[11px] text-muted-foreground/70 sm:w-auto"
+                >
+                  {{ entry.class_label }}
+                </span>
+                <!-- 没有班级号的人（比如 root 或老数据）退回显示学院专业。 -->
+                <span
+                  v-else-if="entry.college_name"
                   class="w-full text-[11px] text-muted-foreground/70 sm:w-auto"
                 >
                   {{ entry.college_name }}
                   <template v-if="entry.major_name"> · {{ entry.major_name }}</template>
-                  <template v-if="entry.class_label"> · {{ entry.class_label }}</template>
                 </span>
               </div>
 
@@ -707,7 +719,8 @@ onMounted(async () => {
                 v-if="entry.class_label || entry.college_name"
                 class="truncate text-[11px] text-muted-foreground/70"
               >
-                {{ [entry.college_name, entry.major_name, entry.class_label].filter(Boolean).join(' · ') }}
+                <!-- 班级简称里已含学院和专业，不再重复。 -->
+                {{ entry.class_label || [entry.college_name, entry.major_name].filter(Boolean).join(' · ') }}
               </p>
             </div>
 

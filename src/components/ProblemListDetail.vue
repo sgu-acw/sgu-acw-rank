@@ -245,10 +245,15 @@ onMounted(async () => {
             <div
               v-for="(entry, index) in rank.entries"
               :key="entry.user_id"
-              class="flex items-center gap-2.5 px-3 py-2.5 sm:gap-3 sm:px-4"
+              class="flex items-end gap-2.5 px-3 py-2.5 sm:gap-3 sm:px-4"
             >
+              <!--
+                名次和百分比都跟进度条对齐（items-end + 底边留白）。
+                行里有两层：姓名一行、进度条一行。垂直居中的话，右侧的
+                百分比会落在两行之间，看起来是浮着的。
+              -->
               <span
-                class="w-6 shrink-0 text-center font-mono text-xs"
+                class="w-6 shrink-0 pb-0.5 text-center font-mono text-xs"
                 :class="index < 3 ? 'font-semibold text-foreground' : 'text-muted-foreground'"
               >
                 {{ index + 1 }}
@@ -282,7 +287,9 @@ onMounted(async () => {
                 </div>
               </div>
 
-              <span class="shrink-0 font-mono text-sm font-semibold">{{ entry.percent }}%</span>
+              <span class="shrink-0 pb-0.5 font-mono text-sm font-semibold">
+                {{ entry.percent }}%
+              </span>
             </div>
           </div>
         </CardContent>
