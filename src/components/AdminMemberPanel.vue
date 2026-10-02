@@ -128,13 +128,19 @@ onMounted(load)
               <span class="text-xs font-normal text-muted-foreground">天</span>
             </p>
           </div>
+          <!--
+            「几天前」放在日期下面一行，而不是跟在后面。
+
+            跟在后面时内容太长会折行，把这一格撑高，四个格子的值就不在
+            同一水平线上了。分两行是固定的，多长都不会挤。
+          -->
           <div>
             <p class="text-[11px] text-muted-foreground">最后一次做题</p>
-            <p class="mt-0.5 text-sm font-medium">
+            <p class="mt-0.5 font-mono text-sm font-medium tabular-nums">
               {{ data.last_practice_date ?? '没有记录' }}
-              <span v-if="idleDays !== null" class="text-[11px] font-normal text-muted-foreground">
-                （{{ idleDays }} 天前）
-              </span>
+            </p>
+            <p v-if="idleDays !== null" class="text-[11px] text-muted-foreground">
+              {{ idleDays }} 天前
             </p>
           </div>
           <div>
