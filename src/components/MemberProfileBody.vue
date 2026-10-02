@@ -8,8 +8,9 @@
  * 弹窗那条路径会传 ``entry`` 进来——榜单里已经有这个人的姓名、学院、每日
  * 明细了，没必要再拉一遍整个榜单。只有直接开页面时才需要自己取。
  */
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { AlertCircle, ExternalLink, Loader2 } from 'lucide-vue-next'
+import AdminMemberPanel from './AdminMemberPanel.vue'
 import { Alert } from './ui/alert'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Separator } from './ui/separator'
@@ -22,6 +23,7 @@ import {
   type PlatformAccount,
   type PracticeEntry,
 } from '../lib/api'
+import { useAuth } from '../lib/auth'
 import { formatEnrollYear } from '../lib/format'
 
 const props = withDefaults(
@@ -45,6 +47,16 @@ interface MemberInfo {
   class_label: string | null
   role: string
 }
+
+const { user, ensureLoaded } = useAuth()
+
+/**
+ * 当前查看者是不是管理员。
+ *
+ * 决定要不要多显示一段「管理员信息」。注意这只是界面上的取舍——真正的
+ * 权限在后端，普通成员即使手动改前端也拿不到那些数据（会 403）。
+ */
+const isAdmin = computed(() => !!user.value && user.value.role !== 'member')
 
 const loading = ref(true)
 const error = ref('')
@@ -108,6 +120,9 @@ async function load(id: number) {
 }
 
 watch(() => props.userId, load, { immediate: true })
+
+// 要知道自己是不是管理员，才能决定显不显示那一块。
+onMounted(() => ensureLoaded())
 </script>
 
 <template>
@@ -207,6 +222,12 @@ watch(() => props.userId, load, { immediate: true })
 
       <Separator />
       <p class="text-xs text-muted-foreground">练习数据由后台定时同步，不是实时值。</p>
+
+      <!--
+        管理员才看得到的一段。普通成员这里什么都不显示，后端也不会把
+        这些数据发给他们。
+      -->
+      <AdminMemberPanel v-if="isAdmin" :user-id="member.id" />
     </template>
   </div>
 </template>

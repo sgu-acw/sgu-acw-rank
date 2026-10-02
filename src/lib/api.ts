@@ -435,6 +435,9 @@ export interface AdminUserQuery {
 }
 
 export const adminApi = {
+  /** 成员详情的管理员视角。普通成员调用会 403。 */
+  memberDetail: (userId: number) => api.get<AdminMemberDetail>(`/admin/members/${userId}`),
+
   stats: () =>
     api.get<{
       user_count: number
@@ -639,4 +642,70 @@ export const problemListApi = {
 
   reorderProblems: (listId: number, ids: number[]) =>
     api.post<ProblemEntry[]>(`/problem-lists/${listId}/problems/reorder`, { ids }),
+}
+
+// --------------------------------------------------------------------------- //
+// 管理员视角的成员详情
+// --------------------------------------------------------------------------- //
+
+/**
+ * 管理员看到的一个平台账号。
+ *
+ * 比成员自己看到的多出同步健康度：抓取时间、失败次数、最近错误。这些是
+ * 用来回答「这个人为什么没数据」的，对成员本人没有意义。
+ */
+export interface AdminAccountDetail {
+  id: number
+  platform: Platform
+  identifier: string
+  display_name: string | null
+
+  verified_at: string | null
+  /** 验证尝试次数。冷却时间随它翻倍。 */
+  verify_attempts: number
+  verify_attempted_at: string | null
+
+  rating: number | null
+  max_rating: number | null
+  rating_fetched_at: string | null
+  solved_fetched_at: string | null
+  /** 最后一次抓到新题的时间。与 solved_fetched_at 不同：后者只是「最后一次去看」。 */
+  last_active_at: string | null
+
+  last_error: string | null
+  consecutive_failures: number
+  rating_failures: number
+
+  created_at: string
+  solved_count: number
+  active_days: number
+}
+
+/** 管理员视角的成员详情。在公开信息之外，加上排查用的那一块。 */
+export interface AdminMemberDetail {
+  id: number
+  display_name: string
+  student_id: string
+  enroll_year: number
+  level: number
+  college_code: string
+  major_code: string
+  college_name: string | null
+  major_name: string | null
+  class_label: string | null
+  role: string
+  status: string
+
+  admin_note: string
+  last_login_at: string | null
+  created_at: string
+
+  accounts: AdminAccountDetail[]
+
+  total_solved: number
+  /** 最近 30 天有几天做过题。 */
+  active_days_30: number
+  last_practice_date: string | null
+  /** 有几个账号处于连续失败状态。 */
+  failing_accounts: number
 }
