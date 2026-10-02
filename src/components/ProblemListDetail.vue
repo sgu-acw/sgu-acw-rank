@@ -228,7 +228,16 @@ onMounted(async () => {
         默认收起，免得盖住题目列表——看题单的人多半是来问题目的。
       -->
       <Card v-if="!isCollection && rank?.entries.length">
-        <CardHeader class="flex flex-row items-center justify-between gap-2 pb-3">
+        <!--
+          标题用 items-baseline 对齐，而不是 items-center。
+
+          items-center 按盒子居中，但中文在行盒里的视觉重心偏上：14px 的字
+          放在 14px 的行盒里，盒子中心比文字看起来的中心低约 3px。右边那个
+          36px 高的按钮也是按盒子居中的，两者就差了这 3px。
+
+          改成基线对齐：标题和按钮的文字坐在同一条基线上，看起来就是齐的。
+        -->
+        <CardHeader class="flex flex-row items-baseline justify-between gap-2 pb-3">
           <CardTitle class="text-sm font-medium">
             完成度排行
             <span class="ml-1 font-normal text-muted-foreground">
