@@ -60,7 +60,16 @@ onMounted(async () => {
           按主题整理的题目清单。完成度来自你绑定的平台账号。
         </p>
       </div>
-      <Button v-if="user?.role !== 'member'" size="sm" @click="go('/admin/problem-lists')">
+      <!--
+        未登录时 user 是 null，``user?.role !== 'member'`` 会算成
+        ``undefined !== 'member'`` 也就是 true，按钮就露出来了。所以要
+        先判 user 存在。
+      -->
+      <Button
+        v-if="user && user.role !== 'member'"
+        size="sm"
+        @click="go('/problems/admin')"
+      >
         <Plus class="mr-1 h-3.5 w-3.5" />
         管理题单
       </Button>
