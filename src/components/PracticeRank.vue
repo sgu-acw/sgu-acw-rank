@@ -32,8 +32,6 @@ const { ensureLoaded } = useAuth()
 
 type Dimension = 'practice' | 'rating'
 
-const dimension = ref<Dimension>('practice')
-
 const loading = ref(true)
 const error = ref('')
 const data = ref<PracticeRank | null>(null)
@@ -41,16 +39,67 @@ const rating = ref<RatingBoard | null>(null)
 const status = ref<SyncStatus | null>(null)
 const needsLogin = ref(false)
 
-const days = ref(1)
-const platform = ref<Platform | ''>('')
-const ratingPlatform = ref<Platform>('codeforces')
+/**
+ * 筛选状态的持久化。
+ *
+ * 切走再回来要还是原来那一屏——选了「最近 90 天 · 只看信工」，去题单看一眼
+ * 再回来又变回「今日」，得重新选一遍，很烦。
+ *
+ * 只存这几个筛选条件，不存滚动位置之类——那些存了反而奇怪。
+ * 搜索词也存：它同样是「我正在看什么」的一部分。
+ */
+const FILTER_KEY = 'practice-filters'
+
+interface StoredFilters {
+  dimension?: Dimension
+  days?: number
+  platform?: string
+  ratingPlatform?: string
+  college?: string
+  enrollYear?: number | null
+}
+
+function readStoredFilters(): StoredFilters {
+  try {
+    const raw = localStorage.getItem(FILTER_KEY)
+    return raw ? (JSON.parse(raw) as StoredFilters) : {}
+  } catch {
+    // 存储被禁用或内容坏了，当作没有存过。筛选状态不值得为它报错。
+    return {}
+  }
+}
+
+const stored = readStoredFilters()
+
+const dimension = ref<Dimension>(stored.dimension === 'rating' ? 'rating' : 'practice')
+const days = ref(typeof stored.days === 'number' ? stored.days : 1)
+const platform = ref<Platform | ''>((stored.platform as Platform | '') ?? '')
+const ratingPlatform = ref<Platform>((stored.ratingPlatform as Platform) ?? 'codeforces')
 
 // 高级筛选。平时收起来——大多数时候只想看「今日谁在刷」，不想先面对一堆
 // 下拉框。
 const showFilters = ref(false)
-const college = ref('')
-const enrollYear = ref<number | null>(null)
+const college = ref(stored.college ?? '')
+const enrollYear = ref<number | null>(stored.enrollYear ?? null)
 const search = ref('')
+
+function saveFilters() {
+  try {
+    localStorage.setItem(
+      FILTER_KEY,
+      JSON.stringify({
+        dimension: dimension.value,
+        days: days.value,
+        platform: platform.value,
+        ratingPlatform: ratingPlatform.value,
+        college: college.value,
+        enrollYear: enrollYear.value,
+      }),
+    )
+  } catch {
+    // 存不下就算了，不影响当前这一屏。
+  }
+}
 
 // 点名字弹出的资料窗口。
 const dialogEntry = ref<PracticeEntry | null>(null)
@@ -60,6 +109,9 @@ const DAY_OPTIONS = [
   { value: 7, label: '最近 7 天' },
   { value: 30, label: '最近 30 天' },
   { value: 90, label: '最近 90 天' },
+  // 0 是约定：后端从 2024-01-01 算到今天。不用一个很大的天数，因为社团的
+  // 记录从 2024 级才开始，按天数拉会带出一段没有意义的空白期。
+  { value: 0, label: '历史综合' },
 ]
 
 const PLATFORM_OPTIONS = [
@@ -102,14 +154,70 @@ const isNarrow = ref(false)
  * 所以窄屏按周合并：90 天变 13 根，每根代表一周的题量。牺牲了单日
  * 精度，换来能看清趋势——这是手机上唯一说得通的选择。
  */
-function barsFor(days: { date: string; count: number }[]): { date: string; count: number }[] {
-  if (!isNarrow.value || days.length <= 30) return days
+/**
+ * 把一个日期归到哪个学期。
+ *
+ * 广工的校历大致是：秋季学期 9 月到次年 1 月，春季学期 2 月到 6 月，
+ * 7-8 月是暑假。暑假单独一桶，因为那段时间的练习多半是集训，和学期中
+ * 的节奏不一样。
+ *
+ * 返回的字符串直接当分组键，同时也是标签的一部分。
+ */
+function termOf(isoDate: string): string {
+  const year = Number(isoDate.slice(0, 4))
+  const month = Number(isoDate.slice(5, 7))
+
+  if (month >= 9) return `${year} 秋`
+  if (month === 1) return `${year - 1} 秋`
+  if (month >= 2 && month <= 6) return `${year} 春`
+  return `${year} 暑`
+}
+
+/** 学期是否要按学期分桶。只有「历史综合」是这样。 */
+const byTerm = computed(() => days.value === 0)
+
+/**
+ * 把学期键转成提示里的话。
+ *
+ * 键本身是「2024 秋」这种紧凑写法（当分组键用，越短越好），但显示时
+ * 「2024 秋季学期」才通顺。暑假不是学期，单独说。
+ */
+function termLabel(key: string): string {
+  const [year, season] = key.split(' ')
+  return season === '暑' ? `${year} 年暑假` : `${year} 年${season}季学期`
+}
+
+function barsFor(input: { date: string; count: number }[]): { date: string; count: number }[] {
+  // 历史综合：一个学期一根柱子。
+  //
+  // 不分桶的话是 1000 多根，全挤成一条线。按学期分既能看出趋势，柱子数量
+  // 又刚好（三四年也就七八根），而且「哪一学期练得多」本来就是最自然的
+  // 问法。
+  if (byTerm.value) {
+    const buckets: { date: string; count: number }[] = []
+    for (const day of input) {
+      const term = termOf(day.date)
+      const last = buckets[buckets.length - 1]
+      if (last && last.date === term) {
+        last.count += day.count
+      } else {
+        buckets.push({ date: term, count: day.count })
+      }
+    }
+    return buckets
+  }
+
+  // 一个月以内照原样画。再长就得合并，否则柱子会细到看不见。
+  if (input.length <= 30) return input
+
+  // 90 天按周，再长按月。
+  const step = input.length > 365 ? 30 : 7
 
   const buckets: { date: string; count: number }[] = []
-  for (let i = 0; i < days.length; i += 7) {
-    const chunk = days.slice(i, i + 7)
+  for (let i = 0; i < input.length; i += step) {
+    const chunk = input.slice(i, i + step)
     buckets.push({
-      // 用这一周的最后一天当标签，表示「截至这天」。
+      // 用这一格的最后一天当标签，表示「截至这天」。
       date: chunk[chunk.length - 1].date,
       count: chunk.reduce((sum, d) => sum + d.count, 0),
     })
@@ -133,8 +241,32 @@ function barHeight(count: number): string {
   return `${Math.max(4, (count / maxBar.value) * 40)}px`
 }
 
-/** 柱子是一周还是单日，决定提示文字怎么写。 */
-const weekly = computed(() => isNarrow.value && days.value > 30)
+/**
+ * 柱子是一周还是单日，决定提示文字怎么写。
+ */
+/** 柱子是否代表一段时间而不是单日。决定提示文字怎么写。 */
+const bucketed = computed(() => days.value > 30)
+
+/**
+ * 只有一天时改用横向条。
+ *
+ * 「今日」窗口只有一根柱子，竖着画会占满整行宽度——看起来像一条分隔线，
+ * 而不是「谁做了多少」。横条更直观：长度直接对比，第一名占满整宽。
+ */
+// 只有「今日」是单日。注意 days=0 是「历史综合」，不是「零天」——
+    // 写成 days.value <= 1 会把历史综合也算进来。
+const singleDay = computed(() => days.value === 1)
+
+/** 今天最多的人做了多少题。横条按它算比例。 */
+const topToday = computed(() => {
+  if (!data.value) return 1
+  return Math.max(1, ...data.value.entries.map((e) => e.total))
+})
+
+/** 横条宽度，第一位 100%。 */
+function barWidth(total: number): string {
+  return `${Math.max(2, Math.round((total / topToday.value) * 100))}%`
+}
 
 async function load() {
   loading.value = true
@@ -184,6 +316,11 @@ function go(path: string) {
 }
 
 // 切换维度或平台筛选就重拉。rating 榜只看平台，与天数无关。
+// 筛选一变就存下来，下次回来接着用。
+watch([dimension, ratingPlatform, days, platform, college, enrollYear], () => {
+  saveFilters()
+})
+
 watch([dimension, ratingPlatform], load)
 
 // 搜索防抖：每敲一个字就发请求太浪费。
@@ -444,6 +581,19 @@ onMounted(async () => {
               </div>
 
               <!--
+                只有一天（「今日」窗口）时画横条。
+
+                竖着画的话只有一根柱子，占满整行宽度，看起来像一条分隔线，
+                读不出「谁做了多少」。横条按题数比长度，第一位 100%。
+              -->
+              <div v-if="singleDay" class="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                <div
+                  class="h-full rounded-full bg-primary/70 transition-[width] duration-300 ease-[var(--ease-out)]"
+                  :style="{ width: barWidth(entry.total) }"
+                />
+              </div>
+
+              <!--
                 柱状图。窄屏且窗口较长时按周聚合，否则 90 根柱子会挤成
                 一条线，既看不出起伏也点不中。
 
@@ -454,7 +604,7 @@ onMounted(async () => {
                 外层列负责感应，内层柱子负责画。提示跟着柱子走，
                 这样它不会因为列是整高就飘到图表外面去。
               -->
-              <div class="mt-1.5 flex gap-px sm:gap-0.5" style="height: 40px">
+              <div v-else class="mt-1.5 flex gap-px sm:gap-0.5" style="height: 40px">
                 <span
                   v-for="bar in barsFor(entry.days)"
                   :key="bar.date"
@@ -472,7 +622,11 @@ onMounted(async () => {
                     <span
                       class="pointer-events-none absolute bottom-full left-1/2 z-10 mb-1 -translate-x-1/2 whitespace-nowrap rounded border border-border/60 bg-popover px-1.5 py-0.5 text-[10px] text-popover-foreground opacity-0 shadow-sm transition-opacity duration-150 group-hover/bar:opacity-100 group-active/bar:opacity-100"
                     >
-                      <template v-if="weekly">截至 {{ bar.date.slice(5) }} 那周 · {{ bar.count }} 题</template>
+                      <template v-if="byTerm">{{ termLabel(bar.date) }} · {{ bar.count }} 题</template>
+                      <template v-else-if="bucketed">
+                        截至 {{ bar.date.slice(5) }} 那{{ days > 365 ? '月' : '周' }} ·
+                        {{ bar.count }} 题
+                      </template>
                       <template v-else>{{ bar.date.slice(5) }} · {{ bar.count }} 题</template>
                     </span>
                   </span>

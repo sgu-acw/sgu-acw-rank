@@ -345,7 +345,9 @@ export const practiceApi = {
     } = {},
   ) => {
     const query = new URLSearchParams()
-    if (params.days) query.set('days', String(params.days))
+    // 用 != null 而不是真值判断：days=0 是合法的（历史综合），
+    // 而 0 是 falsy，写成 if (params.days) 会把它吞掉。
+    if (params.days != null) query.set('days', String(params.days))
     if (params.platform) query.set('platform', params.platform)
     if (params.college) query.set('college', params.college)
     if (params.enroll_year) query.set('enroll_year', String(params.enroll_year))
@@ -559,6 +561,28 @@ export interface ProblemListDetail extends ProblemListSummary {
   children: ProblemListSummary[]
 }
 
+export interface ProblemListRankEntry {
+  user_id: number
+  display_name: string
+  student_id: string
+  enroll_year: number
+  college_name: string | null
+  major_name: string | null
+  class_label: string | null
+  done_count: number
+  total: number
+  /** 完成度百分比，0~100。 */
+  percent: number
+  last_done_date: string | null
+}
+
+export interface ProblemListRank {
+  list_id: number
+  title: string
+  total: number
+  entries: ProblemListRankEntry[]
+}
+
 export interface ProblemLookup {
   platform: Platform
   key: string
@@ -593,6 +617,9 @@ export const problemListApi = {
   },
 
   get: (id: number) => api.get<ProblemListDetail>(`/problem-lists/${id}`),
+
+  /** 题单的完成度排行榜。 */
+  rank: (id: number) => api.get<ProblemListRank>(`/problem-lists/${id}/rank`),
 
   create: (payload: {
     kind: ProblemListKind

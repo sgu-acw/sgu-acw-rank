@@ -89,17 +89,16 @@ onMounted(load)
 
 <template>
   <!--
-    琥珀色底 + 左边一条竖线，让它一眼就能和上面的公开内容分开。
-    之前用 0.03 的透明度，浅色主题下几乎看不出来，和普通卡片一样。
+    就是一张普通卡片，不加边框线也不加额外颜色。
+    「这是管理员专属」由标题旁边那个标签说明就够了——用颜色或边框去强调，
+    要么浅色主题下看不见，要么看起来像出错了。
   -->
-  <Card class="border-l-2 border-amber-500/60 border-y-border/40 border-r-border/40 bg-amber-500/[0.06] dark:bg-amber-500/[0.05]">
+  <Card>
     <CardHeader class="pb-3">
       <div class="flex flex-wrap items-center gap-2">
         <CardTitle class="text-sm font-medium">管理员信息</CardTitle>
         <!-- 明确标出来，避免截图分享时把内部信息带出去 -->
-        <span
-          class="rounded border border-amber-600/40 px-1.5 py-0.5 text-[10px] text-amber-700 dark:text-amber-500"
-        >
+        <span class="rounded border border-border px-1.5 py-0.5 text-[10px] text-muted-foreground">
           仅管理员可见
         </span>
       </div>
@@ -152,7 +151,7 @@ onMounted(load)
         <!-- 掉队提醒。只提示，不评价。 -->
         <p
           v-if="idleDays !== null && idleDays >= 14"
-          class="flex items-start gap-2 rounded-md border border-amber-600/30 bg-amber-500/[0.06] px-3 py-2 text-xs text-amber-700 dark:text-amber-500"
+          class="flex items-start gap-2 rounded-md border border-border/60 bg-muted/40 px-3 py-2 text-xs text-muted-foreground"
         >
           <AlertTriangle class="mt-0.5 h-3.5 w-3.5 shrink-0" />
           <span>已经 {{ idleDays }} 天没做题了。</span>

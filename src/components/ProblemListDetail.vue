@@ -18,11 +18,13 @@ import {
 } from 'lucide-vue-next'
 import ProblemRow from './ProblemRow.vue'
 import { Alert } from './ui/alert'
-import { Card, CardContent } from './ui/card'
+import { Button } from './ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import {
   ApiError,
   problemListApi,
   type ProblemListDetail,
+  type ProblemListRank,
 } from '../lib/api'
 import { useAuth } from '../lib/auth'
 
@@ -44,6 +46,12 @@ const error = ref('')
 /** 题单不存在（而不是加载失败）。两种情况的界面不一样。 */
 const notFound = ref(false)
 
+/** 完成度排行榜。合集不显示——那要先把子题单的题合并，意义不大。 */
+const rank = ref<ProblemListRank | null>(null)
+const rankLoading = ref(false)
+/** 榜单是否展开。默认收起，免得盖住题目列表。 */
+const showRank = ref(false)
+
 /** 合集进去是一堆子题单，题单进去是题目清单。 */
 const isCollection = computed(() => data.value?.kind === 'collection')
 
@@ -59,6 +67,17 @@ async function load() {
   error.value = ''
   try {
     data.value = await problemListApi.get(listId.value)
+    // 排行单独拉，失败不影响题目列表。
+    if (data.value.kind === 'list') {
+      rankLoading.value = true
+      try {
+        rank.value = await problemListApi.rank(listId.value)
+      } catch {
+        rank.value = null
+      } finally {
+        rankLoading.value = false
+      }
+    }
   } catch (err) {
     // 404 和「网络坏了」是两回事：前者是这个题单没有，后者是等一下就好。
     if (err instanceof ApiError && err.status === 404) {
@@ -203,6 +222,71 @@ onMounted(async () => {
           <ChevronRight class="h-4 w-4 shrink-0 text-muted-foreground/40 transition-transform group-hover:translate-x-0.5" />
         </button>
       </div>
+
+      <!--
+        完成度排行榜。谁做了多少，一眼看得到。
+        默认收起，免得盖住题目列表——看题单的人多半是来问题目的。
+      -->
+      <Card v-if="!isCollection && rank?.entries.length">
+        <CardHeader class="flex flex-row items-center justify-between gap-2 pb-3">
+          <CardTitle class="text-sm font-medium">
+            完成度排行
+            <span class="ml-1 font-normal text-muted-foreground">
+              {{ rank.entries.length }} 人
+            </span>
+          </CardTitle>
+          <Button variant="ghost" size="sm" @click="showRank = !showRank">
+            {{ showRank ? '收起' : '展开' }}
+          </Button>
+        </CardHeader>
+
+        <CardContent v-if="showRank" class="p-0">
+          <div class="divide-y divide-border/40">
+            <div
+              v-for="(entry, index) in rank.entries"
+              :key="entry.user_id"
+              class="flex items-center gap-2.5 px-3 py-2.5 sm:gap-3 sm:px-4"
+            >
+              <span
+                class="w-6 shrink-0 text-center font-mono text-xs"
+                :class="index < 3 ? 'font-semibold text-foreground' : 'text-muted-foreground'"
+              >
+                {{ index + 1 }}
+              </span>
+
+              <div class="min-w-0 flex-1">
+                <div class="flex flex-wrap items-baseline gap-x-2">
+                  <a
+                    :href="`/member?id=${entry.user_id}`"
+                    class="truncate text-sm font-medium underline-offset-4 transition-colors hover:text-primary hover:underline"
+                  >
+                    {{ entry.display_name }}
+                  </a>
+                  <span v-if="entry.class_label" class="text-[11px] text-muted-foreground/70">
+                    {{ entry.class_label }}
+                  </span>
+                </div>
+
+                <!-- 进度条。长度直接对比，比只给数字直观。 -->
+                <div class="mt-1.5 flex items-center gap-2">
+                  <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
+                    <div
+                      class="h-full rounded-full transition-[width] duration-300 ease-[var(--ease-out)]"
+                      :class="entry.done_count > 0 ? 'bg-primary/70' : 'bg-transparent'"
+                      :style="{ width: `${entry.percent}%` }"
+                    />
+                  </div>
+                  <span class="shrink-0 font-mono text-[11px] text-muted-foreground">
+                    {{ entry.done_count }}/{{ entry.total }}
+                  </span>
+                </div>
+              </div>
+
+              <span class="shrink-0 font-mono text-sm font-semibold">{{ entry.percent }}%</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       <!-- 题单：题目清单 -->
       <Card v-else>
