@@ -583,6 +583,54 @@ export interface ProblemListRank {
   entries: ProblemListRankEntry[]
 }
 
+/** 每日一题里的一道。 */
+export interface DailyProblemEntry {
+  /** 难度档位：800-1000 / 1100-1300 / 1400-1600。 */
+  band: string
+  platform: Platform
+  key: string
+  name: string
+  rating: number | null
+  url: string
+  /** CF 全站多少人过了。用来旁证难度可信度。 */
+  solved_count: number | null
+  /** 站内有多少成员做对了这道题。 */
+  members_solved: number
+  /** 当前用户过没过。未登录时是 false。 */
+  solved: boolean
+}
+
+export interface DailyProblemBoard {
+  day: string
+  /** 下一次换题的时刻（东八区次日零点），拿去算倒计时。 */
+  reset_at: string
+  problems: DailyProblemEntry[]
+  /** 当前用户签到了几天。 */
+  checkin_days: number
+  /** 当前用户连续签到几天。 */
+  checkin_streak: number
+  /** 今天签到了没。 */
+  checked_in_today: boolean
+  /** 今天有谁签到了。 */
+  checked_in_today_names: string[]
+}
+
+export interface CheckinEntry {
+  rank: number
+  user_id: number
+  display_name: string
+  student_id: string
+  enroll_year: number
+  class_label: string | null
+  days: number
+  streak: number
+}
+
+export interface CheckinBoard {
+  entries: CheckinEntry[]
+  total_members: number
+}
+
 export interface ProblemLookup {
   platform: Platform
   key: string
@@ -592,6 +640,19 @@ export interface ProblemLookup {
   url: string
   missing_reason: string
   cached: boolean
+}
+
+export const dailyApi = {
+  /** 某一天的每日一题，默认今天。同一天多次调用返回同一套。 */
+  get: (day?: string) =>
+    api.get<DailyProblemBoard>(`/daily${day ? `?day=${day}` : ''}`),
+
+  /** 重抽某一天。管理员用。 */
+  redraw: (day?: string) =>
+    api.post<DailyProblemBoard>(`/daily/redraw${day ? `?day=${day}` : ''}`),
+
+  /** 签到天数排行榜。 */
+  checkin: () => api.get<CheckinBoard>('/daily/checkin'),
 }
 
 export const problemListApi = {

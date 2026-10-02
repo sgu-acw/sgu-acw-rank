@@ -303,8 +303,15 @@ onMounted(async () => {
         </CardContent>
       </Card>
 
-      <!-- 题单：题目清单 -->
-      <Card v-else>
+      <!--
+        题单：题目清单。
+
+        条件写成 ``v-if="!isCollection"`` 而不是 ``v-else``：上面的完成度
+        排行榜也是一个 ``v-if``，而 ``v-else`` 只认**紧邻的上一个** ``v-if``。
+        写成 ``v-else`` 会配到排行榜上，于是「有排行榜数据」时题目列表被
+        顶掉，「合集」时反而多出一句「还没有题目」。
+      -->
+      <Card v-if="!isCollection">
         <CardContent class="p-0">
           <p v-if="!data.problems.length" class="p-6 text-center text-sm text-muted-foreground">
             这个题单里还没有题目。

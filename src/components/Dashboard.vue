@@ -17,6 +17,7 @@ import { ApiError, PLATFORM_META, practiceApi, type Dashboard, type Platform } f
 import { useAuth } from '../lib/auth'
 import { formatEnrollYear } from '../lib/format'
 import WorkshopStatusCard from './WorkshopStatusCard.vue'
+import DailyProblem from './DailyProblem.vue'
 
 const { user, ensureLoaded } = useAuth()
 
@@ -90,6 +91,7 @@ onMounted(async () => {
     <!-- 未登录：工作坊状态 + 引导。状态是公开信息，不登录也该看得到。 -->
     <template v-else-if="!user">
       <WorkshopStatusCard />
+      <DailyProblem />
       <Card class="py-10 text-center">
         <CardContent class="space-y-3">
           <p class="text-sm text-muted-foreground">登录后可以看到自己的练习数据。</p>
@@ -113,6 +115,9 @@ onMounted(async () => {
 
       <!-- 工作坊开没开门。放在最上面，因为它是每天都会被看一眼的信息。 -->
       <WorkshopStatusCard />
+
+      <!-- 每日一题。也是每天都看一眼的东西，放在个人数据前面。 -->
+      <DailyProblem />
 
       <div v-if="data" class="space-y-3">
         <!-- 抬头。姓名与操作放在一行，练习日退成脚注。 -->

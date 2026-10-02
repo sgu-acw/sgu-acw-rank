@@ -13,3 +13,23 @@ export function formatEnrollYear(year: number | null | undefined): string {
   if (!year || year <= 0) return ''
   return `${year} 级`
 }
+
+/**
+ * 大数字缩写。用于「多少人做过」这类统计。
+ *
+ * 一万以上写「1.2 万」，一亿以上写「1.2 亿」。CF 的过题人数常见几万，
+ * 原样显示「123456 人做过」太长，占掉卡片一行。
+ */
+export function formatCount(value: number | null | undefined): string {
+  if (value == null || !Number.isFinite(value)) return ''
+  const abs = Math.abs(value)
+  if (abs >= 100_000_000) return `${trim(value / 100_000_000)}亿`
+  if (abs >= 10_000) return `${trim(value / 10_000)}万`
+  return String(value)
+}
+
+/** 保留一位小数，整数就不显示小数点。 */
+function trim(value: number): string {
+  const rounded = Math.round(value * 10) / 10
+  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1)
+}
