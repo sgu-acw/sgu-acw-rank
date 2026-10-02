@@ -446,24 +446,35 @@ onMounted(async () => {
               <!--
                 柱状图。窄屏且窗口较长时按周聚合，否则 90 根柱子会挤成
                 一条线，既看不出起伏也点不中。
+
+                每一列都是整高（40px）的感应区，柱子画在里面。
+                早先感应区就是柱子本身，而没练的那天柱子只有 2px——
+                想看一眼那天有没有练，得拿鼠标去够一条发丝，手指更不可能点中。
+
+                外层列负责感应，内层柱子负责画。提示跟着柱子走，
+                这样它不会因为列是整高就飘到图表外面去。
               -->
-              <div class="mt-1.5 flex items-end gap-px sm:gap-0.5" style="height: 40px">
+              <div class="mt-1.5 flex gap-px sm:gap-0.5" style="height: 40px">
                 <span
                   v-for="bar in barsFor(entry.days)"
                   :key="bar.date"
-                  class="group/bar relative flex-1 cursor-default rounded-sm transition-all duration-150 hover:bg-primary active:bg-primary"
-                  :class="bar.count > 0 ? 'bg-primary/70' : 'bg-muted'"
-                  :style="{ height: barHeight(bar.count) }"
+                  class="group/bar relative flex h-full flex-1 cursor-default items-end rounded-sm transition-colors hover:bg-muted/60 active:bg-muted/60"
                 >
-                  <!--
-                    提示。桌面端靠悬停，触屏没有悬停，所以长按也要能出。
-                    group-active/bar 让手指按下时同样显示。
-                  -->
                   <span
-                    class="pointer-events-none absolute bottom-full left-1/2 z-10 mb-1 -translate-x-1/2 whitespace-nowrap rounded border border-border/60 bg-popover px-1.5 py-0.5 text-[10px] text-popover-foreground opacity-0 shadow-sm transition-opacity duration-150 group-hover/bar:opacity-100 group-active/bar:opacity-100"
+                    class="relative w-full rounded-sm transition-colors duration-150 group-hover/bar:bg-primary group-active/bar:bg-primary"
+                    :class="bar.count > 0 ? 'bg-primary/70' : 'bg-muted'"
+                    :style="{ height: barHeight(bar.count) }"
                   >
-                    <template v-if="weekly">截至 {{ bar.date.slice(5) }} 那周 · {{ bar.count }} 题</template>
-                    <template v-else>{{ bar.date.slice(5) }} · {{ bar.count }} 题</template>
+                    <!--
+                      提示。桌面端靠悬停，触屏没有悬停，所以长按也要能出。
+                      group-active/bar 让手指按下时同样显示。
+                    -->
+                    <span
+                      class="pointer-events-none absolute bottom-full left-1/2 z-10 mb-1 -translate-x-1/2 whitespace-nowrap rounded border border-border/60 bg-popover px-1.5 py-0.5 text-[10px] text-popover-foreground opacity-0 shadow-sm transition-opacity duration-150 group-hover/bar:opacity-100 group-active/bar:opacity-100"
+                    >
+                      <template v-if="weekly">截至 {{ bar.date.slice(5) }} 那周 · {{ bar.count }} 题</template>
+                      <template v-else>{{ bar.date.slice(5) }} · {{ bar.count }} 题</template>
+                    </span>
                   </span>
                 </span>
               </div>

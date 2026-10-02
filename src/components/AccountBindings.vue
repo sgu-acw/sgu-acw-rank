@@ -7,7 +7,16 @@
  * 学校配合，前者正是绑定真正要确认的事。
  */
 import { onMounted, onUnmounted, ref } from 'vue'
-import { AlertCircle, Check, ExternalLink, Loader2, Plus, RefreshCw, Trash2 } from 'lucide-vue-next'
+import {
+  AlertCircle,
+  Check,
+  Copy,
+  ExternalLink,
+  Loader2,
+  Plus,
+  RefreshCw,
+  Trash2,
+} from 'lucide-vue-next'
 import { Alert } from './ui/alert'
 import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
@@ -43,6 +52,40 @@ function flash(message: string) {
   window.setTimeout(() => {
     if (notice.value === message) notice.value = ''
   }, 3000)
+}
+
+//: 刚复制过的账号 id。用来把按钮图标换成对勾，给一个「按下去了」的反馈。
+const copiedId = ref<number | null>(null)
+
+/**
+ * 复制验证码。
+ *
+ * navigator.clipboard 只在 https 或 localhost 下可用，而且用户拒绝授权时
+ * 会抛错。所以失败时退回到「选中这段文字」，让人自己按 Ctrl+C——
+ * 总好过点了没反应。
+ */
+async function copyToken(account: PlatformAccount) {
+  const token = account.verify_token
+  if (!token) return
+
+  try {
+    await navigator.clipboard.writeText(token)
+    copiedId.value = account.id
+    window.setTimeout(() => {
+      if (copiedId.value === account.id) copiedId.value = null
+    }, 1500)
+  } catch {
+    // 退路：把验证码选中，用户直接按 Ctrl+C 就行。
+    const el = document.querySelector(`[data-token="${account.id}"]`)
+    if (el) {
+      const range = document.createRange()
+      range.selectNodeContents(el)
+      const selection = window.getSelection()
+      selection?.removeAllRanges()
+      selection?.addRange(range)
+    }
+    flash('已选中验证码，按 Ctrl+C 复制')
+  }
 }
 
 async function load() {
@@ -228,8 +271,22 @@ onUnmounted(() => {
               >
                 {{ PLATFORM_META[account.platform].hint }}
               </p>
-              <div class="flex items-center gap-2">
-                <code class="rounded bg-muted px-2 py-1 font-mono text-sm">{{ account.verify_token }}</code>
+              <!--
+                验证码。整块可点，点了就复制。
+                单独放一个小按钮不够——这串东西就是要拿去粘到别处的，
+                点击本身就该是复制，不用先找按钮。
+              -->
+              <div class="flex flex-wrap items-center gap-2">
+                <button
+                  :data-token="account.id"
+                  class="group/token inline-flex items-center gap-1.5 rounded border border-border/50 bg-muted px-2 py-1 font-mono text-sm transition-colors hover:border-border hover:bg-muted/70 active:scale-[0.98]"
+                  :title="`复制 ${account.verify_token}`"
+                  @click="copyToken(account)"
+                >
+                  {{ account.verify_token }}
+                  <Check v-if="copiedId === account.id" class="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-500" />
+                  <Copy v-else class="h-3.5 w-3.5 text-muted-foreground/50 transition-colors group-hover/token:text-foreground" />
+                </button>
                 <Button variant="ghost" size="sm" @click="renew(account)">
                   <RefreshCw class="mr-1 h-3 w-3" />
                   换一个
