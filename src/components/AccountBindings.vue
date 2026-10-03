@@ -6,7 +6,7 @@
  * 这证明的是「这个人控制那个账号」，不是「这个人是韶关学院的」——后者需要
  * 学校配合，前者正是绑定真正要确认的事。
  */
-import { onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import {
   AlertCircle,
   Check,
@@ -26,6 +26,7 @@ import {
   ApiError,
   PLATFORM_META,
   accountsApi,
+  practiceApi,
   type Platform,
   type PlatformAccount,
 } from '../lib/api'
@@ -162,8 +163,58 @@ async function remove(account: PlatformAccount) {
   }
 }
 
+/**
+ * 立刻抓一次自己的账号，不等定时任务。
+ *
+ * 原来这个按钮在首页。它抓的是「自己绑定的账号」，放在账号列表这里
+ * 才对得上：谁在刷新、刷新的是什么，一眼能看出来。
+ *
+ * 每周有次数上限，所以把剩余次数写在按钮上；用完了就禁用，不让人
+ * 反复点着试。
+ */
+const refreshing = ref(false)
+const quota = ref<{ limit: number; remaining: number } | null>(null)
+
+/**
+ * 至少有一个已验证的账号，刷新才有意义。
+ *
+ * 否则点了会白扣一次额度（后端只抓已验证的账号，一个都没就 synced=0），
+ * 而且因为没失败也没新增，界面什么都不显示，看起来像按钮坏了。
+ */
+const hasVerified = computed(() => accounts.value.some((a) => a.verified_at))
+
+async function loadQuota() {
+  try {
+    quota.value = await practiceApi.quota()
+  } catch {
+    // 拿不到额度不影响绑定管理，静默降级：按钮照常可用，超限时后端会拦。
+    quota.value = null
+  }
+}
+
+async function refreshNow() {
+  refreshing.value = true
+  error.value = ''
+  try {
+    const result = await practiceApi.refresh()
+    if (result.failures.length) {
+      error.value = result.failures.join('；')
+    } else {
+      flash(result.added > 0 ? `已更新，新增 ${result.added} 题` : '已更新，没有新题')
+    }
+    // 用后端返回的 remaining 直接更新，不再单独请求一次。
+    quota.value = { limit: quota.value?.limit ?? result.remaining, remaining: result.remaining }
+  } catch (err) {
+    error.value = err instanceof ApiError ? err.message : '刷新失败'
+    await loadQuota()
+  } finally {
+    refreshing.value = false
+  }
+}
+
 onMounted(() => {
   load()
+  loadQuota()
   // 每秒把倒计时往下减。用一个 ticker 而不是每个账号一个定时器。
   ticker = window.setInterval(() => {
     const next: Record<number, number> = {}
@@ -187,7 +238,35 @@ onUnmounted(() => {
 <template>
   <Card>
     <CardHeader class="pb-3">
-      <CardTitle class="text-sm font-medium">平台账号</CardTitle>
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <CardTitle class="text-sm font-medium">平台账号</CardTitle>
+        <!--
+          手动刷新。放在账号列表旁，因为刷新的就是这里列出的账号。
+          剩余次数直接写在按钮上，用完禁用，不让人反复点着试。
+        -->
+        <Button
+          v-if="hasVerified"
+          variant="outline"
+          size="sm"
+          :disabled="refreshing || (quota !== null && quota.remaining <= 0)"
+          :title="
+            quota === null
+              ? '立刻抓取一次平台数据'
+              : quota.remaining > 0
+                ? `本周还剩 ${quota.remaining} 次，每周一重置`
+                : '本周次数已用完，下周一重置'
+          "
+          @click="refreshNow"
+        >
+          <RefreshCw class="mr-1.5 h-3.5 w-3.5" :class="refreshing && 'animate-spin'" />
+          <template v-if="quota === null">刷新数据</template>
+          <template v-else-if="quota.remaining > 0">
+            刷新数据
+            <span class="ml-1 text-muted-foreground">剩 {{ quota.remaining }} 次</span>
+          </template>
+          <template v-else>本周已刷完</template>
+        </Button>
+      </div>
     </CardHeader>
 
     <CardContent class="space-y-4">
