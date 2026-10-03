@@ -24,11 +24,13 @@ const props = withDefaults(
   { initialMode: 'login', redirectTo: '/me' },
 )
 
-const { login, register } = useAuth()
+const { login, register, user, ensureLoaded } = useAuth()
 
 const mode = ref<'login' | 'register'>(props.initialMode)
 const submitting = ref(false)
 const error = ref('')
+//: 还在确认登录态。确认完之前不渲染表单，免得已登录的人先看一眼空表单。
+const checking = ref(true)
 
 const studentId = ref('')
 const password = ref('')
@@ -68,7 +70,7 @@ function switchMode(next: 'login' | 'register') {
   error.value = ''
 }
 
-onMounted(() => {
+onMounted(async () => {
   // 邀请链接形如 /register?code=ABCD1234。带了这个参数就直接进注册模式并把
   // 码填好——成员从群里点过来时不该还要手抄一遍。
   const code = new URLSearchParams(window.location.search).get('code')
@@ -76,8 +78,27 @@ onMounted(() => {
     mode.value = 'register'
     inviteCode.value = code.trim().toUpperCase()
   }
-})
 
+  // 已经登录的人不该停在登录/注册表单上。
+  //
+  // 之前没这一步，已登录的账号点 /register 会看到一个空的注册表单，填了
+  // 还会因为「账号已存在」报错——其实是该直接进去的。
+  //
+  // 先 await ensureLoaded()：user 初始为 null，不等它拉完就判，已登录的人
+  // 也会被当成未登录放过去。
+  //
+  // 用 finally 复位 checking：ensureLoaded 内部已经吞掉网络错误，但真出
+  // 意外时也不能让页面永远卡在「正在确认」。
+  try {
+    await ensureLoaded()
+    if (user.value) {
+      window.location.replace(props.redirectTo)
+      return
+    }
+  } finally {
+    checking.value = false
+  }
+})
 async function submit() {
   if (!canSubmit.value) return
 
@@ -108,7 +129,16 @@ async function submit() {
 </script>
 
 <template>
-  <Card class="w-full max-w-md mx-auto">
+  <!--
+    确认登录态期间不渲染表单。已登录的人会直接被跳走，让表单先出现再消失
+    会白闪一下。
+  -->
+  <div v-if="checking" class="flex items-center justify-center gap-2 py-10 text-sm text-muted-foreground">
+    <Loader2 class="h-4 w-4 animate-spin" />
+    正在确认登录状态
+  </div>
+
+  <Card v-else class="w-full max-w-md mx-auto">
     <CardHeader class="pb-4">
       <CardTitle class="text-lg">{{ mode === 'login' ? '登录' : '注册' }}</CardTitle>
 
