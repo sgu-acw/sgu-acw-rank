@@ -35,3 +35,6 @@ firmware/**/secrets.h
 
 # wrangler local state
 .wrangler/
+
+# 本地密钥文本，绝不入库
+sgu-deepseek.txt

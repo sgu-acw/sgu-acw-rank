@@ -9,16 +9,17 @@
  * 三道题全站统一：抽签只由日期决定，与「谁在看」无关。
  */
 import { computed, onMounted, ref } from 'vue'
-import { Check, ChevronRight, ExternalLink, Loader2, RefreshCw, Shuffle } from 'lucide-vue-next'
+import { BookOpen, Check, ExternalLink, Loader2, RefreshCw, Shuffle } from 'lucide-vue-next'
 import { Alert } from './ui/alert'
 import { Button } from './ui/button'
 import { Card, CardContent } from './ui/card'
+import Editorial from './Editorial.vue'
 import {
   ApiError,
   dailyApi,
-  type CheckinBoard,
   type DailyProblemBoard,
   type DailyProblemEntry,
+  type EditorialView,
 } from '../lib/api'
 import { useAuth } from '../lib/auth'
 
@@ -27,10 +28,22 @@ const props = withDefaults(defineProps<{ compact?: boolean }>(), { compact: fals
 const { user, ensureLoaded } = useAuth()
 
 const board = ref<DailyProblemBoard | null>(null)
-const checkin = ref<CheckinBoard | null>(null)
 const loading = ref(true)
 const error = ref('')
 const redrawing = ref(false)
+
+/** 题号 → 题解。和后端返回的三道题按 key 对应。 */
+const editorials = ref<Record<string, EditorialView>>({})
+/** 展开着题解的题号。同时只开一道，避免页面太长。 */
+const openEditorial = ref<string | null>(null)
+
+function editorialFor(key: string): EditorialView | null {
+  return editorials.value[key] ?? null
+}
+
+function toggleEditorial(key: string) {
+  openEditorial.value = openEditorial.value === key ? null : key
+}
 
 const isAdmin = computed(() => user.value?.role === 'admin' || user.value?.role === 'root')
 
@@ -38,13 +51,15 @@ async function load(): Promise<void> {
   loading.value = true
   error.value = ''
   try {
-    // 两个请求一起发，串行的话签到榜要等题目加载完才开始。
-    const [boardResult, checkinResult] = await Promise.all([
+    // 两个请求一起发，串行的话题解要等题目加载完才开始。
+    const [boardResult, editorialResult] = await Promise.all([
       dailyApi.get(),
-      dailyApi.checkin(),
+      dailyApi.editorials(),
     ])
     board.value = boardResult
-    checkin.value = checkinResult
+    editorials.value = Object.fromEntries(
+      editorialResult.problems.map((item) => [item.key, item]),
+    )
   } catch (exc) {
     error.value = exc instanceof ApiError ? exc.message : '加载失败'
   } finally {
@@ -56,7 +71,6 @@ async function redraw(): Promise<void> {
   redrawing.value = true
   try {
     board.value = await dailyApi.redraw()
-    checkin.value = await dailyApi.checkin()
   } catch (exc) {
     error.value = exc instanceof ApiError ? exc.message : '重抽失败'
   } finally {
@@ -203,87 +217,52 @@ function membersSolved(entry: DailyProblemEntry): string {
             <span v-if="problem.rating" class="font-mono">{{ problem.rating }} 分</span>
             <!-- 站内完成人数。这是成员之间的进度参照，比 CF 全站数字更有意义。 -->
             <span>{{ membersSolved(problem) }}</span>
+
+            <!--
+              题解入口。放在卡片底部，与难度同一行。
+
+              三列网格里放不下题解正文，所以点击后在网格下方展开一块全宽的
+              区域（见下面那个 Editorial）。
+            -->
+            <button
+              v-if="editorialFor(problem.key)"
+              type="button"
+              class="ml-auto flex items-center gap-0.5 rounded px-1 py-0.5 font-medium transition-colors hover:text-primary"
+              :class="openEditorial === problem.key ? 'text-primary' : ''"
+              :aria-expanded="openEditorial === problem.key"
+              @click="toggleEditorial(problem.key)"
+            >
+              <BookOpen class="h-3 w-3" />
+              题解
+            </button>
           </div>
         </CardContent>
       </Card>
     </div>
 
     <!--
-      签到排行榜。做对当天的每日一题里任意一道就算签到。
-      只列签过到的人——一次没签过不是「0 天」，更接近「没参加」。
+      题解展开区。全宽放在三道题下面。
+
+      同时只开一道：三道题的题解一起展开会有几千字，页面长得没法用。
+      点另一道的「题解」会切换过去。
     -->
-    <a
-      v-if="props.compact && checkin"
-      href="/daily"
-      class="row-action group -mx-1 flex items-center gap-2 rounded-lg px-1.5 py-2 text-xs text-muted-foreground"
-    >
-      <span>签到排行</span>
-      <span class="font-mono tabular-nums">{{ checkin.total_members }} 人</span>
-      <ChevronRight class="ml-auto h-3.5 w-3.5 transition-transform duration-150 group-hover:translate-x-0.5" />
-    </a>
-
-    <Card v-if="!props.compact && checkin && checkin.entries.length">
-      <CardContent class="p-0">
-        <div class="px-4 py-3">
+    <Card v-if="board && openEditorial && editorialFor(openEditorial)">
+      <CardContent class="p-4 sm:p-5">
+        <div class="mb-3 flex flex-wrap items-baseline gap-x-2 gap-y-1">
           <h3 class="text-sm font-medium">
-            签到排行
-            <span class="ml-1 font-normal text-muted-foreground">
-              {{ checkin.total_members }} 人
-            </span>
+            <span class="mr-1.5 font-mono text-xs text-muted-foreground">{{ openEditorial }}</span>
+            {{ editorialFor(openEditorial)?.name }}
           </h3>
-        </div>
-
-        <div class="divide-y divide-border/40 border-t border-border/40">
-          <div
-            v-for="entry in checkin.entries"
-            :key="entry.user_id"
-            class="flex items-center gap-2.5 px-4 py-2.5 transition-colors hover:bg-muted/30"
+          <button
+            type="button"
+            class="ml-auto text-xs text-muted-foreground transition-colors hover:text-foreground"
+            @click="openEditorial = null"
           >
-            <span
-              class="w-6 shrink-0 text-center font-mono text-xs"
-              :class="entry.rank <= 3 ? 'font-semibold text-foreground' : 'text-muted-foreground'"
-            >
-              {{ entry.rank }}
-            </span>
-
-            <div class="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-2">
-              <a
-                :href="`/member?id=${entry.user_id}`"
-                class="truncate text-sm font-medium underline-offset-4 transition-colors hover:text-primary hover:underline"
-              >
-                {{ entry.display_name }}
-              </a>
-              <span v-if="entry.class_label" class="text-[11px] text-muted-foreground/70">
-                {{ entry.class_label }}
-              </span>
-            </div>
-
-            <!--
-              连续天数放在前面，因为它就是排序依据——榜单上名次怎么来的，
-              一眼要看得出来。
-
-              连续 0 也要显示（写成「已中断」）。不显示的话，一个两个月没
-              签到的人靠着历史累计排在榜上，看起来却和别人一样积极，那比
-              不显示更误导。
-            -->
-            <span
-              class="shrink-0 rounded px-1.5 py-0.5 font-mono text-sm font-semibold"
-              :class="
-                entry.streak > 0
-                  ? 'bg-muted text-foreground'
-                  : 'text-muted-foreground/60'
-              "
-            >
-              <template v-if="entry.streak > 0">连续 {{ entry.streak }} 天</template>
-              <template v-else>已中断</template>
-            </span>
-
-            <!-- 累计天数。断过签的也算，只是不参与排序。 -->
-            <span class="shrink-0 font-mono text-[11px] text-muted-foreground">
-              累计 {{ entry.days }} 天
-            </span>
-          </div>
+            收起
+          </button>
         </div>
+
+        <Editorial :editorial="editorialFor(openEditorial)!" />
       </CardContent>
     </Card>
   </div>

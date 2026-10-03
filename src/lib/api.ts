@@ -643,6 +643,40 @@ export interface ProblemLookup {
   cached: boolean
 }
 
+/** 一道题的题解。未公布时只有 status 和 publish_at。 */
+export interface EditorialView {
+  band: string
+  platform: string
+  key: string
+  name: string
+  rating: number | null
+  url: string
+
+  status: 'pending' | 'draft' | 'published' | 'failed'
+  available: boolean
+  publish_at: string | null
+
+  hints: string[]
+  body: string
+  code_available: boolean
+  code_publish_at: string | null
+  /** 语言 → 源码。代码未公布时是空对象。 */
+  code: Record<string, string>
+}
+
+/** 某一天的题解。 */
+export interface DayEditorials {
+  day: string
+  problems: EditorialView[]
+}
+
+/** 往日列表里的一条。 */
+export interface RecentDay {
+  day: string
+  problem_count: number
+  editorial_count: number
+}
+
 export const dailyApi = {
   /** 某一天的每日一题，默认今天。同一天多次调用返回同一套。 */
   get: (day?: string) =>
@@ -654,6 +688,14 @@ export const dailyApi = {
 
   /** 签到天数排行榜。 */
   checkin: () => api.get<CheckinBoard>('/daily/checkin'),
+
+  /** 某一天的题解，默认今天。未公布的内容服务端不会返回。 */
+  editorials: (day?: string) =>
+    api.get<DayEditorials>(`/daily/editorials${day ? `?day=${day}` : ''}`),
+
+  /** 有每日一题的往日列表。 */
+  recentDays: (limit = 30) =>
+    api.get<RecentDay[]>(`/daily/editorials/recent?limit=${limit}`),
 }
 
 export const problemListApi = {

@@ -1,10 +1,19 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import DailyProblem from '../components/DailyProblem.vue';
+import EditorialArchive from '../components/EditorialArchive.vue';
 ---
 
 <BaseLayout title="SGU ACW - 每日一题">
+  <!--
+    今日与往日之间加一条分隔线。
+
+    两块都是带边框的卡片，只靠间距区分不够——看起来像同一组里的第四张。
+    一条线把「今天的题」和「查历史」分开。
+  -->
   <div class="mx-auto w-full max-w-4xl">
     <DailyProblem client:only="vue" />
+    <hr class="my-8 border-border/50" />
+    <EditorialArchive client:only="vue" />
   </div>
 </BaseLayout>

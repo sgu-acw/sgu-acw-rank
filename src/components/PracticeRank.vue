@@ -1,10 +1,14 @@
 <script setup lang="ts">
 /**
- * 榜单。两个维度：
+ * 榜单。三个维度：
  *
  * * **练习量**：按天统计的过题数，同平台的主号小号按人合并。
  * * **Rating**：平台上的等级分，以账号为单位——主号和小号各有各的 rating，
  *   合并没有意义。
+ * * **签到**：做对当天每日一题任意一道的连续天数。
+ *
+ * 签到原来放在每日一题页。它虽然由做题产生，但展示的是「别人的数据」，
+ * 和「今天做什么题」不是一回事——放在这里和其他榜单一起才顺。
  *
  * 数据由后端定时同步平台得来，页面只读。
  */
@@ -18,7 +22,9 @@ import MemberDialog from './MemberDialog.vue'
 import {
   ApiError,
   PLATFORM_META,
+  dailyApi,
   practiceApi,
+  type CheckinBoard,
   type Platform,
   type PracticeEntry,
   type PracticeRank,
@@ -30,12 +36,13 @@ import { formatEnrollYear } from '../lib/format'
 
 const { ensureLoaded } = useAuth()
 
-type Dimension = 'practice' | 'rating'
+type Dimension = 'practice' | 'rating' | 'checkin'
 
 const loading = ref(true)
 const error = ref('')
 const data = ref<PracticeRank | null>(null)
 const rating = ref<RatingBoard | null>(null)
+const checkin = ref<CheckinBoard | null>(null)
 const status = ref<SyncStatus | null>(null)
 const needsLogin = ref(false)
 
@@ -71,7 +78,9 @@ function readStoredFilters(): StoredFilters {
 
 const stored = readStoredFilters()
 
-const dimension = ref<Dimension>(stored.dimension === 'rating' ? 'rating' : 'practice')
+const dimension = ref<Dimension>(
+  stored.dimension === 'rating' || stored.dimension === 'checkin' ? stored.dimension : 'practice',
+)
 const days = ref(typeof stored.days === 'number' ? stored.days : 1)
 const platform = ref<Platform | ''>((stored.platform as Platform | '') ?? '')
 const ratingPlatform = ref<Platform>((stored.ratingPlatform as Platform) ?? 'codeforces')
@@ -266,6 +275,9 @@ async function load() {
   try {
     if (dimension.value === 'rating') {
       rating.value = await practiceApi.rating(ratingPlatform.value)
+    } else if (dimension.value === 'checkin') {
+      // 签到榜不需要平台、天数这些筛选：它只看「做了当天的每日一题没有」。
+      checkin.value = await dailyApi.checkin()
     } else {
       const [rank, sync] = await Promise.all([
         practiceApi.rank({
@@ -351,6 +363,7 @@ onMounted(async () => {
         v-for="tab in [
           { key: 'practice' as const, label: '练习量' },
           { key: 'rating' as const, label: 'Rating' },
+          { key: 'checkin' as const, label: '签到' },
         ]"
         :key="tab.key"
         class="flex-1 rounded px-3 py-2 text-xs font-medium transition-colors active:scale-[0.98]"
@@ -414,7 +427,10 @@ onMounted(async () => {
       </button>
     </div>
 
-    <div v-else class="flex flex-wrap gap-1 rounded-md border border-border/40 p-0.5">
+    <div
+      v-else-if="dimension === 'rating'"
+      class="flex flex-wrap gap-1 rounded-md border border-border/40 p-0.5"
+    >
       <button
         v-for="option in RATING_PLATFORMS"
         :key="option.value"
@@ -636,7 +652,7 @@ onMounted(async () => {
     </Card>
 
     <!-- Rating 榜。以账号为单位，所以同一个人可能出现多行。 -->
-    <Card v-else>
+    <Card v-else-if="dimension === 'rating'">
       <CardHeader class="pb-3">
         <div class="flex items-center justify-between">
           <CardTitle class="text-sm font-medium">{{ rating?.label ?? '' }} Rating</CardTitle>
@@ -718,6 +734,83 @@ onMounted(async () => {
       </CardContent>
     </Card>
 
+    <!--
+      签到榜。按连续天数排，不是累计。
+
+      连续天数才是「现在还在坚持」的信号；累计天数只说明来得早。
+      累计作为次要信息放在右边。
+    -->
+    <Card v-if="dimension === 'checkin'">
+      <CardHeader class="pb-3">
+        <div class="flex items-center justify-between">
+          <CardTitle class="text-sm font-medium">签到排行</CardTitle>
+          <span v-if="checkin?.entries.length" class="text-xs text-muted-foreground">
+            {{ checkin.total_members }} 人
+          </span>
+        </div>
+      </CardHeader>
+
+      <CardContent class="p-0">
+        <div v-if="loading" class="flex items-center gap-2 p-6 text-sm text-muted-foreground">
+          <Loader2 class="h-4 w-4 animate-spin" />
+          正在读取…
+        </div>
+
+        <div
+          v-else-if="!checkin?.entries.length"
+          class="p-6 text-center text-sm text-muted-foreground"
+        >
+          还没有人签到。做对当天的每日一题里任意一道就算签到。
+        </div>
+
+        <div v-else class="divide-y divide-border/40">
+          <div
+            v-for="entry in checkin.entries"
+            :key="entry.user_id"
+            class="row-action flex items-center gap-2 px-3 py-3 sm:gap-3 sm:px-4"
+          >
+            <span
+              class="w-6 shrink-0 text-center font-mono text-xs"
+              :class="entry.rank <= 3 ? 'font-semibold text-foreground' : 'text-muted-foreground'"
+            >
+              {{ entry.rank }}
+            </span>
+
+            <div class="min-w-0 flex-1">
+              <div class="flex flex-wrap items-baseline gap-x-2">
+                <button
+                  class="truncate text-sm font-medium underline-offset-4 transition-colors hover:text-primary hover:underline"
+                  :title="`查看 ${entry.display_name} 的资料`"
+                  @click="go(`/member?id=${entry.user_id}`)"
+                >
+                  {{ entry.display_name }}
+                </button>
+                <span
+                  v-if="formatEnrollYear(entry.enroll_year)"
+                  class="shrink-0 text-[11px] text-muted-foreground"
+                >
+                  {{ formatEnrollYear(entry.enroll_year) }}
+                </span>
+                <span
+                  v-if="entry.class_label"
+                  class="truncate text-[11px] text-muted-foreground/70"
+                >
+                  {{ entry.class_label }}
+                </span>
+              </div>
+            </div>
+
+            <div class="shrink-0 text-right">
+              <span class="font-mono text-sm font-semibold">{{ entry.streak }}</span>
+              <span class="ml-0.5 text-xs text-muted-foreground">天</span>
+              <p v-if="entry.days > entry.streak" class="font-mono text-[10px] text-muted-foreground">
+                累计 {{ entry.days }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
     <!--
       只在同步出错时提示。同步了多少个账号、成功几个是运维数字，
       成员看了没用；但抓失败得说出来，否则数据缺了没人知道。

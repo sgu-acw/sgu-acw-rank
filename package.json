@@ -20,7 +20,9 @@
     "axios": "^1.9.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "katex": "^0.19.0",
     "lucide-vue-next": "^0.474.0",
+    "markdown-it": "^15.0.2",
     "radix-vue": "^1.9.17",
     "rehype-katex": "^7.0.1",
     "remark-math": "^6.0.0",
@@ -34,6 +36,7 @@
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
     "@eslint/js": "^10.0.1",
+    "@types/markdown-it": "^14.2.0",
     "@types/sortablejs": "^1.15.9",
     "@vue/eslint-config-typescript": "^14.9.0",
     "eslint": "^10.11.0",
