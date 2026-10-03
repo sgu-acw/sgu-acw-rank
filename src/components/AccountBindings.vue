@@ -207,7 +207,7 @@ onUnmounted(() => {
 
       <template v-else>
         <div v-if="!accounts.length" class="text-sm text-muted-foreground">
-          还没有绑定账号。绑定之后才会出现在练习榜上。
+          暂无已绑定账号
         </div>
 
         <div v-else class="space-y-3">
@@ -322,7 +322,7 @@ onUnmounted(() => {
             </Button>
           </div>
           <p class="text-xs text-muted-foreground">
-            同一平台可以绑多个（主号、小号）。一个账号只能属于一个人。
+            同一平台可以绑多个（主号、小号）
           </p>
         </div>
       </template>

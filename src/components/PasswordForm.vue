@@ -72,7 +72,7 @@ async function submit() {
       </Alert>
       <Alert v-if="done" class="flex items-start gap-2">
         <Check class="h-4 w-4 shrink-0 translate-y-0.5" />
-        <span class="text-sm">密码已修改，其他设备的登录已退出。</span>
+        <span class="text-sm">密码已修改，其他设备的登录已退出</span>
       </Alert>
 
       <form class="space-y-3" @submit.prevent="submit">

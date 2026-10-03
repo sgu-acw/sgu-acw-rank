@@ -148,7 +148,7 @@ onMounted(async () => {
     -->
     <Card v-else-if="notFound">
       <CardContent class="space-y-3 py-10 text-center">
-        <p class="text-sm text-muted-foreground">这个题单不存在，可能已经被删了。</p>
+        <p class="text-sm text-muted-foreground">这个题单不存在</p>
         <Button size="sm" @click="go('/problems')">看看其他题单</Button>
       </CardContent>
     </Card>
@@ -156,13 +156,13 @@ onMounted(async () => {
     <template v-else-if="data">
       <!-- 头部：标题、描述、完成度 -->
       <div>
-        <div class="flex flex-wrap items-center gap-2">
+        <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
           <component
             :is="isCollection ? FolderOpen : undefined"
             v-if="isCollection"
             class="h-4 w-4 text-muted-foreground"
           />
-          <h1 class="text-lg font-semibold tracking-tight">{{ data.title }}</h1>
+          <h1 class="text-xl font-semibold tracking-tight">{{ data.title }}</h1>
           <span class="text-xs text-muted-foreground">
             <template v-if="isCollection">
               {{ data.item_count }} 个题单 · {{ data.total_problems }} 题
@@ -171,12 +171,16 @@ onMounted(async () => {
           </span>
         </div>
 
-        <p v-if="data.description" class="mt-1 text-sm text-muted-foreground">
+        <p v-if="data.description" class="mt-2 text-sm text-muted-foreground">
           {{ data.description }}
         </p>
 
+        <!--
+          进度条限宽。之前是 flex-1，在宽屏上会拉满整行，看起来像一条
+          分隔线而不是进度。限到 max-w-sm，它才读得出「做了多少」。
+        -->
         <div v-if="showProgress && data.total_problems > 0" class="mt-3 flex items-center gap-2">
-          <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
+          <div class="h-1.5 w-full max-w-sm overflow-hidden rounded-full bg-muted">
             <div
               class="h-full rounded-full bg-primary transition-[width] duration-300 ease-[var(--ease-out)]"
               :style="{ width: `${percent(data.done_count, data.total_problems)}%` }"
@@ -191,24 +195,24 @@ onMounted(async () => {
       <!-- 合集：子题单 -->
       <div v-if="isCollection" class="space-y-2">
         <p v-if="!data.children.length" class="py-6 text-center text-sm text-muted-foreground">
-          这个合集里还没有题单。
+          这个合集里还没有题单
         </p>
         <button
           v-for="child in data.children"
           :key="child.id"
-          class="group flex w-full items-center gap-3 rounded-lg border border-border/50 bg-card px-4 py-3 text-left transition-colors hover:border-border hover:bg-muted/30 active:scale-[0.995]"
+          class="surface-action group flex w-full items-center gap-3 rounded-lg border border-border/50 bg-card px-4 py-3 text-left"
           @click="go(`/problems/view?id=${child.id}`)"
         >
           <div class="min-w-0 flex-1">
             <div class="flex flex-wrap items-baseline gap-x-2">
-              <span class="text-sm font-medium">{{ child.title }}</span>
+              <span class="text-sm font-medium transition-colors group-hover:text-primary">{{ child.title }}</span>
               <span class="text-[11px] text-muted-foreground">{{ child.total_problems }} 题</span>
             </div>
             <p v-if="child.description" class="mt-0.5 truncate text-xs text-muted-foreground/70">
               {{ child.description }}
             </p>
             <div v-if="showProgress && child.total_problems > 0" class="mt-2 flex items-center gap-2">
-              <div class="h-1 flex-1 overflow-hidden rounded-full bg-muted">
+              <div class="h-1 w-full max-w-xs overflow-hidden rounded-full bg-muted">
                 <div
                   class="h-full rounded-full bg-primary transition-[width] duration-300 ease-[var(--ease-out)]"
                   :style="{ width: `${percent(child.done_count, child.total_problems)}%` }"
@@ -219,7 +223,7 @@ onMounted(async () => {
               </span>
             </div>
           </div>
-          <ChevronRight class="h-4 w-4 shrink-0 text-muted-foreground/40 transition-transform group-hover:translate-x-0.5" />
+          <ChevronRight class="h-4 w-4 shrink-0 text-muted-foreground/40 transition-[transform,color] duration-150 group-hover:translate-x-0.5 group-hover:text-muted-foreground" />
         </button>
       </div>
 
@@ -314,7 +318,7 @@ onMounted(async () => {
       <Card v-if="!isCollection">
         <CardContent class="p-0">
           <p v-if="!data.problems.length" class="p-6 text-center text-sm text-muted-foreground">
-            这个题单里还没有题目。
+            这个题单里还没有题目
           </p>
 
           <div v-else class="divide-y divide-border/40">

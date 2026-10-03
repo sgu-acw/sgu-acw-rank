@@ -203,11 +203,12 @@ async function submit() {
         </p>
       </form>
 
-      <p v-if="mode === 'login'" class="text-xs text-muted-foreground text-center">
+      <!--
+        只有登录页需要这一句：用户找不到「忘记密码」入口时会到处找。
+        注册页不需要——邀请码字段的 placeholder 已经写了「群里的邀请码」。
+      -->
+      <p v-if="mode === 'login'" class="text-center text-xs text-muted-foreground">
         忘记密码请联系管理员重置
-      </p>
-      <p v-else class="text-xs text-muted-foreground text-center">
-        注册需要群里发的邀请码
       </p>
     </CardContent>
   </Card>

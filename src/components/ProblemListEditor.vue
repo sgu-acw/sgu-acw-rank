@@ -271,7 +271,7 @@ onBeforeUnmount(() => {
 
     <Card v-else-if="notFound">
       <CardContent class="space-y-3 py-10 text-center">
-        <p class="text-sm text-muted-foreground">这个题单不存在，可能已经被删了。</p>
+        <p class="text-sm text-muted-foreground">这个题单不存在</p>
         <Button size="sm" @click="go('/problems/admin')">回到管理</Button>
       </CardContent>
     </Card>
@@ -315,7 +315,7 @@ onBeforeUnmount(() => {
         </CardHeader>
         <CardContent class="p-0">
           <p v-if="!data.children.length" class="p-4 text-sm text-muted-foreground">
-            这个合集里还没有题单。
+            这个合集里还没有题单
           </p>
           <div v-else data-sortable="children" class="divide-y divide-border/40">
             <div
@@ -374,7 +374,7 @@ onBeforeUnmount(() => {
 
         <CardContent class="p-0">
           <p v-if="!data.problems.length" class="p-4 text-sm text-muted-foreground">
-            这个题单里还没有题目。点上面的「加题」开始。
+            这个题单里还没有题目，点上面的「加题」开始
           </p>
           <div v-else data-sortable="problems" class="divide-y divide-border/40">
             <div

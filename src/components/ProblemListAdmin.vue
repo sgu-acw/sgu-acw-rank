@@ -381,9 +381,7 @@ onMounted(load)
 
 <template>
   <div class="space-y-6">
-    <AdminWorkspaceNav active="problems" />
-
-    <div class="flex flex-wrap items-center justify-end gap-2">
+    <AdminWorkspaceNav active="problems">
       <Button variant="outline" size="sm" :disabled="refreshing" @click="refreshCodeforces">
         <RefreshCw class="mr-1.5 h-3.5 w-3.5" :class="refreshing && 'animate-spin'" />
         刷新 CF 题库
@@ -392,7 +390,7 @@ onMounted(load)
         <Plus class="mr-1.5 h-3.5 w-3.5" />
         {{ showCreate ? '收起' : '新建题单' }}
       </Button>
-    </div>
+    </AdminWorkspaceNav>
 
     <Alert v-if="error" variant="destructive" class="flex items-start gap-2">
       <AlertCircle class="h-4 w-4 shrink-0 translate-y-0.5" />
@@ -416,8 +414,8 @@ onMounted(load)
               v-model="newKind"
               class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
             >
-              <option value="list">题单（装题目）</option>
-              <option value="collection">合集（装题单）</option>
+              <option value="list">题单</option>
+              <option value="collection">合集</option>
             </select>
           </div>
           <div v-if="newKind === 'list'" class="space-y-1.5">
@@ -614,7 +612,7 @@ onMounted(load)
       </CardHeader>
       <CardContent class="p-0">
         <p v-if="!standalone.length" class="p-4 text-sm text-muted-foreground">
-          还没有不属于合集的题单。
+          还没有单独的题单
         </p>
         <div v-else class="divide-y divide-border/40">
           <div v-for="(item, index) in standalone" :key="item.id" class="space-y-3 px-4 py-3">
@@ -738,7 +736,7 @@ onMounted(load)
             <!-- 展开的题目列表。加完题就能在这里改备注、调顺序、移除。 -->
             <div v-if="expanded[item.id]" class="rounded-md border border-border/40">
               <p v-if="!expanded[item.id].length" class="p-3 text-xs text-muted-foreground">
-                这个题单里还没有题目。
+                这个题单里还没有题目
               </p>
               <div v-else class="divide-y divide-border/40">
                 <ProblemRow

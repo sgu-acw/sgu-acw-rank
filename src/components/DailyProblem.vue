@@ -8,7 +8,7 @@
  *
  * 三道题全站统一：抽签只由日期决定，与「谁在看」无关。
  */
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { Check, ChevronRight, ExternalLink, Loader2, RefreshCw, Shuffle } from 'lucide-vue-next'
 import { Alert } from './ui/alert'
 import { Button } from './ui/button'
@@ -32,32 +32,7 @@ const loading = ref(true)
 const error = ref('')
 const redrawing = ref(false)
 
-/** 距下次换题的倒计时，秒。 */
-const remaining = ref(0)
-let timer: ReturnType<typeof setInterval> | null = null
-
 const isAdmin = computed(() => user.value?.role === 'admin' || user.value?.role === 'root')
-
-/**
- * 倒计时文字。
- *
- * 只显示「还有 X 小时 Y 分」这个粒度——秒级跳动除了让人焦虑没别的用，
- * 而每日一题本来就是一天一次的东西。
- */
-const countdown = computed(() => {
-  if (remaining.value <= 0) return '即将换题'
-  const hours = Math.floor(remaining.value / 3600)
-  const minutes = Math.floor((remaining.value % 3600) / 60)
-  if (hours > 0) return `${hours} 小时 ${minutes} 分后换题`
-  if (minutes > 0) return `${minutes} 分钟后换题`
-  return '不到 1 分钟就换题'
-})
-
-function tick(): void {
-  if (!board.value) return
-  const target = new Date(board.value.reset_at).getTime()
-  remaining.value = Math.max(0, Math.round((target - Date.now()) / 1000))
-}
 
 async function load(): Promise<void> {
   loading.value = true
@@ -70,7 +45,6 @@ async function load(): Promise<void> {
     ])
     board.value = boardResult
     checkin.value = checkinResult
-    tick()
   } catch (exc) {
     error.value = exc instanceof ApiError ? exc.message : '加载失败'
   } finally {
@@ -83,7 +57,6 @@ async function redraw(): Promise<void> {
   try {
     board.value = await dailyApi.redraw()
     checkin.value = await dailyApi.checkin()
-    tick()
   } catch (exc) {
     error.value = exc instanceof ApiError ? exc.message : '重抽失败'
   } finally {
@@ -94,11 +67,6 @@ async function redraw(): Promise<void> {
 onMounted(() => {
   void ensureLoaded()
   void load()
-  timer = setInterval(tick, 30_000)
-})
-
-onUnmounted(() => {
-  if (timer) clearInterval(timer)
 })
 
 /** 档位的显示文字。接口给的是「800-1000」这种，直接显示就行。 */
@@ -108,8 +76,8 @@ function bandLabel(band: string): string {
 
 /** 站内完成人数。这是本平台的数字，不是 CF 全站的。 */
 function membersSolved(entry: DailyProblemEntry): string {
-  if (entry.members_solved <= 0) return '站内还没人做'
-  return `站内 ${entry.members_solved} 人做过`
+  if (entry.members_solved <= 0) return '无人通过'
+  return `${entry.members_solved} 人通过`
 }
 </script>
 
@@ -118,11 +86,16 @@ function membersSolved(entry: DailyProblemEntry): string {
     <!-- 头部：说明 + 倒计时 + 重抽 -->
     <div class="flex flex-wrap items-center justify-between gap-2">
       <div class="min-w-0">
-        <h2 class="text-sm font-medium">每日一题</h2>
-        <p class="mt-0.5 text-[11px] text-muted-foreground">
-          <template v-if="board">{{ countdown }} · 三个难度档各一道，全站同一套</template>
-          <template v-else>三个难度档各一道，全站同一套</template>
-        </p>
+        <!--
+          compact 是首页用的。首页上它是今天的主线，标题要压过周围的
+          卡片标题，否则整个页面看起来全是同样重量的块，没有重点。
+        -->
+        <h2 :class="props.compact ? 'text-lg font-semibold tracking-tight' : 'text-sm font-medium'">每日一题</h2>
+        <!--
+          不显示倒计时。小时分钟一直在跳，看久了只会让人焦虑，而这是一天
+          一次的东西——知道「凌晨四点换」就够了。
+        -->
+        <p class="mt-0.5 text-[11px] text-muted-foreground">凌晨四点刷新</p>
         <!-- 签到状态。只有登录后才显示——未登录没有「我」这个概念。 -->
         <p v-if="user && board" class="mt-1 flex flex-wrap items-center gap-x-2 text-[11px]">
           <span
@@ -216,12 +189,12 @@ function membersSolved(entry: DailyProblemEntry): string {
             :href="problem.url"
             target="_blank"
             rel="noopener noreferrer"
-            class="group -mx-1 rounded px-1 text-sm font-medium underline-offset-4 hover:text-primary hover:underline"
+            class="group -mx-1 rounded px-1 text-sm font-medium underline-offset-4 transition-colors hover:text-primary hover:underline"
           >
             <span class="mr-1.5 font-mono text-xs text-muted-foreground">{{ problem.key }}</span>
             {{ problem.name || '（题名待抓取）' }}
             <ExternalLink
-              class="ml-0.5 inline h-3 w-3 shrink-0 align-[-1px] text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100"
+              class="ml-0.5 inline h-3 w-3 shrink-0 align-[-1px] text-muted-foreground transition-colors group-hover:text-primary"
             />
           </a>
 
@@ -242,7 +215,7 @@ function membersSolved(entry: DailyProblemEntry): string {
     <a
       v-if="props.compact && checkin"
       href="/daily"
-      class="group flex items-center gap-2 rounded-lg px-1 py-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
+      class="row-action group -mx-1 flex items-center gap-2 rounded-lg px-1.5 py-2 text-xs text-muted-foreground"
     >
       <span>签到排行</span>
       <span class="font-mono tabular-nums">{{ checkin.total_members }} 人</span>
@@ -251,23 +224,20 @@ function membersSolved(entry: DailyProblemEntry): string {
 
     <Card v-if="!props.compact && checkin && checkin.entries.length">
       <CardContent class="p-0">
-        <div class="flex items-center justify-between gap-2 px-4 py-3">
+        <div class="px-4 py-3">
           <h3 class="text-sm font-medium">
             签到排行
             <span class="ml-1 font-normal text-muted-foreground">
               {{ checkin.total_members }} 人
             </span>
           </h3>
-          <span class="text-[11px] text-muted-foreground">
-            做对当天任意一道即算 · 按连续天数排序
-          </span>
         </div>
 
         <div class="divide-y divide-border/40 border-t border-border/40">
           <div
             v-for="entry in checkin.entries"
             :key="entry.user_id"
-            class="flex items-center gap-2.5 px-4 py-2.5"
+            class="flex items-center gap-2.5 px-4 py-2.5 transition-colors hover:bg-muted/30"
           >
             <span
               class="w-6 shrink-0 text-center font-mono text-xs"

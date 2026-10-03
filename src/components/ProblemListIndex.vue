@@ -56,9 +56,6 @@ onMounted(async () => {
     <div class="flex flex-wrap items-start justify-between gap-3">
       <div>
         <h1 class="text-lg font-semibold tracking-tight">题单</h1>
-        <p class="mt-0.5 text-xs text-muted-foreground">
-          按主题整理的题目清单。完成度来自你绑定的平台账号。
-        </p>
       </div>
       <!--
         未登录时 user 是 null，``user?.role !== 'member'`` 会算成
@@ -68,7 +65,7 @@ onMounted(async () => {
       <Button
         v-if="user && user.role !== 'member'"
         size="sm"
-        @click="go('/admin')"
+        @click="go('/problems/admin')"
       >
         <Settings class="mr-1 h-3.5 w-3.5" />
         管理工作台
@@ -87,7 +84,7 @@ onMounted(async () => {
 
     <Card v-else-if="!lists.length">
       <CardContent class="py-10 text-center text-sm text-muted-foreground">
-        还没有题单。
+        还没有题单
       </CardContent>
     </Card>
 
@@ -95,18 +92,18 @@ onMounted(async () => {
       <button
         v-for="item in lists"
         :key="item.id"
-        class="group flex w-full items-center gap-3 rounded-lg border border-border/50 bg-card px-4 py-3 text-left transition-colors hover:border-border hover:bg-muted/30 active:scale-[0.995]"
+        class="surface-action group flex w-full items-start gap-3 rounded-lg border border-border/50 bg-card px-4 py-3.5 text-left"
         @click="go(`/problems/view?id=${item.id}`)"
       >
         <!-- 合集和题单用不同图标，一眼能分清 -->
         <component
           :is="item.kind === 'collection' ? FolderOpen : ListChecks"
-          class="h-4 w-4 shrink-0 text-muted-foreground"
+          class="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground"
         />
 
         <div class="min-w-0 flex-1">
           <div class="flex flex-wrap items-baseline gap-x-2">
-            <span class="text-sm font-medium">{{ item.title }}</span>
+            <span class="text-sm font-medium transition-colors group-hover:text-primary">{{ item.title }}</span>
             <span class="text-[11px] text-muted-foreground">
               <template v-if="item.kind === 'collection'">
                 {{ item.item_count }} 个题单 · {{ item.total_problems }} 题
@@ -133,7 +130,7 @@ onMounted(async () => {
         </div>
 
         <ChevronRight
-          class="h-4 w-4 shrink-0 text-muted-foreground/40 transition-transform duration-150 group-hover:translate-x-0.5 group-hover:text-muted-foreground"
+          class="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground/40 transition-[transform,color] duration-150 group-hover:translate-x-0.5 group-hover:text-muted-foreground"
         />
       </button>
     </div>

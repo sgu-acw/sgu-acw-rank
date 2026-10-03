@@ -166,13 +166,13 @@ onMounted(() => ensureLoaded())
         </CardHeader>
         <CardContent class="p-0">
           <div v-if="!accounts.length" class="p-4 text-sm text-muted-foreground">
-            还没有绑定任何平台账号。
+            还没有绑定任何平台账号
           </div>
           <div v-else class="divide-y divide-border/40">
             <div
               v-for="account in accounts"
               :key="account.id"
-              class="flex flex-wrap items-center gap-2 px-4 py-2.5"
+              class="flex flex-wrap items-center gap-2 px-4 py-2.5 transition-colors hover:bg-muted/30"
             >
               <span class="text-sm font-medium">{{ PLATFORM_META[account.platform].label }}</span>
               <span class="font-mono text-xs text-muted-foreground">{{ account.identifier }}</span>
@@ -200,7 +200,7 @@ onMounted(() => ensureLoaded())
           </div>
         </CardHeader>
         <CardContent>
-          <div v-if="!trend" class="text-sm text-muted-foreground">这 30 天没有记录。</div>
+          <div v-if="!trend" class="text-sm text-muted-foreground">这 30 天没有记录</div>
           <template v-else>
             <div class="flex items-end gap-0.5" style="height: 48px">
               <span
@@ -222,7 +222,7 @@ onMounted(() => ensureLoaded())
       </Card>
 
       <Separator />
-      <p class="text-xs text-muted-foreground">练习数据由后台定时同步，不是实时值。</p>
+      <p class="text-xs text-muted-foreground">练习数据由后台定时同步，不是实时值</p>
 
       <!--
         管理员才看得到的一段。普通成员这里什么都不显示，后端也不会把

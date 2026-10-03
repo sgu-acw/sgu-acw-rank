@@ -211,4 +211,50 @@
   .link-card:hover .link-card-arrow {
     @apply text-primary;
   }
+
+  /*
+   * 可点的行与块。
+   *
+   * 之前只有按钮有反馈，列表行、链接卡点上去什么都不动，鼠标扫过去
+   * 分不出哪块能点。这里补上统一的两档：行换底色，块提亮边框。
+   *
+   * 刻意不做阴影和位移——本站的卡片本来就是平的，靠边框分层。
+   * 悬停时浮起来会和整体语言打架。
+   */
+  .row-action {
+    transition:
+      background-color 140ms ease,
+      border-color 140ms ease,
+      transform 140ms var(--ease-out);
+  }
+
+  .surface-action {
+    transition:
+      background-color 140ms ease,
+      border-color 140ms ease,
+      transform 160ms var(--ease-out);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .row-action:hover {
+      background-color: hsl(var(--muted) / 0.4);
+    }
+
+    .surface-action:hover {
+      background-color: hsl(var(--muted) / 0.25);
+      border-color: hsl(var(--border));
+    }
+  }
+
+  .row-action:active,
+  .surface-action:active {
+    transform: scale(0.995);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .row-action:active,
+    .surface-action:active {
+      transform: none;
+    }
+  }
 }

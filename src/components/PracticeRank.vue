@@ -338,17 +338,7 @@ onMounted(async () => {
 <template>
   <div class="space-y-4">
     <div class="flex flex-wrap items-center justify-between gap-3">
-      <div>
-        <h1 class="text-lg font-semibold tracking-tight">榜单</h1>
-        <p class="mt-0.5 text-xs text-muted-foreground">
-          <template v-if="dimension === 'practice'">
-            按过题数统计。同一平台的主号与小号已合并。一天从凌晨 4 点算起。
-          </template>
-          <template v-else>
-            平台上的等级分，以账号为单位——主号和小号各有各的 rating，合并没有意义。
-          </template>
-        </p>
-      </div>
+      <h1 class="text-lg font-semibold tracking-tight">榜单</h1>
       <Button variant="outline" size="sm" :disabled="loading" @click="reload">
         <RefreshCw class="mr-1.5 h-3.5 w-3.5" :class="loading && 'animate-spin'" />
         刷新
@@ -492,11 +482,10 @@ onMounted(async () => {
     </Alert>
 
     <Card v-if="needsLogin">
-      <CardContent class="space-y-3 py-8 text-center">
-        <p class="text-sm text-muted-foreground">榜单包含成员姓名与数据，需要登录后查看。</p>
+      <CardContent class="py-8 text-center">
         <Button @click="go('/login')">
           <LogIn class="mr-2 h-4 w-4" />
-          去登录
+          登录后查看榜单
         </Button>
       </CardContent>
     </Card>
@@ -522,7 +511,7 @@ onMounted(async () => {
         </div>
 
         <div v-else-if="!data?.entries.length" class="p-6 text-center text-sm text-muted-foreground">
-          <template v-if="hasFilters">没有符合条件的人。</template>
+          <template v-if="hasFilters">没有符合条件的人</template>
           <template v-else>
             这段时间还没有记录。榜单由后台定时同步，成员绑好账号后就会出现。
           </template>
@@ -532,7 +521,7 @@ onMounted(async () => {
           <div
             v-for="entry in data.entries"
             :key="entry.user_id"
-            class="flex items-center gap-2 px-3 py-3 sm:gap-3 sm:px-4"
+            class="row-action flex items-center gap-2 px-3 py-3 sm:gap-3 sm:px-4"
           >
             <span
               class="w-6 shrink-0 text-center font-mono text-xs"
@@ -674,7 +663,7 @@ onMounted(async () => {
           <div
             v-for="entry in rating.entries"
             :key="`${entry.platform}-${entry.identifier}`"
-            class="flex items-center gap-2 px-3 py-3 sm:gap-3 sm:px-4"
+            class="row-action flex items-center gap-2 px-3 py-3 sm:gap-3 sm:px-4"
           >
             <span
               class="w-6 shrink-0 text-center font-mono text-xs"
@@ -729,17 +718,14 @@ onMounted(async () => {
       </CardContent>
     </Card>
 
-    <p v-if="dimension === 'practice' && status?.has_run" class="text-xs text-muted-foreground">
-      上次同步：{{ status.account_count }} 个账号，成功 {{ status.ok_count }}
-      <span v-if="status.error_count">，失败 {{ status.error_count }}</span>
-      <span v-if="status.errors.length" class="block pt-1 text-destructive/80">
-        {{ status.errors.join('；') }}
-      </span>
-    </p>
-
-    <p v-else-if="dimension === 'rating'" class="text-xs text-muted-foreground">
-      Rating 每天同步一次。刚打完比赛的话，去首页点「刷新」立刻更新。
-    </p>
+    <!--
+      只在同步出错时提示。同步了多少个账号、成功几个是运维数字，
+      成员看了没用；但抓失败得说出来，否则数据缺了没人知道。
+    -->
+    <Alert v-if="dimension === 'practice' && status?.errors.length" variant="destructive" class="flex items-start gap-2">
+      <AlertCircle class="h-4 w-4 shrink-0 translate-y-0.5" />
+      <span class="text-sm">部分账号同步失败：{{ status.errors.join('；') }}</span>
+    </Alert>
 
     <!-- 成员资料弹窗。用榜单里已有的那一行，不再重复拉数据。 -->
     <MemberDialog v-if="dialogEntry" :entry="dialogEntry" @close="dialogEntry = null" />

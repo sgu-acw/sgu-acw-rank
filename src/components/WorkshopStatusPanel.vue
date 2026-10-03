@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { Activity, Clock, RefreshCw, Router, Server } from 'lucide-vue-next'
+import { Clock, RefreshCw } from 'lucide-vue-next'
 import {
-  WORKSHOP_STATUS_API,
   formatAge,
   stateDescription,
   stateDotClass,
@@ -25,11 +24,6 @@ const lastSeenText = computed(() => {
   const ts = data.value?.last_seen
   if (!ts) return '—'
   return new Date(ts * 1000).toLocaleString('zh-CN', { hour12: false })
-})
-
-const ttlText = computed(() => {
-  const ttl = data.value?.ttl
-  return ttl ? `${ttl} 秒` : '—'
 })
 
 async function manualRefresh() {
@@ -73,39 +67,20 @@ async function manualRefresh() {
         </button>
       </div>
 
-      <dl class="mt-6 grid grid-cols-1 gap-px overflow-hidden rounded-md border border-border/40 bg-border/40 sm:grid-cols-3">
-        <div class="bg-card p-4">
-          <dt class="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Clock class="h-3.5 w-3.5" />
-            最后心跳
-          </dt>
-          <dd class="mt-1.5 text-sm font-medium">{{ age }}</dd>
-          <dd class="mt-0.5 text-xs text-muted-foreground/60">{{ lastSeenText }}</dd>
-        </div>
+      <!--
+        只留最后心跳。
 
-        <div class="bg-card p-4">
-          <dt class="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Activity class="h-3.5 w-3.5" />
-            判定窗口
-          </dt>
-          <dd class="mt-1.5 text-sm font-medium">{{ ttlText }}</dd>
-          <dd class="mt-0.5 text-xs text-muted-foreground/60">超过即视为关门</dd>
-        </div>
+        判定窗口、数据源、心跳机制都是内部实现，成员不需要知道：他们只
+        关心现在能不能过去。数据源域名更不能往外摆。
+      -->
+      <div class="mt-6 flex items-center gap-2 rounded-md border border-border/40 px-4 py-3">
+        <Clock class="h-3.5 w-3.5 text-muted-foreground" />
+        <span class="text-xs text-muted-foreground">最后心跳</span>
+        <span class="ml-auto text-sm font-medium">{{ age }}</span>
+        <span class="text-xs text-muted-foreground/60">{{ lastSeenText }}</span>
+      </div>
 
-        <div class="bg-card p-4">
-          <dt class="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Server class="h-3.5 w-3.5" />
-            数据源
-          </dt>
-          <dd class="mt-1.5 truncate text-sm font-medium" :title="WORKSHOP_STATUS_API">
-            {{ WORKSHOP_STATUS_API.replace('https://', '') }}
-          </dd>
-          <dd class="mt-0.5 text-xs text-muted-foreground/60">每 20 秒自动刷新</dd>
-        </div>
-      </dl>
-
-      <div v-if="devices.length" class="mt-4 flex flex-wrap items-center gap-2 text-xs">
-        <span class="text-muted-foreground">正在报到的设备</span>
+      <div v-if="devices.length" class="mt-3 flex flex-wrap items-center gap-2 text-xs">
         <span
           v-for="device in devices"
           :key="device.id"
@@ -119,21 +94,6 @@ async function manualRefresh() {
           <span class="text-muted-foreground/60">{{ formatAge(device.age) }}</span>
         </span>
       </div>
-    </div>
-
-    <div class="mt-6 rounded-lg border border-border/40 bg-card p-6">
-      <h2 class="flex items-center gap-2 text-sm font-medium">
-        <Router class="h-4 w-4 text-muted-foreground" />
-        这是怎么判断的
-      </h2>
-      <ol class="mt-3 space-y-2 text-sm text-muted-foreground">
-        <li>1. 工作坊里的设备每 30 秒向状态服务发一次心跳。</li>
-        <li>2. 服务器记录收到心跳的时间,设备自己的时钟不参与判断。</li>
-        <li>3. 只要最近一次心跳在 {{ ttlText }} 之内,就认为工作坊开门;否则当作关门。</li>
-      </ol>
-      <p class="mt-3 text-xs text-muted-foreground/60">
-        设备断电、断网或还没开机,心跳就会停下,状态自动变成没开门。
-      </p>
     </div>
   </div>
 </template>

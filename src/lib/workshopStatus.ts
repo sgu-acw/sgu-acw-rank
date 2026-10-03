@@ -79,15 +79,16 @@ export function stateLabel(state: WorkshopState): string {
 }
 
 export function stateDescription(state: WorkshopState): string {
+  //
+  // 开门和关门不再给描述。状态词已经把结论说完了，
+  // 「工作坊里的设备不在线，现在关着」只是把「没开门」换个说法再说一遍。
+  // 只有出错时才有需要补充的信息：是服务联系不上，而不是真的关门。
+  //
   switch (state) {
-    case 'open':
-      return '工作坊里的设备在线,现在开着'
-    case 'closed':
-      return '工作坊里的设备不在线,现在关着'
     case 'error':
-      return '联系不上状态服务,稍后重试'
+      return '联系不上状态服务'
     default:
-      return '正在查询工作坊里的设备'
+      return ''
   }
 }
 

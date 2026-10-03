@@ -33,8 +33,8 @@ const sections: NavSection[] = [
     title: '站内',
     icon: Trophy,
     links: [
-      { name: '现役成员 CF Rank', url: '/codeforces/rank', internal: true },
-      { name: '退役成员 CF Rank', url: '/codeforces/rank-retired', internal: true },
+      { name: '成员练习榜', url: '/practice', desc: '训练量与 Rating 榜单', internal: true },
+      { name: '每日一题', url: '/daily', desc: '三个难度档各一道', internal: true },
       { name: '工作坊状态', url: '/status', internal: true },
     ],
   },
@@ -123,15 +123,12 @@ const sections: NavSection[] = [
 ---
 
 <BaseLayout title="SGU ACW - 导航">
-  <div class="max-w-5xl mx-auto">
-    <header class="mb-8">
-      <h1 class="flex items-center gap-2 text-2xl font-semibold tracking-tight">
-        <GraduationCap class="h-6 w-6 text-muted-foreground" />
+  <div class="mx-auto w-full max-w-5xl">
+    <header class="mb-6">
+      <h1 class="flex items-center gap-2 text-xl font-semibold tracking-tight">
+        <GraduationCap class="h-5 w-5 text-muted-foreground" />
         导航
       </h1>
-      <p class="mt-1.5 text-sm text-muted-foreground">
-        训练、比赛、资料和工具，常用链接都收在这里。
-      </p>
     </header>
 
     <a

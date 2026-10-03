@@ -137,7 +137,7 @@ onMounted(() => {
               </TableRow>
               <TableRow v-if="!students.length">
                 <TableCell :colspan="columns.length" class="text-center text-muted-foreground py-8">
-                  暂无数据或加载失败。
+                  暂无数据或加载失败
                 </TableCell>
               </TableRow>
             </TableBody>

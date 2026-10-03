@@ -81,7 +81,7 @@ function go(path: string) {
       </div>
 
       <div v-else-if="!user" class="space-y-4 py-2">
-        <p class="text-sm text-muted-foreground">你还没有登录。</p>
+        <p class="text-sm text-muted-foreground">你还没有登录</p>
         <div class="flex gap-2">
           <Button class="flex-1" @click="go('/login')">去登录</Button>
           <Button variant="outline" class="flex-1" @click="go('/register')">去注册</Button>

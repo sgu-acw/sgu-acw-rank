@@ -1,5 +1,5 @@
 ---
-import { getCollection, render } from 'astro:content';
+import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 
 const posts = await getCollection('blog');
@@ -7,12 +7,10 @@ const sorted = posts.sort((a, b) => {
   return (b.data.sortOrder ?? 0) - (a.data.sortOrder ?? 0);
 });
 
-// Render each post to get HTML content for preview
-const postsWithContent = await Promise.all(
-  sorted.map(async (post) => {
-    const { Content } = await render(post);
-    // Extract plain text from the raw markdown body for excerpt
-    const plainText = post.body
+// 列表只需要标题和一段摘要。摘要直接从 Markdown 原文里抽，不渲染整篇——
+// 列表页没人看正文，白渲染一遍只是拖慢构建。
+const postsWithContent = sorted.map((post) => {
+  const plainText = post.body
       ?.replace(/^---[\s\S]*?---\n*/m, '') // remove frontmatter
       ?.replace(/#+\s/g, '')               // remove headings
       ?.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // links -> text
@@ -22,17 +20,16 @@ const postsWithContent = await Promise.all(
       ?.replace(/!\[.*?\]\(.*?\)/g, '')    // remove images
       ?.trim()
       ?.slice(0, 200) || '';
-    return { post, Content, excerpt: plainText };
-  })
-);
+  return { post, excerpt: plainText };
+});
 ---
 
 <BaseLayout title="SGU ACW - 博客">
-  <div class="max-w-3xl mx-auto px-2">
+  <div class="mx-auto w-full max-w-3xl">
     <div class="divide-y divide-border/50">
-      {postsWithContent.map(({ post, Content, excerpt }) => (
+      {postsWithContent.map(({ post, excerpt }) => (
         <a href={`/blog/${post.id.replace(/\.md$/, '')}`} class="block group">
-          <article class="py-6 md:py-8 px-2 md:px-4 -mx-2 md:-mx-4 rounded-lg hover:bg-muted/40 transition-colors duration-200">
+          <article class="row-action -mx-2 rounded-lg px-2 py-6 md:-mx-4 md:px-4 md:py-8">
             <h2 class="text-base md:text-lg font-medium tracking-tight group-hover:text-primary transition-colors">
               {post.data.title}
             </h2>

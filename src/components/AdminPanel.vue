@@ -6,7 +6,7 @@
  * 后端——这里只是不给无权的人显示入口，每个请求失败都会照常提示。
  */
 import { computed, onMounted, ref, watch } from 'vue'
-import { AlertCircle, Check, ChevronDown, Copy, Link2, Loader2, MoreHorizontal, Pencil, Plus, Search, SlidersHorizontal, Trash2, X } from 'lucide-vue-next'
+import { AlertCircle, Check, ChevronDown, Copy, KeyRound, Link2, Loader2, MoreHorizontal, Pencil, Plus, Search, SlidersHorizontal, Trash2, Users, X } from 'lucide-vue-next'
 import AdminWorkspaceNav from './AdminWorkspaceNav.vue'
 import { Alert } from './ui/alert'
 import { Button } from './ui/button'
@@ -399,7 +399,7 @@ onMounted(async () => {
 
     <Alert v-else-if="!isAdmin" variant="destructive" class="flex items-start gap-2">
       <AlertCircle class="h-4 w-4 shrink-0 translate-y-0.5" />
-      <span class="text-sm">这个页面只有管理员能看。</span>
+      <span class="text-sm">这个页面只有管理员能看</span>
     </Alert>
 
     <template v-else>
@@ -413,44 +413,58 @@ onMounted(async () => {
         <span class="text-sm">{{ notice }}</span>
       </Alert>
 
-      <Card v-if="stats">
-        <CardContent class="grid grid-cols-2 divide-y divide-border/50 p-0 sm:grid-cols-4 sm:divide-x sm:divide-y-0">
-          <div v-for="item in [
-            { label: '成员', value: stats.user_count },
-            { label: '在用', value: stats.active_count },
-            { label: '管理员', value: stats.admin_count },
-            { label: '可用邀请码', value: stats.usable_invite_count },
-          ]" :key="item.label" class="px-4 py-3">
-            <p class="text-xs text-muted-foreground">{{ item.label }}</p>
-            <p class="mt-1 font-mono text-xl font-semibold tabular-nums">{{ item.value }}</p>
-          </div>
-        </CardContent>
-      </Card>
+      <!--
+        账号 / 邀请码。
 
-      <div class="flex flex-wrap items-center gap-1 border-b border-border/50" role="group" aria-label="管理内容分区">
+        标签不叫「成员」：上面那排分段控件已经有「成员」了，同屏两个
+        「成员」会分不清哪个管什么。这一层管的是账号（学号、密码重置、
+        身份），叫「账号」更准确。
+
+        图标配文字，不单用图标——图标在手机上只占二十几像素，孤零零
+        两个认不出是切换器。
+      -->
+      <div class="flex flex-wrap items-center gap-1 border-b border-border/50" role="tablist" aria-label="管理内容分区">
         <button
           type="button"
-          :aria-pressed="activeSection === 'members'"
-          class="relative min-h-11 px-3 text-sm font-medium transition-colors"
+          role="tab"
+          :aria-selected="activeSection === 'members'"
+          class="relative flex min-h-11 items-center gap-1.5 px-3 text-sm font-medium transition-colors"
           :class="activeSection === 'members' ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'"
           @click="activeSection = 'members'"
         >
-          成员
+          <Users class="h-4 w-4" />
+          账号
           <span v-if="activeSection === 'members'" class="absolute inset-x-3 bottom-0 h-0.5 rounded-full bg-primary" />
         </button>
         <button
           type="button"
-          :aria-pressed="activeSection === 'invites'"
-          class="relative min-h-11 px-3 text-sm font-medium transition-colors"
+          role="tab"
+          :aria-selected="activeSection === 'invites'"
+          class="relative flex min-h-11 items-center gap-1.5 px-3 text-sm font-medium transition-colors"
           :class="activeSection === 'invites' ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'"
           @click="activeSection = 'invites'"
         >
+          <KeyRound class="h-4 w-4" />
           邀请码
-          <span v-if="stats" class="ml-1.5 rounded-full bg-muted px-1.5 py-0.5 text-[10px] tabular-nums text-muted-foreground">
-            {{ stats.usable_invite_count }} 可用
-          </span>
           <span v-if="activeSection === 'invites'" class="absolute inset-x-3 bottom-0 h-0.5 rounded-full bg-primary" />
         </button>
+
+        <!--
+          在用账号 / 管理员。原来这两项和成员数、邀请码数一起摆成一张
+          四项统计卡，但后两项就在左边图标旁，那张卡看起来像在重复。
+          现在只留这两个没有别处可看的数据，靠右放，与左边的分区切换分开。
+        -->
+        <div v-if="stats" class="ml-auto hidden items-center gap-3 pb-2 text-xs text-muted-foreground sm:flex">
+          <span>
+            在用
+            <span class="ml-1 font-mono tabular-nums text-foreground">{{ stats.active_count }}</span>
+          </span>
+          <span class="text-border">·</span>
+          <span>
+            管理员
+            <span class="ml-1 font-mono tabular-nums text-foreground">{{ stats.admin_count }}</span>
+          </span>
+        </div>
       </div>
 
       <section v-if="activeSection === 'invites'" class="admin-section-content space-y-4">
@@ -458,7 +472,6 @@ onMounted(async () => {
       <Card v-if="showInviteCreate" class="admin-section-content">
         <CardHeader class="pb-3">
           <CardTitle class="text-sm font-medium">创建邀请码</CardTitle>
-          <p class="mt-1 text-xs text-muted-foreground">先设人数和有效期，生成后可复制邀请码或邀请链接。</p>
         </CardHeader>
         <CardContent class="space-y-4">
           <div class="grid gap-3 sm:grid-cols-3">
@@ -486,6 +499,7 @@ onMounted(async () => {
             <Input v-model="form.note" placeholder="给谁用的、什么时候发的" />
           </div>
           <Button size="sm" @click="createInvite">生成</Button>
+          <!-- 规则，不是复述控件：谁先到谁生效、能不能授予 root。 -->
           <p class="text-xs text-muted-foreground">
             人数和时间谁先到谁生效。管理员之间平级，可以互相任命；root 不能通过邀请码授予。
           </p>
@@ -496,8 +510,12 @@ onMounted(async () => {
         <CardHeader class="pb-3">
           <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <CardTitle class="text-sm font-medium">邀请码</CardTitle>
-              <p class="mt-1 text-xs text-muted-foreground">复制邀请码或邀请链接，发给要加入工作坊的成员。</p>
+              <CardTitle class="text-sm font-medium">
+                邀请码
+                <span v-if="stats" class="ml-1 font-normal text-muted-foreground">
+                  {{ stats.usable_invite_count }} 个可用
+                </span>
+              </CardTitle>
             </div>
             <Button size="sm" variant="outline" @click="showInviteCreate = !showInviteCreate">
               <Plus class="mr-1.5 h-3.5 w-3.5" />
@@ -506,9 +524,9 @@ onMounted(async () => {
           </div>
         </CardHeader>
         <CardContent class="p-0">
-          <div v-if="!invites.length" class="p-4 text-sm text-muted-foreground">还没有邀请码。</div>
+          <div v-if="!invites.length" class="p-4 text-sm text-muted-foreground">还没有邀请码</div>
           <div v-else class="divide-y divide-border/40">
-            <div v-for="invite in invites" :key="invite.id" class="flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3">
+            <div v-for="invite in invites" :key="invite.id" class="flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3 transition-colors hover:bg-muted/25">
               <button
                 class="flex items-center gap-1.5 font-mono text-sm hover:text-primary"
                 title="点击复制邀请码"
@@ -709,10 +727,10 @@ onMounted(async () => {
 
         <CardContent class="p-0">
           <div v-if="!members.length" class="p-4 text-sm text-muted-foreground">
-            没有符合条件的成员。
+            没有符合条件的成员
           </div>
           <div v-else class="divide-y divide-border/40">
-            <div v-for="member in members" :key="member.id" class="space-y-2 px-4 py-3">
+            <div v-for="member in members" :key="member.id" class="space-y-2 px-4 py-3 transition-colors hover:bg-muted/25">
               <div class="flex flex-wrap items-center gap-2">
                 <span class="text-sm font-medium">{{ member.display_name }}</span>
                 <span class="font-mono text-xs text-muted-foreground">{{ member.student_id }}</span>
@@ -864,10 +882,6 @@ onMounted(async () => {
         </CardContent>
       </Card>
         </section>
-
-      <p class="text-xs leading-relaxed text-muted-foreground">
-        忘记密码只能由管理员重置：账号以学号为名，没有绑定邮箱，无法自助找回。
-      </p>
     </template>
   </div>
 </template>

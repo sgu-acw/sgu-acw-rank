@@ -167,7 +167,7 @@ onMounted(load)
         <div class="space-y-2">
           <p class="text-xs font-medium">账号同步状态</p>
           <p v-if="!data.accounts.length" class="text-xs text-muted-foreground">
-            还没有绑定任何平台账号。
+            还没有绑定平台账号
           </p>
           <div v-else class="divide-y divide-border/40 rounded-md border border-border/40">
             <div
@@ -233,7 +233,7 @@ onMounted(load)
             {{ data.admin_note || '（空）' }}
           </p>
           <p class="mt-1 text-[10px] text-muted-foreground/60">
-            备注在「管理」页改。
+            备注在「管理」页改
           </p>
         </div>
       </template>
