@@ -13,7 +13,7 @@
  */
 import { computed, ref } from 'vue'
 import { BookOpen, ChevronDown, Code2, Lightbulb, Loader2, Lock } from 'lucide-vue-next'
-import { renderMarkdown } from '../lib/markdown'
+import { renderInline, renderMarkdown } from '../lib/markdown'
 import type { EditorialView } from '../lib/api'
 
 const props = defineProps<{ editorial: EditorialView }>()
@@ -33,6 +33,12 @@ const showCode = ref(false)
 const lang = ref<'cpp17' | 'py3' | 'java17'>('cpp17')
 
 const bodyHtml = computed(() => renderMarkdown(props.editorial.body))
+
+/**
+ * hint 渲染后的 HTML。hint 里可能有行内公式（比如 ``$x \le 100$``），
+ * 直接输出文本会显示成原文。
+ */
+const hintsHtml = computed(() => hints.value.map((hint) => renderInline(hint)))
 
 const LANGS = [
   { key: 'cpp17' as const, label: 'C++17' },
@@ -98,7 +104,8 @@ const publishLabel = computed(() => {
             class="flex gap-2 rounded-md border border-border/40 bg-muted/20 px-3 py-2 text-xs leading-relaxed"
           >
             <Lightbulb class="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" />
-            <span>{{ hint }}</span>
+            <!-- eslint-disable-next-line vue/no-v-html -- markdown-it 开了 html:false，只会有自己产出的标签 -->
+            <span v-html="hintsHtml[index]" />
           </li>
         </ol>
 

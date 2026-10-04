@@ -11,7 +11,7 @@
  * 这里提供的是「发现问题后能立刻处理」的能力：改几个字、撤下来、或者
  * 删掉让下次重跑。
  */
-import { onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import {
   AlertCircle,
   BookOpen,
@@ -30,7 +30,7 @@ import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Input } from './ui/input'
 import AdminWorkspaceNav from './AdminWorkspaceNav.vue'
-import { renderMarkdown } from '../lib/markdown'
+import { renderInline, renderMarkdown } from '../lib/markdown'
 import {
   ApiError,
   adminApi,
@@ -45,6 +45,11 @@ const notice = ref('')
 const items = ref<AdminEditorial[]>([])
 const total = ref(0)
 const missing = ref<MissingEditorial[]>([])
+
+/** 今天的题。还没到生成时间，列出来让管理员知道今天出了什么。 */
+const todayMissing = computed(() => missing.value.filter((item) => item.is_today))
+/** 往日缺的。这才是真漏了。 */
+const pastMissing = computed(() => missing.value.filter((item) => !item.is_today))
 
 const filterDay = ref('')
 const filterStatus = ref('')
@@ -233,31 +238,69 @@ onMounted(load)
       <span class="text-sm">{{ notice }}</span>
     </Alert>
 
-    <!-- 缺题解的题。生成任务漏了的时候这里能看出来。 -->
-    <Card v-if="missing.length">
+    <!--
+      今天的题。还没生成，所以没有题解记录可看——但管理员需要知道今天
+      出的是哪几道。
+    -->
+    <Card v-if="todayMissing.length">
       <CardHeader class="pb-3">
         <CardTitle class="text-sm font-medium">
-          还没生成题解
-          <span class="ml-1 font-normal text-muted-foreground">{{ missing.length }} 道</span>
+          今天的题
+          <span class="ml-1 font-normal text-muted-foreground">{{ todayMissing.length }} 道</span>
         </CardTitle>
       </CardHeader>
-      <CardContent class="space-y-1">
+      <CardContent class="space-y-2">
         <p class="text-xs text-muted-foreground">
-          往日里这些题还没有题解。生成每天早上跑一次，只处理当天的题，
-          所以往日落下的不会自动补上。
+          生成任务每天早上跑一次，跑完这里就有题解了。
         </p>
-        <div class="flex flex-wrap gap-1.5 pt-1">
-          <span
-            v-for="item in missing.slice(0, 40)"
+        <div class="space-y-1">
+          <div
+            v-for="item in todayMissing"
             :key="item.daily_problem_id"
-            class="rounded border border-border/40 px-1.5 py-0.5 font-mono text-[11px] text-muted-foreground"
-            :title="`${item.day} · ${item.name}`"
+            class="flex flex-wrap items-center gap-x-2 text-xs"
           >
-            {{ item.key }}
-          </span>
-          <span v-if="missing.length > 40" class="text-[11px] text-muted-foreground">
-            还有 {{ missing.length - 40 }} 道…
-          </span>
+            <span class="font-mono text-muted-foreground">{{ item.key }}</span>
+            <span>{{ item.name }}</span>
+            <span v-if="item.rating" class="font-mono text-[11px] text-muted-foreground">
+              {{ item.rating }}
+            </span>
+            <span class="text-[11px] text-muted-foreground/60">待生成</span>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+
+    <!--
+      往日缺题解的。这才是真漏了——生成只处理当天的题，往日落下不会
+      自动补上。
+    -->
+    <Card v-if="pastMissing.length">
+      <CardHeader class="pb-3">
+        <CardTitle class="text-sm font-medium">
+          往日缺题解
+          <span class="ml-1 font-normal text-muted-foreground">{{ pastMissing.length }} 道</span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent class="space-y-2">
+        <p class="text-xs text-muted-foreground">
+          生成只处理当天的题，这些往日落下的不会自动补上。
+        </p>
+        <div class="space-y-1">
+          <div
+            v-for="item in pastMissing.slice(0, 40)"
+            :key="item.daily_problem_id"
+            class="flex flex-wrap items-center gap-x-2 text-xs"
+          >
+            <span class="font-mono text-muted-foreground">{{ item.day }}</span>
+            <span class="font-mono text-muted-foreground">{{ item.key }}</span>
+            <span>{{ item.name }}</span>
+            <span v-if="item.rating" class="font-mono text-[11px] text-muted-foreground">
+              {{ item.rating }}
+            </span>
+          </div>
+          <p v-if="pastMissing.length > 40" class="text-[11px] text-muted-foreground">
+            还有 {{ pastMissing.length - 40 }} 道…
+          </p>
         </div>
       </CardContent>
     </Card>
@@ -431,7 +474,8 @@ onMounted(load)
                   class="flex gap-2 text-xs leading-relaxed text-muted-foreground"
                 >
                   <Lightbulb class="mt-0.5 h-3 w-3 shrink-0 text-amber-500" />
-                  <span>{{ hint }}</span>
+                  <!-- eslint-disable-next-line vue/no-v-html -- 见 Editorial.vue 的说明 -->
+                  <span v-html="renderInline(hint)" />
                 </li>
               </ol>
             </div>

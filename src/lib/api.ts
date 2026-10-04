@@ -713,6 +713,8 @@ export interface MissingEditorial {
   key: string
   name: string
   rating: number | null
+  /** 今天的题还没生成是正常的，往日没有才是真漏了。 */
+  is_today: boolean
 }
 
 /** 一道题的题解。未公布时只有 status 和 publish_at。 */

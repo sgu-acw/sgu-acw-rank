@@ -78,3 +78,19 @@ export function renderMarkdown(source: string): string {
 
   return html.replace(PLACEHOLDER_RE, (_match, index: string) => math[Number(index)] ?? '')
 }
+
+
+/**
+ * 行内渲染。用于 hint 这种一句话的内容。
+ *
+ * 和 ``renderMarkdown`` 的区别是不包 ``<p>``——hint 是列表项里的一行，
+ * 外面再套一层段落会让行距变得奇怪。公式、加粗、行内代码照常渲染。
+ *
+ * 做法是渲染完把最外层的 ``<p>...</p>`` 剥掉。markdown-it 对单段输入
+ * 一定产出这个结构，所以剥离是安全的。
+ */
+export function renderInline(source: string): string {
+  const html = renderMarkdown(source)
+  const match = html.match(/^<p>([\s\S]*)<\/p>\n?$/)
+  return match ? match[1] : html.trim()
+}
