@@ -3,6 +3,7 @@ import '../styles/globals.css'
 import AppNav from '../components/AppNav.vue'
 import MobileTabBar from '../components/MobileTabBar.vue'
 import ThemeToggle from '../components/ThemeToggle.vue'
+import { ClientRouter } from 'astro:transitions'
 
 interface Props {
   title?: string
@@ -70,6 +71,39 @@ const { title = 'SGU 算法竞赛工作坊' } = Astro.props
   <link rel="icon" href="/favicon.ico" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
   <title>{title}</title>
+
+  <!--
+    客户端路由。
+
+    **它解决的是「切页面时主题闪一下」。**
+
+    默认情况下每次点链接都是加载一个全新文档，html 元素重建——上一页
+    挂着 class="dark"，新文档的 html 是干净的，于是先按浅色画一帧，
+    脚本再挂类。中间那一帧就是闪。
+
+    ClientRouter 把整页跳转改成只交换 body 内容，html 元素从头到尾
+    不重建，主题类一直在，所以不存在「新文档第一帧没类」这件事。
+
+    顺带的好处：页面间的公共部分（侧边栏、顶栏）不用重新渲染，
+    切换更快。
+
+    它不负责首屏（第一次打开站点）——那时候 html 确实是新的。
+    首屏由 head 里那个内联脚本处理，见上面的说明。
+  -->
+  <ClientRouter />
+
+  <!--
+    主题在客户端路由切换时的存活逻辑。
+
+    用 <script> 标签而不是 import：Astro 会把这种标签里的模块打包并注入，
+    而 ``import '../scripts/...'`` 那种纯副作用导入会被 rollup 当成无副作用
+    的东西删掉——打包产物里根本没有它。
+
+    内容是空的，逻辑全在那个文件里。
+  -->
+  <script>
+    import '../scripts/theme-routing'
+  </script>
 
 </head>
 <body>
