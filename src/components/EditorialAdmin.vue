@@ -60,7 +60,7 @@ const editingId = ref<number | null>(null)
 /** 展开着预览的题解 id。 */
 const previewingId = ref<number | null>(null)
 /** 预览里看哪个语言的代码。 */
-const previewLang = ref('cpp17')
+const previewLang = ref('cpp20')
 
 /**
  * 渲染后的正文。按 id 缓存，避免每次重渲染都跑一遍 markdown-it + KaTeX。
@@ -80,7 +80,7 @@ const draft = ref<{ hints: string; body: string; code: Record<string, string> }>
 })
 const saving = ref(false)
 /** 编辑时看哪个语言的代码。 */
-const editLang = ref('cpp17')
+const editLang = ref('cpp20')
 
 const STATUS_LABEL: Record<string, string> = {
   pending: '未生成',
@@ -97,7 +97,7 @@ const STATUS_TONE: Record<string, string> = {
 }
 
 const LANGS = [
-  { key: 'cpp17', label: 'C++' },
+  { key: 'cpp20', label: 'C++' },
   { key: 'py3', label: 'Python' },
   { key: 'java17', label: 'Java' },
 ]
@@ -151,7 +151,7 @@ function startEdit(item: AdminEditorial) {
     body: item.body,
     code: { ...item.code },
   }
-  editLang.value = 'cpp17'
+  editLang.value = 'cpp20'
 }
 
 function cancelEdit() {

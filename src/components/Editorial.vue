@@ -30,7 +30,7 @@ const showBody = ref(false)
 /** 代码默认收起。 */
 const showCode = ref(false)
 /** 当前看哪个语言的代码。 */
-const lang = ref<'cpp17' | 'py3' | 'java17'>('cpp17')
+const lang = ref<'cpp20' | 'py3' | 'java17'>('cpp20')
 
 const bodyHtml = computed(() => renderMarkdown(props.editorial.body))
 
@@ -41,7 +41,7 @@ const bodyHtml = computed(() => renderMarkdown(props.editorial.body))
 const hintsHtml = computed(() => hints.value.map((hint) => renderInline(hint)))
 
 const LANGS = [
-  { key: 'cpp17' as const, label: 'C++17' },
+  { key: 'cpp20' as const, label: 'C++20' },
   { key: 'py3' as const, label: 'Python 3' },
   { key: 'java17' as const, label: 'Java 17' },
 ]
