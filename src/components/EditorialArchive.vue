@@ -45,6 +45,16 @@ function editorialFor(key: string): EditorialView | null {
   return dayEditorials.value?.problems.find((p) => p.key === key) ?? null
 }
 
+/**
+ * 题解入口要不要显示。
+ *
+ * 只有已公布的才显示。往日里未公布的多半是生成失败或还在跑，对查阅的人
+ * 来说等于「没有这道题的题解」——给个点进去写「正在生成」的入口没有意义。
+ */
+function hasEditorial(key: string): boolean {
+  return editorialFor(key)?.available === true
+}
+
 async function load() {
   loading.value = true
   error.value = ''
@@ -159,7 +169,7 @@ async function toggleDay(day: string) {
                 </span>
 
                 <button
-                  v-if="editorialFor(problem.key)"
+                  v-if="hasEditorial(problem.key)"
                   type="button"
                   class="ml-auto flex items-center gap-0.5 rounded px-1 py-0.5 text-xs font-medium transition-colors hover:text-primary"
                   :class="openEditorial === problem.key ? 'text-primary' : 'text-muted-foreground'"
@@ -172,7 +182,7 @@ async function toggleDay(day: string) {
               </div>
 
               <div
-                v-if="openEditorial === problem.key && editorialFor(problem.key)"
+                v-if="openEditorial === problem.key && hasEditorial(problem.key)"
                 class="border-t border-border/40 px-3 py-3"
               >
                 <Editorial :editorial="editorialFor(problem.key)!" />

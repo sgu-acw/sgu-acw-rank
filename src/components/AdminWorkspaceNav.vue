@@ -1,20 +1,21 @@
 <script setup lang="ts">
 /**
- * 管理工作台的分区切换。成员、题单、题单编辑三个页面共用同一条。
+ * 管理工作台的分区切换。成员、题单、题解、题单编辑几个页面共用同一条。
  *
  * 标题就是这一条，不再另起一行写「SGU ACW · 管理」再加一句功能说明——
  * 那两句和「管理工作台」说的是同一件事，只是把版面撑高。分区靠图标区分，
  * 文字只留最短的标签。
  */
-import { ListChecks, Users } from 'lucide-vue-next'
+import { BookOpen, ListChecks, Users } from 'lucide-vue-next'
 
 defineProps<{
-  active: 'people' | 'problems'
+  active: 'people' | 'problems' | 'editorials'
 }>()
 
 const TABS = [
   { key: 'people', href: '/admin', label: '成员', icon: Users },
   { key: 'problems', href: '/problems/admin', label: '题单', icon: ListChecks },
+  { key: 'editorials', href: '/editorials/admin', label: '题解', icon: BookOpen },
 ] as const
 </script>
 

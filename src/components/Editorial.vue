@@ -6,8 +6,7 @@
  *
  * - **提示**：逐条显示。看一条、想一想，还不够再点下一条。
  * - **题解**：默认隐藏。很多人点进来只是想拿一条提示，不想被剧透。
- * - **参考代码**：次日凌晨 4 点公布。比题解晚一天——题解讲思路，
- *   看完还得自己写；代码是最终答案，早给出来就没得做了。
+ * - **参考代码**：和正文一起公布，默认收起。
  *
  * 未公布的内容服务端根本不返回，所以这里不用做「隐藏」，只需要按
  * 有没有内容来显示状态。
@@ -69,14 +68,6 @@ const publishLabel = computed(() => {
   return `${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`
 })
 
-const codePublishLabel = computed(() => {
-  const at = props.editorial.code_publish_at
-  if (!at) return ''
-  const date = new Date(at)
-  const month = date.getMonth() + 1
-  const day = date.getDate()
-  return `${month} 月 ${day} 日 ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`
-})
 </script>
 
 <template>
@@ -168,7 +159,6 @@ const codePublishLabel = computed(() => {
       <!-- 参考代码 -->
       <div>
         <button
-          v-if="editorial.code_available"
           type="button"
           class="row-action flex w-full items-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium text-muted-foreground"
           :aria-expanded="showCode"
@@ -182,12 +172,7 @@ const codePublishLabel = computed(() => {
           />
         </button>
 
-        <p v-else class="flex items-center gap-1.5 px-2 py-1.5 text-xs text-muted-foreground/70">
-          <Lock class="h-3.5 w-3.5" />
-          参考代码 {{ codePublishLabel }} 公布
-        </p>
-
-        <template v-if="showCode && editorial.code_available">
+        <template v-if="showCode">
           <div class="mt-1.5 flex gap-1">
             <button
               v-for="item in LANGS"

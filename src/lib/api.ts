@@ -438,6 +438,39 @@ export interface AdminUserQuery {
 }
 
 export const adminApi = {
+  // ---------------------------------------------------------------- //
+  // 题解管理
+  // ---------------------------------------------------------------- //
+
+  /** 题解列表。不传 day 则返回全部，从新到旧。 */
+  editorials: (query: { day?: string; status?: string; q?: string; limit?: number; offset?: number } = {}) => {
+    const params = new URLSearchParams()
+    for (const [key, value] of Object.entries(query)) {
+      if (value === undefined || value === null || value === '') continue
+      params.set(key, String(value))
+    }
+    const suffix = params.toString()
+    return api.get<AdminEditorialPage>(`/admin/editorials${suffix ? `?${suffix}` : ''}`)
+  },
+
+  /** 还没生成题解的题，用来提示补跑。 */
+  missingEditorials: (days = 30) =>
+    api.get<MissingEditorial[]>(`/admin/editorials/missing?days=${days}`),
+
+  updateEditorial: (
+    id: number,
+    payload: { hints?: string; body?: string; code?: Record<string, string> },
+  ) => api.patch<AdminEditorial>(`/admin/editorials/${id}`, payload),
+
+  publishEditorial: (id: number) =>
+    api.post<AdminEditorial>(`/admin/editorials/${id}/publish`),
+
+  unpublishEditorial: (id: number) =>
+    api.post<AdminEditorial>(`/admin/editorials/${id}/unpublish`),
+
+  deleteEditorial: (id: number) => api.delete<void>(`/admin/editorials/${id}`),
+
+
   /** 成员详情的管理员视角。普通成员调用会 403。 */
   memberDetail: (userId: number) => api.get<AdminMemberDetail>(`/admin/members/${userId}`),
 
@@ -643,6 +676,45 @@ export interface ProblemLookup {
   cached: boolean
 }
 
+/** 管理员看到的题解。比成员多状态、模型、失败原因。 */
+export interface AdminEditorial {
+  id: number
+  daily_problem_id: number
+  day: string
+  platform: string
+  key: string
+  name: string
+  rating: number | null
+
+  status: 'pending' | 'draft' | 'published' | 'failed'
+  error: string
+  model: string
+
+  hints: string
+  body: string
+  code: Record<string, string>
+
+  generated_at: string | null
+  published_at: string | null
+
+  publish_at: string
+}
+
+export interface AdminEditorialPage {
+  items: AdminEditorial[]
+  total: number
+}
+
+/** 还没生成题解的题。 */
+export interface MissingEditorial {
+  daily_problem_id: number
+  day: string
+  band: string
+  key: string
+  name: string
+  rating: number | null
+}
+
 /** 一道题的题解。未公布时只有 status 和 publish_at。 */
 export interface EditorialView {
   band: string
@@ -658,9 +730,9 @@ export interface EditorialView {
 
   hints: string[]
   body: string
+  /** 代码和正文一起公布，所以这个字段恒为 true（正文可见时代码就可见）。 */
   code_available: boolean
-  code_publish_at: string | null
-  /** 语言 → 源码。代码未公布时是空对象。 */
+  /** 语言 → 源码。 */
   code: Record<string, string>
 }
 

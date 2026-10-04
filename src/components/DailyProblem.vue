@@ -41,6 +41,17 @@ function editorialFor(key: string): EditorialView | null {
   return editorials.value[key] ?? null
 }
 
+/**
+ * 题解入口要不要显示。
+ *
+ * 只有已公布的才显示。八点之前题解已经生成好了（草稿），但那是个半成品，
+ * 对成员来说等于「没有」——显示一个点进去写着「正在生成」的入口，比不显示
+ * 更让人困惑。生成失败同理，那是给管理员看的，不该扰民。
+ */
+function hasEditorial(key: string): boolean {
+  return editorialFor(key)?.available === true
+}
+
 function toggleEditorial(key: string) {
   openEditorial.value = openEditorial.value === key ? null : key
 }
@@ -225,7 +236,7 @@ function membersSolved(entry: DailyProblemEntry): string {
               区域（见下面那个 Editorial）。
             -->
             <button
-              v-if="editorialFor(problem.key)"
+              v-if="hasEditorial(problem.key)"
               type="button"
               class="ml-auto flex items-center gap-0.5 rounded px-1 py-0.5 font-medium transition-colors hover:text-primary"
               :class="openEditorial === problem.key ? 'text-primary' : ''"
@@ -246,7 +257,7 @@ function membersSolved(entry: DailyProblemEntry): string {
       同时只开一道：三道题的题解一起展开会有几千字，页面长得没法用。
       点另一道的「题解」会切换过去。
     -->
-    <Card v-if="board && openEditorial && editorialFor(openEditorial)">
+    <Card v-if="board && openEditorial && hasEditorial(openEditorial)">
       <CardContent class="p-4 sm:p-5">
         <div class="mb-3 flex flex-wrap items-baseline gap-x-2 gap-y-1">
           <h3 class="text-sm font-medium">
