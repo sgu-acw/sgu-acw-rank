@@ -14,6 +14,50 @@ const { title = 'SGU 算法竞赛工作坊' } = Astro.props
 <html lang="zh">
 <head>
   <meta charset="UTF-8" />
+
+  <!--
+    地址栏 / 状态栏颜色（手机上进地址栏那一块）。
+
+    ``#111113`` 是 --background 的深色值（240 6% 7%），``#ffffff`` 是浅色值。
+
+    不能只写 media="(prefers-color-scheme: ...)"：那只跟系统偏好，用户手动
+    选了主题时地址栏会和页面对不上。也没有选择器能选中 meta，所以只能由
+    脚本在切主题时同步改 content——见下面的初始化脚本和 ThemeToggle。
+
+    这两条带 media 的是「脚本还没跑」时的初值，按系统偏好猜。
+  -->
+  <meta id="theme-color" name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff" />
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#111113" />
+
+  <!--
+    主题初始化。**必须排在所有外部样式表之前。**
+
+    这里的类只处理「用户手动选过」的情况——没选过时由 CSS 的
+    prefers-color-scheme 决定（见 globals.css），那不需要脚本。
+
+    位置很关键：head 里有个 CDN 的 KaTeX 样式表，它是渲染阻塞的。浏览器
+    执行到阻塞样式表时会停下来等它下载完，排在后面的脚本就跟着被推迟。
+    脚本一旦晚执行，手动选深色的人就会先看到一帧浅色。
+
+    所以它紧跟在 meta charset 后面：此刻还没有任何外部资源要等，同步
+    执行，第一帧之前就把类挂好了。用 is:inline 确保 Astro 不打包它——
+    打包成模块会变成异步加载，那就又赶不上了。
+  -->
+  <script is:inline>
+    (() => {
+      try {
+        const saved = localStorage.getItem('theme');
+        if (saved === 'dark' || saved === 'light') {
+          document.documentElement.classList.add(saved);
+          // 地址栏颜色也要跟着走，否则深色页面上顶着一条白的。
+          const meta = document.getElementById('theme-color');
+          if (meta) meta.setAttribute('content', saved === 'dark' ? '#111113' : '#ffffff');
+        }
+      } catch {
+        /* 隐私模式下 localStorage 可能抛异常。跟随系统就够了。 */
+      }
+    })();
+  </script>
   <!--
     viewport-fit=cover：让页面铺到 iPhone 的刘海和底部横条区域，
     再用 env(safe-area-inset-*) 把内容推回安全区内。
@@ -23,11 +67,10 @@ const { title = 'SGU 算法竞赛工作坊' } = Astro.props
     name="viewport"
     content="width=device-width, initial-scale=1.0, viewport-fit=cover"
   />
-  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff" />
-  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#111113" />
   <link rel="icon" href="/favicon.ico" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
   <title>{title}</title>
+
 </head>
 <body>
   <!--
@@ -67,14 +110,5 @@ const { title = 'SGU 算法竞赛工作坊' } = Astro.props
   <!-- 底部标签栏。md 以上自己隐藏。 -->
   <MobileTabBar client:load />
 
-  <!-- Theme init script: runs before paint to prevent flash -->
-  <script is:inline>
-    const theme = localStorage.getItem('theme');
-    if (theme === 'light') {
-      document.documentElement.classList.remove('dark');
-    } else {
-      document.documentElement.classList.add('dark');
-    }
-  </script>
 </body>
 </html>
