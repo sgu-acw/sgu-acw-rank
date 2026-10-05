@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Input } from './ui/input'
 import {
   ApiError,
+  PLATFORM_META,
   adminApi,
   type AdminUser,
   type AdminUserPage,
@@ -793,9 +794,53 @@ onMounted(async () => {
                 </div>
               </div>
 
-              <p v-if="editingMemberId !== member.id" class="pl-0.5 text-xs text-muted-foreground">
-                {{ [member.college_name, member.major_name, member.class_no ? `${member.class_no} 班` : ''].filter(Boolean).join(' · ') || '学院信息未设置' }}
-              </p>
+              <!-- 学院信息与平台账号。不编辑时显示。 -->
+              <div
+                v-if="editingMemberId !== member.id"
+                class="flex flex-wrap items-center gap-x-2 gap-y-1 pl-0.5 text-xs text-muted-foreground"
+              >
+                <span>
+                  {{ [member.college_name, member.major_name, member.class_no ? `${member.class_no} 班` : ''].filter(Boolean).join(' · ') || '学院信息未设置' }}
+                </span>
+
+                <!--
+                  平台账号。管理员最常看的两个信息：绑了没有、验没验过。
+
+                  未验证的不计入榜单，所以用琥珀色标出来——和已验证的放在
+                  一起看，一眼能挑出需要跟进的人。
+                -->
+                <template v-if="member.accounts.length">
+                  <span class="text-border">|</span>
+                  <span
+                    v-for="account in member.accounts"
+                    :key="account.id"
+                    class="inline-flex items-center gap-1 rounded border px-1.5 py-0.5 font-mono text-[10px]"
+                    :class="
+                      account.verified_at
+                        ? 'border-border/40'
+                        : 'border-amber-500/40 text-amber-600 dark:text-amber-500'
+                    "
+                    :title="
+                      account.verified_at
+                        ? `${PLATFORM_META[account.platform].label} · 已验证`
+                        : `${PLATFORM_META[account.platform].label} · 还没验证，不计入榜单`
+                    "
+                  >
+                    <span class="text-muted-foreground">{{ PLATFORM_META[account.platform].label }}</span>
+                    {{ account.identifier }}
+                  </span>
+                </template>
+                <!--
+                  「未绑定」用中性色，不用警告色：新成员还没绑是正常状态，
+                  不是出错。用琥珀色会让整页看起来到处是问题。
+                -->
+                <template v-else>
+                  <span class="text-border">|</span>
+                  <span class="rounded border border-border/40 px-1.5 py-0.5 text-[10px]">
+                    未绑定账号
+                  </span>
+                </template>
+              </div>
 
               <div v-if="editingMemberId === member.id" class="admin-section-content space-y-3 rounded-lg border border-border/50 bg-muted/20 p-3">
                 <div class="grid gap-2 sm:grid-cols-2">

@@ -396,6 +396,16 @@ export interface Invite {
   is_usable: boolean
 }
 
+/** 成员列表里显示的平台账号摘要。 */
+export interface AdminAccountBrief {
+  id: number
+  platform: Platform
+  identifier: string
+  display_name: string | null
+  /** 验证通过的时间。为 null 表示还没验证，不计入榜单。 */
+  verified_at: string | null
+}
+
 export interface AdminUser {
   id: number
   student_id: string
@@ -414,6 +424,8 @@ export interface AdminUser {
   /** 学院名与专业名。可能被管理员改过，所以不一定跟码对得上。 */
   college_name: string | null
   major_name: string | null
+  /** 绑定的平台账号。列表页直接显示，不用点进详情。 */
+  accounts: AdminAccountBrief[]
 }
 
 export interface AdminUserPage {
