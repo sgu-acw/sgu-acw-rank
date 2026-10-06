@@ -2,11 +2,11 @@
 /**
  * 每日一题。
  *
- * 每天三道，按难度分档各一道：800-1000 / 1100-1300 / 1400-1600。
+ * 每天几道由后端的 BANDS 决定，按难度分档各一道。
  * 抽中的题当天固定，第二天凌晨 4 点（东八区）换——与练习数据的「一天」
  * 用同一个起点，免得出现「榜单算昨天、题目算今天」的错位。
  *
- * 三道题全站统一：抽签只由日期决定，与「谁在看」无关。
+ * 题目全站统一：抽签只由日期决定，与「谁在看」无关。
  */
 import { computed, onMounted, ref } from 'vue'
 import { BookOpen, Check, ExternalLink, Loader2, RefreshCw, Shuffle } from 'lucide-vue-next'
@@ -32,7 +32,7 @@ const loading = ref(true)
 const error = ref('')
 const redrawing = ref(false)
 
-/** 题号 → 题解。和后端返回的三道题按 key 对应。 */
+/** 题号 → 题解。和后端返回的题目按 key 对应。 */
 const editorials = ref<Record<string, EditorialView>>({})
 /** 展开着题解的题号。同时只开一道，避免页面太长。 */
 const openEditorial = ref<string | null>(null)
@@ -189,8 +189,15 @@ function membersSolved(entry: DailyProblemEntry): string {
       </CardContent>
     </Card>
 
-    <!-- 三道题 -->
-    <div v-else-if="board" class="grid gap-3 md:grid-cols-3">
+    <!--
+      题目卡片。列数跟着档位数走，不写死——加档位时不用改这里。
+      两列起步，宽屏按数量摊开。
+    -->
+    <div
+      v-else-if="board"
+      class="grid gap-3 sm:grid-cols-2"
+      :class="board.problems.length >= 4 ? 'lg:grid-cols-4' : 'lg:grid-cols-3'"
+    >
       <Card v-for="problem in board.problems" :key="problem.key">
         <CardContent class="flex h-full flex-col gap-2 p-4">
           <!-- 档位 + 做过了 -->
@@ -252,9 +259,9 @@ function membersSolved(entry: DailyProblemEntry): string {
     </div>
 
     <!--
-      题解展开区。全宽放在三道题下面。
+      题解展开区。全宽放在题目下面。
 
-      同时只开一道：三道题的题解一起展开会有几千字，页面长得没法用。
+      同时只开一道：几道题的题解一起展开会有几千字，页面长得没法用。
       点另一道的「题解」会切换过去。
     -->
     <Card v-if="board && openEditorial && hasEditorial(openEditorial)">
