@@ -280,7 +280,12 @@ function membersSolved(entry: DailyProblemEntry): string {
           </button>
         </div>
 
-        <Editorial :editorial="editorialFor(openEditorial)!" />
+        <!--
+          :key 不能省。不加的话 Vue 会复用组件实例，展开的提示和「看完整题解」
+          的状态会带到下一道题上——点开另一道题时，它一上来就显示着上次展开到
+          的位置。
+        -->
+        <Editorial :key="openEditorial" :editorial="editorialFor(openEditorial)!" />
       </CardContent>
     </Card>
   </div>

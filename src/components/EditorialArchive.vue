@@ -185,7 +185,8 @@ async function toggleDay(day: string) {
                 v-if="openEditorial === problem.key && hasEditorial(problem.key)"
                 class="border-t border-border/40 px-3 py-3"
               >
-                <Editorial :editorial="editorialFor(problem.key)!" />
+                <!-- :key 见 DailyProblem.vue 的说明：不加会带着上一道题的展开状态。 -->
+                <Editorial :key="problem.key" :editorial="editorialFor(problem.key)!" />
               </div>
             </div>
           </template>
