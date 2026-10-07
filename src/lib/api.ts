@@ -756,6 +756,37 @@ export interface DayEditorials {
   problems: EditorialView[]
 }
 
+/** 某道题的一个通过者。 */
+export interface SolverEntry {
+  rank: number
+  user_id: number
+  display_name: string
+  student_id: string
+  enroll_year: number
+  class_label: string | null
+  /** 我们记录到的时刻，不是平台上真实的通过时间。 */
+  solved_at: string
+}
+
+/** 某道题的通过情况。 */
+export interface ProblemSolvers {
+  band: string
+  platform: Platform
+  key: string
+  name: string
+  rating: number | null
+  /** 题面地址。后端算好的，前端不自己拼。 */
+  url: string
+  /** 通过者，按记录时间从早到晚。第一个就是最早通过。 */
+  entries: SolverEntry[]
+}
+
+/** 当天每道题各自的通过名单。 */
+export interface DailySolversBoard {
+  day: string
+  problems: ProblemSolvers[]
+}
+
 /** 往日列表里的一条。 */
 export interface RecentDay {
   day: string
@@ -774,6 +805,10 @@ export const dailyApi = {
 
   /** 签到天数排行榜。 */
   checkin: () => api.get<CheckinBoard>('/daily/checkin'),
+
+  /** 当天每道题谁通过了，按记录时间从早到晚。 */
+  solvers: (day?: string) =>
+    api.get<DailySolversBoard>(`/daily/solvers${day ? `?day=${day}` : ''}`),
 
   /** 某一天的题解，默认今天。未公布的内容服务端不会返回。 */
   editorials: (day?: string) =>

@@ -25,6 +25,7 @@ import {
   dailyApi,
   practiceApi,
   type CheckinBoard,
+  type DailySolversBoard,
   type Platform,
   type PracticeEntry,
   type PracticeRank,
@@ -43,6 +44,10 @@ const error = ref('')
 const data = ref<PracticeRank | null>(null)
 const rating = ref<RatingBoard | null>(null)
 const checkin = ref<CheckinBoard | null>(null)
+const solvers = ref<DailySolversBoard | null>(null)
+/** 当前看的是第几道题的通过名单。切维度或刷新后回到第一道。 */
+const activeProblem = ref(0)
+const currentProblem = computed(() => solvers.value?.problems[activeProblem.value] ?? null)
 const status = ref<SyncStatus | null>(null)
 const needsLogin = ref(false)
 
@@ -268,6 +273,17 @@ function barWidth(total: number): string {
   return `${Math.max(2, Math.round((total / topToday.value) * 100))}%`
 }
 
+/**
+ * 记录时刻，显示成「14:23」。
+ *
+ * 这是同步任务发现「这道题过了」的时间，不是平台上真正的通过时间。
+ * 同步每 5 分钟一批，所以同批次内的先后分不出来，界面上会说明这点。
+ */
+function formatSolvedAt(value: string): string {
+  const date = new Date(value)
+  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
+}
+
 async function load() {
   loading.value = true
   error.value = ''
@@ -276,8 +292,16 @@ async function load() {
     if (dimension.value === 'rating') {
       rating.value = await practiceApi.rating(ratingPlatform.value)
     } else if (dimension.value === 'checkin') {
-      // 签到榜不需要平台、天数这些筛选：它只看「做了当天的每日一题没有」。
-      checkin.value = await dailyApi.checkin()
+      // 签到相关的两个榜一起拉：天数榜和每题通过名单。
+      // 它们不需要平台、天数这些筛选，只看「当天的每日一题做了没有」。
+      const [board, solversBoard] = await Promise.all([
+        dailyApi.checkin(),
+        dailyApi.solvers(),
+      ])
+      checkin.value = board
+      solvers.value = solversBoard
+      // 换了一天或重新加载，回到第一道题。
+      activeProblem.value = 0
     } else {
       const [rank, sync] = await Promise.all([
         practiceApi.rank({
@@ -811,6 +835,132 @@ onMounted(async () => {
         </div>
       </CardContent>
     </Card>
+    <!--
+      当天每道题谁通过了，按记录时间从早到晚。
+
+      和上面的签到天数榜并列：那个看「谁连续来了几天」，这个看「哪道题
+      谁先做出来」。四道题各一张卡。
+    -->
+    <!--
+      当天每道题谁通过了。
+
+      四道题横着排成一排 tab，点哪个看哪个——竖着堆成四张卡会把页面拉得很长，
+      而且大多数时候只想看其中一道。
+    -->
+    <Card v-if="dimension === 'checkin' && solvers?.problems.length">
+      <!-- tab 条。每道题一个，显示难度档和题号。 -->
+      <div
+        class="flex gap-1 overflow-x-auto border-b border-border/50 p-1"
+        role="tablist"
+        aria-label="每日一题的题目"
+      >
+        <button
+          v-for="(problem, index) in solvers.problems"
+          :key="problem.key"
+          type="button"
+          role="tab"
+          :aria-selected="activeProblem === index"
+          class="flex shrink-0 items-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium transition-colors"
+          :class="
+            activeProblem === index
+              ? 'bg-accent text-accent-foreground'
+              : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
+          "
+          @click="activeProblem = index"
+        >
+          <span class="font-mono">{{ problem.band }}</span>
+          <span class="font-mono text-muted-foreground">{{ problem.key }}</span>
+          <span
+            v-if="problem.entries.length"
+            class="rounded-full bg-muted px-1.5 py-px font-mono text-[10px] text-muted-foreground"
+          >
+            {{ problem.entries.length }}
+          </span>
+        </button>
+      </div>
+
+      <CardContent v-if="currentProblem" class="p-0">
+        <!-- 当前这道题的题目信息 -->
+        <div class="flex flex-wrap items-baseline gap-x-2 px-4 py-3">
+          <span class="text-sm font-medium">{{ currentProblem.name || currentProblem.key }}</span>
+          <a
+            :href="currentProblem.url"
+            target="_blank"
+            rel="noreferrer"
+            class="font-mono text-xs text-muted-foreground transition-colors hover:text-primary"
+          >
+            {{ currentProblem.key }}
+          </a>
+          <span
+            v-if="currentProblem.rating"
+            class="font-mono text-[11px] text-muted-foreground"
+          >
+            {{ currentProblem.rating }} 分
+          </span>
+          <span class="ml-auto text-xs text-muted-foreground">
+            {{ currentProblem.entries.length }} 人通过
+          </span>
+        </div>
+
+        <p
+          v-if="!currentProblem.entries.length"
+          class="px-4 pb-4 text-xs text-muted-foreground"
+        >
+          还没有人通过
+        </p>
+
+        <div v-else class="divide-y divide-border/40 border-t border-border/40">
+          <div
+            v-for="entry in currentProblem.entries"
+            :key="entry.user_id"
+            class="row-action flex items-center gap-2 px-3 py-2.5 sm:gap-3 sm:px-4"
+          >
+            <span
+              class="w-6 shrink-0 text-center font-mono text-xs"
+              :class="entry.rank === 1 ? 'font-semibold text-foreground' : 'text-muted-foreground'"
+            >
+              {{ entry.rank }}
+            </span>
+
+            <div class="min-w-0 flex-1">
+              <div class="flex flex-wrap items-baseline gap-x-2">
+                <button
+                  class="truncate text-sm font-medium underline-offset-4 transition-colors hover:text-primary hover:underline"
+                  :title="`查看 ${entry.display_name} 的资料`"
+                  @click="go(`/member?id=${entry.user_id}`)"
+                >
+                  {{ entry.display_name }}
+                </button>
+                <span
+                  v-if="formatEnrollYear(entry.enroll_year)"
+                  class="shrink-0 text-[11px] text-muted-foreground"
+                >
+                  {{ formatEnrollYear(entry.enroll_year) }}
+                </span>
+                <span
+                  v-if="entry.class_label"
+                  class="truncate text-[11px] text-muted-foreground/70"
+                >
+                  {{ entry.class_label }}
+                </span>
+              </div>
+            </div>
+
+            <span class="shrink-0 font-mono text-xs text-muted-foreground">
+              {{ formatSolvedAt(entry.solved_at) }}
+            </span>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+
+    <p
+      v-if="dimension === 'checkin' && solvers?.problems.length"
+      class="text-xs text-muted-foreground/60"
+    >
+      时间是后台同步发现的时间，每 5 分钟一批；同一批内的先后分不出来。
+    </p>
+
     <!--
       只在同步出错时提示。同步了多少个账号、成功几个是运维数字，
       成员看了没用；但抓失败得说出来，否则数据缺了没人知道。
