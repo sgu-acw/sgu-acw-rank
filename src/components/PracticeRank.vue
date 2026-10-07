@@ -45,8 +45,13 @@ const data = ref<PracticeRank | null>(null)
 const rating = ref<RatingBoard | null>(null)
 const checkin = ref<CheckinBoard | null>(null)
 const solvers = ref<DailySolversBoard | null>(null)
-/** 当前看的是第几道题的通过名单。切维度或刷新后回到第一道。 */
-const activeProblem = ref(0)
+/**
+ * 当前看的是哪一栏。
+ *
+ * ``-1`` 是签到天数榜，``0`` 起是当天第几道题的通过名单。默认看签到天数
+ * ——那是这个页面最常用的一个。
+ */
+const activeProblem = ref(-1)
 const currentProblem = computed(() => solvers.value?.problems[activeProblem.value] ?? null)
 const status = ref<SyncStatus | null>(null)
 const needsLogin = ref(false)
@@ -300,8 +305,8 @@ async function load() {
       ])
       checkin.value = board
       solvers.value = solversBoard
-      // 换了一天或重新加载，回到第一道题。
-      activeProblem.value = 0
+      // 换了一天或重新加载，回到签到天数榜。
+      activeProblem.value = -1
     } else {
       const [rank, sync] = await Promise.all([
         practiceApi.rank({
@@ -764,17 +769,66 @@ onMounted(async () => {
       连续天数才是「现在还在坚持」的信号；累计天数只说明来得早。
       累计作为次要信息放在右边。
     -->
-    <Card v-if="dimension === 'checkin'">
-      <CardHeader class="pb-3">
-        <div class="flex items-center justify-between">
-          <CardTitle class="text-sm font-medium">签到排行</CardTitle>
-          <span v-if="checkin?.entries.length" class="text-xs text-muted-foreground">
-            {{ checkin.total_members }} 人
-          </span>
-        </div>
-      </CardHeader>
+    <!--
+      签到相关的榜单。
 
-      <CardContent class="p-0">
+      一条 tab 栏，第一个是「签到天数」，后面是当天每道题的通过名单。
+      它们并列而不是上下堆叠：看的人通常只关心其中一个，堆起来页面太长。
+    -->
+    <Card v-if="dimension === 'checkin' && solvers">
+      <div
+        class="flex gap-1 overflow-x-auto border-b border-border/50 p-1"
+        role="tablist"
+        aria-label="签到相关的榜单"
+      >
+        <button
+          type="button"
+          role="tab"
+          :aria-selected="activeProblem === -1"
+          class="flex shrink-0 items-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium transition-colors"
+          :class="
+            activeProblem === -1
+              ? 'bg-accent text-accent-foreground'
+              : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
+          "
+          @click="activeProblem = -1"
+        >
+          签到天数
+          <span
+            v-if="checkin?.entries.length"
+            class="rounded-full bg-muted px-1.5 py-px font-mono text-[10px] text-muted-foreground"
+          >
+            {{ checkin.total_members }}
+          </span>
+        </button>
+
+        <button
+          v-for="(problem, index) in solvers.problems"
+          :key="problem.key"
+          type="button"
+          role="tab"
+          :aria-selected="activeProblem === index"
+          class="flex shrink-0 items-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium transition-colors"
+          :class="
+            activeProblem === index
+              ? 'bg-accent text-accent-foreground'
+              : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
+          "
+          @click="activeProblem = index"
+        >
+          <span class="font-mono">{{ problem.band }}</span>
+          <span class="font-mono text-muted-foreground">{{ problem.key }}</span>
+          <span
+            v-if="problem.entries.length"
+            class="rounded-full bg-muted px-1.5 py-px font-mono text-[10px] text-muted-foreground"
+          >
+            {{ problem.entries.length }}
+          </span>
+        </button>
+      </div>
+
+      <!-- 签到天数 -->
+      <CardContent v-if="activeProblem === -1" class="p-0">
         <div v-if="loading" class="flex items-center gap-2 p-6 text-sm text-muted-foreground">
           <Loader2 class="h-4 w-4 animate-spin" />
           正在读取…
@@ -834,53 +888,9 @@ onMounted(async () => {
           </div>
         </div>
       </CardContent>
-    </Card>
-    <!--
-      当天每道题谁通过了，按记录时间从早到晚。
 
-      和上面的签到天数榜并列：那个看「谁连续来了几天」，这个看「哪道题
-      谁先做出来」。四道题各一张卡。
-    -->
-    <!--
-      当天每道题谁通过了。
-
-      四道题横着排成一排 tab，点哪个看哪个——竖着堆成四张卡会把页面拉得很长，
-      而且大多数时候只想看其中一道。
-    -->
-    <Card v-if="dimension === 'checkin' && solvers?.problems.length">
-      <!-- tab 条。每道题一个，显示难度档和题号。 -->
-      <div
-        class="flex gap-1 overflow-x-auto border-b border-border/50 p-1"
-        role="tablist"
-        aria-label="每日一题的题目"
-      >
-        <button
-          v-for="(problem, index) in solvers.problems"
-          :key="problem.key"
-          type="button"
-          role="tab"
-          :aria-selected="activeProblem === index"
-          class="flex shrink-0 items-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium transition-colors"
-          :class="
-            activeProblem === index
-              ? 'bg-accent text-accent-foreground'
-              : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
-          "
-          @click="activeProblem = index"
-        >
-          <span class="font-mono">{{ problem.band }}</span>
-          <span class="font-mono text-muted-foreground">{{ problem.key }}</span>
-          <span
-            v-if="problem.entries.length"
-            class="rounded-full bg-muted px-1.5 py-px font-mono text-[10px] text-muted-foreground"
-          >
-            {{ problem.entries.length }}
-          </span>
-        </button>
-      </div>
-
-      <CardContent v-if="currentProblem" class="p-0">
-        <!-- 当前这道题的题目信息 -->
+      <!-- 某道题的通过名单 -->
+      <CardContent v-else-if="currentProblem" class="p-0">
         <div class="flex flex-wrap items-baseline gap-x-2 px-4 py-3">
           <span class="text-sm font-medium">{{ currentProblem.name || currentProblem.key }}</span>
           <a
@@ -953,7 +963,6 @@ onMounted(async () => {
         </div>
       </CardContent>
     </Card>
-
     <p
       v-if="dimension === 'checkin' && solvers?.problems.length"
       class="text-xs text-muted-foreground/60"
