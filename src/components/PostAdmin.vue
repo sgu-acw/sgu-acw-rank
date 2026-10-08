@@ -92,6 +92,11 @@ async function loadDetail(id: number) {
 
 function select(id: number) {
   activeId.value = id
+  // 先把上一篇的内容清掉再让编辑器重 mount——detail/editBody 不先清
+  // 的话，新编辑器 defaultValue 会吃到旧篇的正文（串扰）。
+  detail.value = null
+  editBody.value = ''
+  editing.value = false
   void loadDetail(id)
 }
 
