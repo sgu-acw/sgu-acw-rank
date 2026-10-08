@@ -40,6 +40,16 @@ const emit = defineEmits<{ 'update:modelValue': [value: string] }>()
 const host = ref<HTMLElement | null>(null)
 let crepe: { getMarkdown(): string; destroy(): Promise<void> } | null = null
 
+// Crepe 的 image-block 节点要求 caption 是 string——`![](url)` 的 title
+// 是 null，直接 RangeError 崩掉整篇渲染。进编辑器前给无 title 的图片
+// 塞上空 title，出编辑器时再清掉，round-trip 对用户透明。
+function normalizeIn(md: string): string {
+  return md.replace(/!\[([^\]]*)\]\(([^\s)]+)\)/g, '![$1]($2 "")')
+}
+function normalizeOut(md: string): string {
+  return md.replace(/!\[([^\]]*)\]\(([^\s)]+) ""\)/g, '![$1]($2)')
+}
+
 onMounted(async () => {
   // 动态 import：这个包很大（编辑器全家桶），只有进了管理页才下载。
   const { Crepe } = await import('@milkdown/crepe')
@@ -47,7 +57,7 @@ onMounted(async () => {
   if (!host.value) return
   const editor = new Crepe({
     root: host.value,
-    defaultValue: props.modelValue,
+    defaultValue: normalizeIn(props.modelValue),
     features,
     featureConfigs: {
       placeholder: { text: '写点什么…' },
@@ -60,7 +70,7 @@ onMounted(async () => {
   // markdownUpdated 事件拿最新 markdown。
   editor.on((api) => {
     api.markdownUpdated((_ctx, markdown) => {
-      emit('update:modelValue', markdown)
+      emit('update:modelValue', normalizeOut(markdown))
     })
   })
 })
