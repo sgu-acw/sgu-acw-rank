@@ -8,6 +8,8 @@
 # 博客文章详情：文章存在数据库里，没有对应的静态文件。
 # 把 /blog/xxx rewrite 到 /post 单页，浏览器地址不变，组件自己从
 # location.pathname 里拿 slug。
-# 200（rewrite）不是 301：Pages 只在「这条路径没有静态资产」时才应用，
-# 所以 /blog/ 本身仍然返回列表页，不会被套住。
-/blog/*  /post  200
+#
+# 目标必须写到 index.html：Astro 产出的是 /post/index.html，写成 /post
+# 会被 Pages 当目录规范化成 /post/ 并回 308——rewrite 变成真跳转，
+# 地址栏里的 slug 就丢了。
+/blog/*  /post/index.html  200
