@@ -53,6 +53,8 @@ const saving = ref(false)
 // 弹窗
 const popupUntil = ref('')
 const togglingPopup = ref(false)
+// 新建时直接发成公告
+const createAsPopup = ref(false)
 
 const isEditingExisting = computed(() => activeId.value !== null)
 
@@ -100,6 +102,8 @@ function startNew() {
   editSlug.value = ''
   editSort.value = 0
   editBody.value = ''
+  createAsPopup.value = false
+  popupUntil.value = ''
   editing.value = true
 }
 
@@ -128,8 +132,19 @@ async function save() {
         sort_order: editSort.value,
         slug: editSlug.value.trim() || undefined,
       })
-      notice.value = '已创建'
+      // 勾了「发成公告」就顺手开弹窗——不用再去另一区块点一次
+      if (createAsPopup.value) {
+        await postAdminApi.setPopup(
+          created.id,
+          true,
+          popupUntil.value ? new Date(popupUntil.value).toISOString() : undefined,
+        )
+        notice.value = '已发布并设为公告'
+      } else {
+        notice.value = '已创建'
+      }
       activeId.value = created.id
+      createAsPopup.value = false
       editing.value = false
     }
     await load()
@@ -298,6 +313,29 @@ onMounted(async () => {
 
             <!-- 编辑器：v-if 保证每次新建/换文章都是全新实例 -->
             <PostEditor v-if="editing || detail" :key="activeId ?? 'new'" v-model="editBody" />
+
+            <!-- 新建时就能发成公告，不用先保存再找开关 -->
+            <div
+              v-if="!isEditingExisting && isAdmin"
+              class="flex flex-wrap items-center gap-3 rounded-md border border-border/50 bg-muted/20 px-3 py-2"
+            >
+              <label class="flex cursor-pointer items-center gap-2 text-xs">
+                <input
+                  v-model="createAsPopup"
+                  type="checkbox"
+                  class="h-4 w-4 rounded border-input accent-primary"
+                />
+                <span class="flex items-center gap-1">
+                  <Megaphone class="h-3.5 w-3.5" />
+                  发布时设为公告
+                </span>
+              </label>
+              <template v-if="createAsPopup">
+                <label class="text-xs text-muted-foreground">自动下架</label>
+                <Input v-model="popupUntil" type="datetime-local" class="h-7 w-auto text-xs" />
+                <span class="text-[10px] text-muted-foreground/70">留空 = 手动关</span>
+              </template>
+            </div>
 
             <div class="flex items-center gap-2">
               <Button size="sm" :disabled="saving || !editTitle.trim()" @click="save">

@@ -76,6 +76,7 @@ const createForm = ref({
 // 成员资料编辑草稿：一次只展开一行，统一保存姓名、备注和学院/专业覆盖。
 const editingMemberId = ref<number | null>(null)
 const editingNote = ref<Record<number, string>>({})
+const editingCanPost = ref<Record<number, boolean>>({})
 const editingName = ref<Record<number, string>>({})
 //: 学院名/专业名的人工覆盖。空串表示恢复成按学号查表。
 const editingCollege = ref<Record<number, string>>({})
@@ -286,6 +287,7 @@ function startEditMember(target: AdminUser) {
   editingMemberId.value = target.id
   editingName.value[target.id] = target.display_name
   editingNote.value[target.id] = target.admin_note ?? ''
+  editingCanPost.value[target.id] = target.can_post ?? false
   editingCollege.value[target.id] = target.college_name ?? ''
   editingMajor.value[target.id] = target.major_name ?? ''
 }
@@ -306,6 +308,7 @@ async function saveNote(target: AdminUser) {
     major_override?: string
   } = {}
   if (editingNote.value[target.id] !== undefined) payload.admin_note = editingNote.value[target.id]
+  if (editingCanPost.value[target.id] !== undefined) payload.can_post = editingCanPost.value[target.id]
   if (editingName.value[target.id] !== undefined) payload.display_name = editingName.value[target.id]
   if (editingCollege.value[target.id] !== undefined) {
     payload.college_override = editingCollege.value[target.id]
@@ -320,6 +323,7 @@ async function saveNote(target: AdminUser) {
     const updated = await adminApi.updateUser(target.id, payload)
     target.admin_note = updated.admin_note
     target.display_name = updated.display_name
+    target.can_post = updated.can_post
     target.college_name = updated.college_name
     target.major_name = updated.major_name
     delete editingNote.value[target.id]
@@ -889,6 +893,19 @@ onMounted(async () => {
                       <option value="member">成员</option>
                       <option value="admin">管理员</option>
                     </select>
+                  </label>
+                  <!-- 管理员天然能发文章，开关只对普通成员有意义 -->
+                  <label v-if="member.role === 'member'" class="flex items-end gap-2 pb-1 text-xs font-medium text-muted-foreground">
+                    <input
+                      type="checkbox"
+                      :checked="editingCanPost[member.id] ?? member.can_post"
+                      class="h-4 w-4 rounded border-input accent-primary"
+                      @change="(e: Event) => (editingCanPost[member.id] = (e.target as HTMLInputElement).checked)"
+                    />
+                    <span>
+                      可发文章
+                      <span class="block text-[10px] font-normal text-muted-foreground/70">开了能进文章管理写博客，弹窗上下架仍是管理员的事</span>
+                    </span>
                   </label>
                 </div>
                 <div class="flex justify-end gap-2">

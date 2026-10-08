@@ -10,6 +10,12 @@
  * 覆盖——值照抄官方的 frame-dark 主题。
  */
 import { onBeforeUnmount, onMounted, ref } from 'vue'
+// 主题 CSS 静态引入：动态 import CSS 在构建时不会单独产出文件，
+// 运行时会 404（`Unable to preload CSS`）。放这里由 Vite 打进本页的样式。
+// Crepe 的样式分两层：common 是组件本身（工具栏、ProseMirror、气泡…），
+// frame 是配色变量。两层都得引，少了 common 编辑器是裸的。
+import '@milkdown/crepe/theme/common/style.css'
+import '@milkdown/crepe/theme/frame.css'
 
 // 按需开特性：工具栏、LaTeX（题解文章会写公式）、表格、列表、代码、
 // 占位提示。block-edit（拖拽重排）关掉——它不显示在工具栏里，靠左侧
@@ -34,7 +40,6 @@ let crepe: { getMarkdown(): string; destroy(): Promise<void> } | null = null
 onMounted(async () => {
   // 动态 import：这个包很大（编辑器全家桶），只有进了管理页才下载。
   const { Crepe } = await import('@milkdown/crepe')
-  await import('@milkdown/crepe/theme/frame.css')
 
   if (!host.value) return
   const editor = new Crepe({

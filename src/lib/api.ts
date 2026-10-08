@@ -423,6 +423,8 @@ export interface AdminUser {
   last_login_at: string | null
   /** 仅管理员可见可改。 */
   admin_note: string
+  /** 成员能不能发文章。管理员天然能，这个开关只管普通成员。 */
+  can_post: boolean
   /** 学院名与专业名。可能被管理员改过，所以不一定跟码对得上。 */
   college_name: string | null
   major_name: string | null
@@ -525,6 +527,8 @@ export const adminApi = {
       /** 空串表示恢复成按学号查表。 */
       college_override?: string
       major_override?: string
+      /** 「可发文章」开关。 */
+      can_post?: boolean
     },
   ) => api.patch<AdminUser>(`/admin/users/${id}`, payload),
 
