@@ -44,10 +44,11 @@ let crepe: { getMarkdown(): string; destroy(): Promise<void> } | null = null
 // 是 null，直接 RangeError 崩掉整篇渲染。进编辑器前给无 title 的图片
 // 塞上空 title，出编辑器时再清掉，round-trip 对用户透明。
 function normalizeIn(md: string): string {
-  return md.replace(/!\[([^\]]*)\]\(([^\s)]+)\)/g, '![$1]($2 "")')
+  // "" 会被 remark 当没 title 解析回 null，要真塞一个空格。
+  return md.replace(/!\[([^\]]*)\]\(([^\s)]+)\)/g, '![$1]($2 " ")')
 }
 function normalizeOut(md: string): string {
-  return md.replace(/!\[([^\]]*)\]\(([^\s)]+) ""\)/g, '![$1]($2)')
+  return md.replace(/!\[([^\]]*)\]\(([^\s)]+) " "\)/g, '![$1]($2)')
 }
 
 onMounted(async () => {
