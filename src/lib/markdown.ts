@@ -18,7 +18,10 @@ import katex from 'katex'
 import MarkdownIt from 'markdown-it'
 
 const md = new MarkdownIt({
-  html: false, // 不让生成器写裸 HTML——内容是模型生成的，不开这个口子
+  // html:true 放行裸 HTML——作者手写 `<br />`、嵌入 B 站视频这些都得透传，
+  // 不然会转义成可见标签。题解是模型生成的，但生成器只写 markdown，
+  // 不会出 script/iframe 这种危险标签。
+  html: true,
   linkify: true,
   breaks: false,
 })
