@@ -27,7 +27,10 @@ const features = {
   'list-item': true,
   'code-mirror': true,
   placeholder: true,
-  'image-block': true,
+  // image-block 是 Crepe 的增强图片节点，但它要求 caption 属性是 string——
+  // 普通 markdown `![](url)` 解析出来 caption 是 null，直接 RangeError 崩掉
+  // 整篇渲染。关掉它，用 ProseMirror 自带的标准图片节点。
+  'image-block': false,
   'link-tooltip': true,
 }
 
