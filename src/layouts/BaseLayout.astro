@@ -49,12 +49,16 @@ const { title = 'SGU 算法竞赛工作坊' } = Astro.props
     (() => {
       try {
         const saved = localStorage.getItem('theme');
-        if (saved === 'dark' || saved === 'light') {
-          document.documentElement.classList.add(saved);
-          // 地址栏颜色也要跟着走，否则深色页面上顶着一条白的。
-          const meta = document.getElementById('theme-color');
-          if (meta) meta.setAttribute('content', saved === 'dark' ? '#111113' : '#ffffff');
-        }
+        // 显式选过就用选过的；没选过跟系统。两种都得在 html 上挂出对应的
+        // class——Tailwind 的 dark: variant 靠它，光靠 media query 的话
+        // 「系统深色但没选过主题」的用户会拿到深背景 + 浅色模式的排版颜色
+        // （dark:prose-invert 不生效，heading 黑得看不见）。
+        const theme = saved === 'dark' || saved === 'light'
+          ? saved
+          : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.classList.add(theme);
+        const meta = document.getElementById('theme-color');
+        if (meta) meta.setAttribute('content', theme === 'dark' ? '#111113' : '#ffffff');
       } catch {
         /* 隐私模式下 localStorage 可能抛异常。跟随系统就够了。 */
       }

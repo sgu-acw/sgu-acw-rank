@@ -39,10 +39,13 @@ function savedTheme(): Theme | null {
 /** 把当前该用的主题写到给定文档的 html 上。 */
 function applyTo(doc: Document) {
   const saved = savedTheme()
-  if (!saved) return
+  // 没存过就跟系统。Tailwind 的 dark: variant 是 class 策略——不挂 .dark
+  // 的话 media query 让背景变深，dark:prose-invert 这类排版反转却不生效，
+  // heading 会在深色背景上保持黑色看不见。
+  const theme: Theme = saved ?? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
   // 两个类都清掉再设，避免 dark 和 light 同时挂着时优先级打架。
   doc.documentElement.classList.remove('dark', 'light')
-  doc.documentElement.classList.add(saved)
+  doc.documentElement.classList.add(theme)
 }
 
 /*
