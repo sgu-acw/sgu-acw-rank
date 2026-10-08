@@ -5,11 +5,16 @@
 # 成员获奖页暂时下线
 /member-awards/*  /  301
 
-# 博客文章详情：文章存在数据库里，没有对应的静态文件。
-# 把 /blog/xxx rewrite 到 /post 单页，浏览器地址不变，组件自己从
-# location.pathname 里拿 slug。
+# 文章详情：文章存在数据库里，没有对应的静态文件。
+# 全部 rewrite 到 /post 单页，地址栏不变，组件从 location.pathname 拿 slug。
 #
-# 目标必须写到 index.html：Astro 产出的是 /post/index.html，写成 /post
-# 会被 Pages 当目录规范化成 /post/ 并回 308——rewrite 变成真跳转，
-# 地址栏里的 slug 就丢了。
-/blog/*  /post/index.html  200
+# 目标写到 index.html：写成 /post 会被 Pages 当目录规范化成 /post/
+# 并回 308——rewrite 变成真跳转，地址栏里的 slug 就丢了。
+/post/*  /post/index.html  200
+
+# 旧链接落点：文章地址从 /blog/{slug} 换成 /post/{slug}。
+# 注意不能用 /blog/* 通配——splat 匹配空串，会把 /blog/ 列表页也吞掉。
+/blog/100-入门指南  /post/100-入门指南  301
+/blog/100-%E5%85%A5%E9%97%A8%E6%8C%87%E5%8D%97  /post/100-%E5%85%A5%E9%97%A8%E6%8C%87%E5%8D%97  301
+/blog/3-奖牌柜  /post/3-奖牌柜  301
+/blog/3-%E5%A5%96%E7%89%8C%E6%9F%9C  /post/3-%E5%A5%96%E7%89%8C%E6%9F%9C  301

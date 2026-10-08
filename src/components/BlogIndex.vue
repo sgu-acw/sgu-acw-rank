@@ -17,8 +17,8 @@ const loading = ref(true)
 const error = ref('')
 
 function go(slug: string) {
-  // 详情页是 /post?s=slug。/blog/{slug} 这条老路径由 _redirects 重写到同一个页面。
-  window.location.href = `/post?s=${encodeURIComponent(slug)}`
+  // 详情页是 /post/{slug}。/blog/{slug} 这条老路径由 _redirects 301 过来。
+  window.location.href = `/post/${encodeURIComponent(slug)}`
 }
 
 function fmtDate(iso: string): string {
@@ -66,7 +66,7 @@ onMounted(async () => {
       <a
         v-for="post in posts"
         :key="post.id"
-        :href="`/post?s=${encodeURIComponent(post.slug)}`"
+        :href="`/post/${encodeURIComponent(post.slug)}`"
         class="group block"
         @click.prevent="go(post.slug)"
       >

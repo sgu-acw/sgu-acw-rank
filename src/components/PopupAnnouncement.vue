@@ -92,7 +92,7 @@ onMounted(async () => {
 
       <div class="mt-4 flex items-center justify-end gap-2">
         <a
-          :href="`/post?s=${encodeURIComponent(popup?.slug ?? '')}`"
+          :href="`/post/${encodeURIComponent(popup?.slug ?? '')}`"
           class="text-xs text-muted-foreground transition-colors hover:text-foreground"
         >
           在博客里查看

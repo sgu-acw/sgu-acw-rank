@@ -15,11 +15,11 @@ const loading = ref(true)
 const error = ref('')
 
 const slug = computed(() => {
-  const q = new URLSearchParams(window.location.search).get('s')
-  if (q) return q
-  // /blog/100-入门指南 → 100-入门指南
-  const m = window.location.pathname.match(/^\/blog\/(.+?)\/?$/)
-  return m ? decodeURIComponent(m[1]) : ''
+  // /post/100-入门指南 → 100-入门指南；老链接 /blog/xxx 会被 301 到 /post/xxx。
+  const m = window.location.pathname.match(/^\/(?:post|blog)\/(.+?)\/?$/)
+  if (m) return decodeURIComponent(m[1])
+  // 兜底：?s= 写法
+  return new URLSearchParams(window.location.search).get('s') ?? ''
 })
 
 const html = computed(() => (post.value ? renderMarkdown(post.value.body) : ''))
