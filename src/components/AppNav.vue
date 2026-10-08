@@ -11,6 +11,7 @@ import {
   ListChecks,
   Settings,
   BookOpen,
+  Trophy,
 } from 'lucide-vue-next'
 import { useAuth } from '../lib/auth'
 
@@ -46,6 +47,7 @@ const navGroups = [
       { title: '每日一题', route: '/daily', icon: CalendarCheck },
       { title: '题单', route: '/problems', icon: ListChecks },
       { title: '练习数据', route: '/practice', icon: BarChart3 },
+      { title: '集训', route: '/camps', icon: Trophy },
     ],
   },
   {
@@ -67,12 +69,13 @@ onMounted(() => {
 })
 
 function isAdminRoute(): boolean {
-  return currentPath.value.startsWith('/admin') || currentPath.value.startsWith('/problems/admin') || currentPath.value.startsWith('/problems/edit')
+  return currentPath.value.startsWith('/admin') || currentPath.value.startsWith('/problems/admin') || currentPath.value.startsWith('/problems/edit') || currentPath.value.startsWith('/camps/admin') || currentPath.value.startsWith('/editorials/admin')
 }
 
 function isActive(route: string): boolean {
   if (route === '/') return currentPath.value === '/'
   if (route === '/problems' && (currentPath.value.startsWith('/problems/admin') || currentPath.value.startsWith('/problems/edit'))) return false
+  if (route === '/camps' && currentPath.value.startsWith('/camps/admin')) return false
   return currentPath.value === route || currentPath.value.startsWith(`${route}/`)
 }
 

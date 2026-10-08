@@ -7,6 +7,7 @@
  * 分开写迟早会长歪。
  */
 import { Check, ExternalLink, Pencil, Trash2, X } from 'lucide-vue-next'
+import { difficultyLabel } from '../lib/format'
 import { Input } from './ui/input'
 import { Button } from './ui/button'
 import { PLATFORM_META, type ProblemEntry } from '../lib/api'
@@ -38,24 +39,7 @@ const emit = defineEmits<{
   'update:noteDraft': [value: string]
 }>()
 
-/** 难度的显示方式各平台不同：CF 是 rating 数字，洛谷是 1~7 的等级。 */
-function difficultyLabel(platform: string, rating: number | null): string {
-  if (rating == null) return ''
-  if (platform === 'luogu') {
-    const names = [
-      '暂无评定',
-      '入门',
-      '普及−',
-      '普及/提高−',
-      '普及+/提高',
-      '提高+/省选−',
-      '省选/NOI−',
-      'NOI/NOI+/CTSC',
-    ]
-    return names[rating] ?? `等级 ${rating}`
-  }
-  return String(rating)
-}
+
 </script>
 
 <template>

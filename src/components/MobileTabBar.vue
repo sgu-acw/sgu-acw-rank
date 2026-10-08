@@ -14,6 +14,7 @@ import {
   ListChecks,
   MoreHorizontal,
   Settings,
+  Trophy,
   User,
 } from 'lucide-vue-next'
 import { useAuth } from '../lib/auth'
@@ -30,6 +31,7 @@ const tabs = [
 ]
 
 const extraLinks = [
+  { title: '集训', route: '/camps', icon: Trophy },
   { title: '工作坊状态', route: '/status', icon: Activity },
   { title: '博客', route: '/blog', icon: BookOpen },
   { title: '导航与资源', route: '/nav', icon: Compass },
@@ -45,10 +47,12 @@ function isActive(route: string): boolean {
 const isAdminRoute = () =>
   currentPath.value.startsWith('/admin') ||
   currentPath.value.startsWith('/problems/admin') ||
-  currentPath.value.startsWith('/problems/edit')
+  currentPath.value.startsWith('/problems/edit') ||
+  currentPath.value.startsWith('/camps/admin') ||
+  currentPath.value.startsWith('/editorials/admin')
 
 const moreActive = () =>
-  ['/status', '/blog', '/nav', '/codeforces/profile', '/me'].some((route) =>
+  ['/camps', '/status', '/blog', '/nav', '/codeforces/profile', '/me'].some((route) =>
     isActive(route),
   ) || isAdminRoute()
 

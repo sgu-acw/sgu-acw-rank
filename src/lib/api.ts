@@ -92,6 +92,8 @@ export const api = {
   get: <T>(path: string) => request<T>(path),
   post: <T>(path: string, data?: unknown) =>
     request<T>(path, { method: 'POST', body: data === undefined ? undefined : JSON.stringify(data) }),
+  put: <T>(path: string, data?: unknown) =>
+    request<T>(path, { method: 'PUT', body: data === undefined ? undefined : JSON.stringify(data) }),
   patch: <T>(path: string, data?: unknown) =>
     request<T>(path, { method: 'PATCH', body: data === undefined ? undefined : JSON.stringify(data) }),
   delete: <T>(path: string) => request<T>(path, { method: 'DELETE' }),
@@ -960,4 +962,101 @@ export interface AdminMemberDetail {
   last_practice_date: string | null
   /** 有几个账号处于连续失败状态。 */
   failing_accounts: number
+}
+
+// --------------------------------------------------------------------------- //
+// 集训
+// --------------------------------------------------------------------------- //
+
+/** 集训里的一道题。 */
+export interface CampProblem {
+  platform: Platform
+  key: string
+  name: string
+  rating: number | null
+  url: string
+}
+
+/** 排行榜里的一人。 */
+export interface CampLeaderboardEntry {
+  rank: number
+  user_id: number
+  display_name: string
+  student_id: string
+  enroll_year: number
+  class_label: string | null
+  solved_count: number
+  /** 「平台:题号」→ 是否通过。 */
+  per_problem: Record<string, boolean>
+}
+
+/** 集训详情。题目和排行榜只有报名了（或管理员）才返回。 */
+export interface CampDetail {
+  id: number
+  name: string
+  description: string
+  start_at: string
+  end_at: string
+  started: boolean
+  ended: boolean
+  registered: boolean
+  registration_count: number
+  problem_count: number
+  /** 涉及的平台。报名前就显示——「需要哪些账号」是报名决策的一部分。 */
+  platforms: Platform[]
+  can_register: boolean
+  register_reason: string
+  problems: CampProblem[]
+  leaderboard: CampLeaderboardEntry[]
+}
+
+/** 列表页的一条。 */
+export interface CampSummary {
+  id: number
+  name: string
+  description: string
+  start_at: string
+  end_at: string
+  started: boolean
+  ended: boolean
+  registration_count: number
+  problem_count: number
+}
+
+export const campApi = {
+  list: () => api.get<CampSummary[]>('/camps'),
+  detail: (id: number) => api.get<CampDetail>(`/camps/${id}`),
+  register: (id: number) => api.post(`/camps/${id}/register`),
+  unregister: (id: number) => api.post(`/camps/${id}/unregister`),
+}
+
+export interface CampAdminProblem {
+  id: number
+  platform: Platform
+  key: string
+  position: number
+}
+
+export interface CampAdminDetail extends CampSummary {
+  created_by: number
+  problems: CampAdminProblem[]
+  registrations: { user_id: number; display_name: string; registered_at: string }[]
+}
+
+export const campAdminApi = {
+  list: () => api.get<CampSummary[]>('/admin/camps'),
+  detail: (id: number) => api.get<CampAdminDetail>(`/admin/camps/${id}`),
+  create: (payload: { name: string; description: string; start_at: string; end_at: string }) =>
+    api.post<CampSummary>('/admin/camps', payload),
+  update: (id: number, payload: Partial<{ name: string; description: string; start_at: string; end_at: string }>) =>
+    api.put<CampSummary>(`/admin/camps/${id}`, payload),
+  remove: (id: number) => api.delete(`/admin/camps/${id}`),
+  addProblem: (id: number, platform: Platform, key: string) =>
+    api.post(`/admin/camps/${id}/problems`, { platform, key, position: 0 }),
+  removeProblem: (id: number, problemId: number) =>
+    api.delete(`/admin/camps/${id}/problems/${problemId}`),
+  addMember: (id: number, userId: number) =>
+    api.post(`/admin/camps/${id}/members`, { user_id: userId }),
+  removeMember: (id: number, userId: number) =>
+    api.delete(`/admin/camps/${id}/members/${userId}`),
 }
