@@ -1,0 +1,8 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PostAdmin from '../../components/PostAdmin.vue';
+---
+
+<BaseLayout title="SGU ACW - 文章管理">
+  <PostAdmin client:only="vue" />
+</BaseLayout>

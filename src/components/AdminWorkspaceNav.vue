@@ -6,10 +6,10 @@
  * 那两句和「管理工作台」说的是同一件事，只是把版面撑高。分区靠图标区分，
  * 文字只留最短的标签。
  */
-import { BookOpen, ListChecks, Trophy, Users } from 'lucide-vue-next'
+import { BookOpen, FileText, ListChecks, Trophy, Users } from 'lucide-vue-next'
 
 defineProps<{
-  active: 'people' | 'problems' | 'editorials' | 'camps'
+  active: 'people' | 'problems' | 'editorials' | 'camps' | 'posts'
 }>()
 
 const TABS = [
@@ -17,6 +17,7 @@ const TABS = [
   { key: 'problems', href: '/problems/admin', label: '题单', icon: ListChecks },
   { key: 'editorials', href: '/editorials/admin', label: '题解', icon: BookOpen },
   { key: 'camps', href: '/camps/admin', label: '集训', icon: Trophy },
+  { key: 'posts', href: '/posts/admin', label: '文章', icon: FileText },
 ] as const
 </script>
 

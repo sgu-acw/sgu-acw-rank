@@ -41,6 +41,44 @@ const MARK = '\uE000'
 const PLACEHOLDER = (index: number) => `${MARK}MATH${index}${MARK}`
 const PLACEHOLDER_RE = /\uE000MATH(\d+)\uE000/g
 
+/**
+ * 链接卡片 ``:::card``。从老 content collection 迁过来的语法：
+ *
+ *   :::card [标题](https://example.com)
+ *   一句话说明。
+ *   :::
+ *
+ * 输出的 class 沿用 globals.css 里 ``.link-card`` 那一组——remark 插件
+ * 产出的结构原样搬过来，样式不用动。
+ */
+const CARD_BLOCK = /^:::card[ \t]+\[([^\]]+)\]\(([^)]+)\)[ \t]*\n([\s\S]*?)\n?:::[ \t]*$/gm
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
+function renderCard(title: string, url: string, description: string): string {
+  const internal = url.startsWith('/')
+  const host = internal ? '站内' : url.replace(/^https?:\/\//, '').split('/')[0]
+  const attrs = internal
+    ? `href="${escapeHtml(url)}"`
+    : `href="${escapeHtml(url)}" target="_blank" rel="noreferrer"`
+  return [
+    `<a class="link-card" ${attrs}>`,
+    '<span class="link-card-main">',
+    `<span class="link-card-title">${escapeHtml(title)}</span>`,
+    description ? `<span class="link-card-desc">${escapeHtml(description)}</span>` : '',
+    `<span class="link-card-host">${escapeHtml(host)}</span>`,
+    '</span>',
+    '<span class="link-card-arrow" aria-hidden="true">↗</span>',
+    '</a>',
+  ].join('')
+}
+
 function renderMath(source: string, displayMode: boolean): string {
   try {
     return katex.renderToString(source.trim(), {
@@ -70,8 +108,12 @@ export function renderMarkdown(source: string): string {
   }
 
   // 先换成占位符再渲染：直接把 KaTeX 产出的 HTML 交给 markdown-it 的话，
-  // 会被 html:false 转义成可见的标签文本。
-  let text = source.replace(BLOCK_MATH, (_match, body: string) => stash(renderMath(body, true)))
+  // 会被 html:false 转义成可见的标签文本。卡片同理。
+  let text = source.replace(
+    CARD_BLOCK,
+    (_match, title: string, url: string, desc: string) => stash(renderCard(title, url, desc.trim())),
+  )
+  text = text.replace(BLOCK_MATH, (_match, body: string) => stash(renderMath(body, true)))
   text = text.replace(INLINE_MATH, (_match, body: string) => stash(renderMath(body, false)))
 
   const html = md.render(text)

@@ -1060,3 +1060,65 @@ export const campAdminApi = {
   removeMember: (id: number, userId: number) =>
     api.delete(`/admin/camps/${id}/members/${userId}`),
 }
+
+// --------------------------------------------------------------------------- //
+// 文章（博客/公告）
+// --------------------------------------------------------------------------- //
+
+/** 列表里的一篇文章。 */
+export interface PostSummary {
+  id: number
+  slug: string
+  title: string
+  excerpt: string
+  sort_order: number
+  is_popup: boolean
+  published_at: string
+  author_name: string
+}
+
+/** 详情含正文。 */
+export interface PostDetail extends PostSummary {
+  body: string
+}
+
+/** 当前该弹的公告。version 是内容指纹，改了就重新弹。 */
+export interface PopupInfo {
+  id: number
+  slug: string
+  title: string
+  body: string
+  version: number
+}
+
+export const postApi = {
+  list: () => api.get<PostSummary[]>('/posts'),
+  detail: (slug: string) => api.get<PostDetail>(`/posts/${encodeURIComponent(slug)}`),
+  popup: () => api.get<PopupInfo | null>('/posts/popup'),
+}
+
+export interface AdminPostSummary extends PostSummary {
+  published: boolean
+  author_id: number
+  popup_until: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface AdminPostDetail extends AdminPostSummary {
+  body: string
+}
+
+export const postAdminApi = {
+  list: () => api.get<AdminPostSummary[]>('/admin/posts'),
+  detail: (id: number) => api.get<AdminPostDetail>(`/admin/posts/${id}`),
+  create: (payload: { title: string; body: string; sort_order?: number; slug?: string }) =>
+    api.post<AdminPostDetail>('/admin/posts', payload),
+  update: (id: number, payload: { title?: string; body?: string; sort_order?: number }) =>
+    api.put<AdminPostDetail>(`/admin/posts/${id}`, payload),
+  remove: (id: number) => api.delete(`/admin/posts/${id}`),
+  setPopup: (id: number, on: boolean, until?: string) =>
+    api.post<AdminPostSummary>(`/admin/posts/${id}/popup`, { on, until }),
+  setPublished: (id: number, published: boolean) =>
+    api.post<AdminPostSummary>(`/admin/posts/${id}/publish`, { published }),
+}

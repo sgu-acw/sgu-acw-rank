@@ -4,3 +4,10 @@
 /blog/10000-%E7%BD%AE%E9%A1%B6/*  /nav  301
 # 成员获奖页暂时下线
 /member-awards/*  /  301
+
+# 博客文章详情：文章存在数据库里，没有对应的静态文件。
+# 把 /blog/xxx rewrite 到 /post 单页，浏览器地址不变，组件自己从
+# location.pathname 里拿 slug。
+# 200（rewrite）不是 301：Pages 只在「这条路径没有静态资产」时才应用，
+# 所以 /blog/ 本身仍然返回列表页，不会被套住。
+/blog/*  /post  200

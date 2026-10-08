@@ -2,6 +2,7 @@
 import '../styles/globals.css'
 import AppNav from '../components/AppNav.vue'
 import MobileTabBar from '../components/MobileTabBar.vue'
+import PopupAnnouncement from '../components/PopupAnnouncement.vue'
 import ThemeToggle from '../components/ThemeToggle.vue'
 import { ClientRouter } from 'astro:transitions'
 
@@ -143,6 +144,15 @@ const { title = 'SGU 算法竞赛工作坊' } = Astro.props
 
   <!-- 底部标签栏。md 以上自己隐藏。 -->
   <MobileTabBar client:load />
+
+  <!--
+    公告弹窗。挂在布局上所以所有页面都会检查一次。
+
+    client:only 而不是 client:load：组件第一件事就是读 localStorage，
+    SSR 跑出来永远是「不弹」然后挂载后再决定要不要显示，白白闪一帧
+    内容。client:only 干脆让 Vue 接管。
+  -->
+  <PopupAnnouncement client:only="vue" />
 
 </body>
 </html>
