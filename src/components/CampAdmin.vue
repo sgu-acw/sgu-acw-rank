@@ -44,10 +44,18 @@ const detailLoading = ref(false)
 
 // 新建表单
 const creating = ref(false)
+function toLocalInput(iso: string): string {
+  // datetime-local 要的是本地时间的 YYYY-MM-DDTHH:mm
+  const d = new Date(iso)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
 const newName = ref('')
 const newDesc = ref('')
-const newStart = ref('')
-const newEnd = ref('')
+// 默认「现在开始、两小时后结束」——常见集训时长，少调两个字段
+const newStart = ref(toLocalInput(new Date().toISOString()))
+const newEnd = ref(toLocalInput(new Date(Date.now() + 2 * 3600 * 1000).toISOString()))
 
 // 编辑表单（选中一份后填充）
 const editName = ref('')
@@ -73,13 +81,6 @@ const lookup = ref<
 const memberQuery = ref('')
 const memberResults = ref<AdminUser[]>([])
 const searching = ref(false)
-
-function toLocalInput(iso: string): string {
-  // datetime-local 要的是本地时间的 YYYY-MM-DDTHH:mm
-  const d = new Date(iso)
-  const pad = (n: number) => String(n).padStart(2, '0')
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
-}
 
 function fromLocalInput(v: string): string {
   return new Date(v).toISOString()
@@ -135,8 +136,9 @@ async function create() {
     })
     newName.value = ''
     newDesc.value = ''
-    newStart.value = ''
-    newEnd.value = ''
+    // 创建完重置回「现在 + 两小时」——下一次新建又是现成的
+    newStart.value = toLocalInput(new Date().toISOString())
+    newEnd.value = toLocalInput(new Date(Date.now() + 2 * 3600 * 1000).toISOString())
     notice.value = '已创建'
     await load()
     select(camp.id)
