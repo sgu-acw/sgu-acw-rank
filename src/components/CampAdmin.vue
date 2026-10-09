@@ -530,6 +530,72 @@ onMounted(load)
               </p>
             </CardContent>
           </Card>
+
+          <!-- 榜单。管理员这里也要看——不然得翻到前台页面。 -->
+          <Card v-if="detail.leaderboard.length">
+            <CardHeader class="pb-2">
+              <CardTitle class="text-sm font-medium">
+                榜单
+                <span class="ml-1 font-normal text-muted-foreground">{{ detail.leaderboard.length }} 人</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent class="p-0">
+              <div class="overflow-x-auto border-t border-border/40">
+                <table class="w-full text-sm">
+                  <thead>
+                    <tr class="border-b border-border/40 text-left text-xs text-muted-foreground">
+                      <th class="w-10 px-3 py-2 text-center font-medium">#</th>
+                      <th class="px-3 py-2 font-medium">姓名</th>
+                      <th class="px-3 py-2 text-right font-medium">过题</th>
+                      <th
+                        v-for="p in detail.problems"
+                        :key="`${p.platform}:${p.key}`"
+                        class="px-2 py-2 text-center font-mono text-[10px] font-medium"
+                        :title="`${p.platform}:${p.key}`"
+                      >
+                        {{ p.key }}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-border/40">
+                    <tr v-for="entry in detail.leaderboard" :key="entry.user_id">
+                      <td
+                        class="px-3 py-2.5 text-center font-mono text-xs"
+                        :class="entry.rank <= 3 ? 'font-semibold text-foreground' : 'text-muted-foreground'"
+                      >
+                        {{ entry.rank }}
+                      </td>
+                      <td class="px-3 py-2.5">
+                        <span class="font-medium">{{ entry.display_name }}</span>
+                        <span v-if="entry.class_label" class="ml-1.5 text-[11px] text-muted-foreground/70">
+                          {{ entry.class_label }}
+                        </span>
+                      </td>
+                      <td class="px-3 py-2.5 text-right font-mono text-sm">
+                        {{ entry.solved_count }}
+                      </td>
+                      <td
+                        v-for="p in detail.problems"
+                        :key="`${p.platform}:${p.key}`"
+                        class="px-2 py-2.5 text-center"
+                      >
+                        <span
+                          class="inline-flex h-4 w-4 items-center justify-center rounded-full text-[10px]"
+                          :class="
+                            entry.per_problem[`${p.platform}:${p.key}`]
+                              ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
+                              : 'text-muted-foreground/30'
+                          "
+                        >
+                          {{ entry.per_problem[`${p.platform}:${p.key}`] ? '✓' : '—' }}
+                        </span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
         </template>
       </div>
     </div>

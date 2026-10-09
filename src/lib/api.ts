@@ -1047,6 +1047,8 @@ export interface CampAdminDetail extends CampSummary {
   created_by: number
   problems: CampAdminProblem[]
   registrations: { user_id: number; display_name: string; registered_at: string }[]
+  /** 最终榜单。管理员在管理页也要能看到谁过了什么。 */
+  leaderboard: CampLeaderboardEntry[]
 }
 
 export const campAdminApi = {
