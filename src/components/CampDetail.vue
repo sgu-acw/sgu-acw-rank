@@ -169,8 +169,8 @@ onMounted(async () => {
         </CardContent>
       </Card>
 
-      <!-- 已登录未报名 -->
-      <Card v-else-if="!camp.registered && !isAdmin">
+      <!-- 已登录未报名。管理员也走这个——在前台他就是普通用户。 -->
+      <Card v-else-if="!camp.registered">
         <CardContent class="space-y-3 py-6">
           <div class="flex flex-wrap items-center gap-2 text-sm">
             <span class="text-muted-foreground">需要至少一个已验证账号：</span>
