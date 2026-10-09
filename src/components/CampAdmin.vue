@@ -5,10 +5,11 @@
  * 左边是集训列表（新建在上），右边是选中那一份的编辑区：
  * 改名改时间、加题删题、看报名名单、手动加人、导出、删除。
  */
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import {
   Check,
   Download,
+  GripVertical,
   Loader2,
   Plus,
   Search,
@@ -17,6 +18,7 @@ import {
   UserPlus,
   X,
 } from 'lucide-vue-next'
+import Sortable from 'sortablejs'
 import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Input } from './ui/input'
@@ -63,6 +65,50 @@ const editDesc = ref('')
 const editStart = ref('')
 const editEnd = ref('')
 const saving = ref(false)
+
+// 拖拽排序：容器 + Sortable 实例。选中集训变了要重建。
+const problemsEl = ref<HTMLElement | null>(null)
+let sortable: Sortable | null = null
+
+function setupSortable() {
+  sortable?.destroy()
+  sortable = null
+  if (!problemsEl.value) return
+  sortable = Sortable.create(problemsEl.value, {
+    handle: '[data-drag-handle]',
+    animation: 150,
+    delayOnTouchOnly: true,
+    delay: 200,
+    onEnd: (event) => {
+      if (event.oldIndex === undefined || event.newIndex === undefined) return
+      if (event.oldIndex === event.newIndex) return
+      void reorderProblems(event.oldIndex, event.newIndex)
+    },
+  })
+}
+
+async function reorderProblems(from: number, to: number) {
+  if (!detail.value) return
+  const items = [...detail.value.problems]
+  const [moved] = items.splice(from, 1)
+  items.splice(to, 0, moved)
+  detail.value.problems = items
+
+  try {
+    const saved = await campAdminApi.reorderProblems(
+      detail.value.id,
+      items.map((p) => p.id),
+    )
+    detail.value.problems = saved
+  } catch (err) {
+    error.value = err instanceof ApiError ? err.message : '排序失败'
+    await loadDetail(detail.value.id)
+  }
+}
+
+// detail 变了要重建 Sortable——DOM 被 Vue 换过之后旧的把手还指着
+// 上一批元素。flush:'post' 等渲染完再调。
+watch(detail, setupSortable, { flush: 'post' })
 
 // 加题
 const PLATFORMS = Object.keys(PLATFORM_META) as Platform[]
@@ -403,12 +449,24 @@ onMounted(load)
               </CardTitle>
             </CardHeader>
             <CardContent class="space-y-2">
-              <div v-if="detail.problems.length" class="divide-y divide-border/40 rounded-md border border-border/40">
+              <div
+                v-if="detail.problems.length"
+                ref="problemsEl"
+                data-sortable="problems"
+                class="divide-y divide-border/40 rounded-md border border-border/40"
+              >
                 <div
                   v-for="p in detail.problems"
                   :key="p.id"
                   class="flex items-center gap-2 px-3 py-2"
                 >
+                  <span
+                    data-drag-handle
+                    class="shrink-0 cursor-grab touch-none text-muted-foreground/40 transition-colors hover:text-muted-foreground active:cursor-grabbing"
+                    title="拖动排序"
+                  >
+                    <GripVertical class="h-4 w-4" />
+                  </span>
                   <span class="w-20 shrink-0 font-mono text-[11px] text-muted-foreground">
                     {{ PLATFORM_META[p.platform]?.label ?? p.platform }}
                   </span>

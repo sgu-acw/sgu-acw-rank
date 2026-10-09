@@ -1059,6 +1059,8 @@ export const campAdminApi = {
   update: (id: number, payload: Partial<{ name: string; description: string; start_at: string; end_at: string }>) =>
     api.put<CampSummary>(`/admin/camps/${id}`, payload),
   remove: (id: number) => api.delete(`/admin/camps/${id}`),
+  reorderProblems: (id: number, ids: number[]) =>
+    api.post<CampAdminProblem[]>(`/admin/camps/${id}/problems/reorder`, { ids }),
   addProblem: (id: number, platform: Platform, key: string) =>
     api.post(`/admin/camps/${id}/problems`, { platform, key, position: 0 }),
   removeProblem: (id: number, problemId: number) =>
