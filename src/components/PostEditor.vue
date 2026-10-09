@@ -1,119 +1,53 @@
 <script setup lang="ts">
 /**
- * 文章的所见即所得编辑器，Crepe（Milkdown 全家桶）套一层壳。
+ * 文章编辑器。
  *
- * 为什么不直接用它的官方 Vue 适配器：@milkdown/vue 是把 React 风格的
- * 上下文硬套进 Vue，生命周期和响应式都别扭。Crepe 本身是 vanilla JS，
- * 一个 div + create()/destroy() 就完了，比适配层干净。
+ * 不用 WYSIWYG——Crepe 很大（1.4MB）、有 image-block 崩 caption=null
+ * 的 bug、左边还浮着一列把手图标跟站点扁平风格不搭。
  *
- * 深色的做法：主题 CSS 只引浅色那份，深色变量用 ``.dark .milkdown``
- * 覆盖——值照抄官方的 frame-dark 主题。
+ * 改成「左边写 markdown、右边实时预览」：跟题解管理页的风格一致，
+ * 没新依赖，renderMarkdown 就是题解用的那个（卡片、公式、裸 HTML
+ * 都通）。
  */
-import { onBeforeUnmount, onMounted, ref } from 'vue'
-// 主题 CSS 静态引入：动态 import CSS 在构建时不会单独产出文件，
-// 运行时会 404（`Unable to preload CSS`）。放这里由 Vite 打进本页的样式。
-// Crepe 的样式分两层：common 是组件本身（工具栏、ProseMirror、气泡…），
-// frame 是配色变量。两层都得引，少了 common 编辑器是裸的。
-import '@milkdown/crepe/theme/common/style.css'
-import '@milkdown/crepe/theme/frame.css'
-
-// 按需开特性：工具栏、LaTeX（题解文章会写公式）、表格、列表、代码、
-// 占位提示。block-edit（拖拽重排）关掉——它不显示在工具栏里，靠左侧
-// 把手，和站点扁平风格不搭。
-const features = {
-  toolbar: true,
-  latex: true,
-  table: true,
-  'list-item': true,
-  'code-mirror': true,
-  placeholder: true,
-  // image-block 是 Crepe 的增强图片节点，但它要求 caption 属性是 string——
-  // 普通 markdown `![](url)` 解析出来 caption 是 null，直接 RangeError 崩掉
-  // 整篇渲染。关掉它，用 ProseMirror 自带的标准图片节点。
-  'image-block': false,
-  'link-tooltip': true,
-}
+import { computed } from 'vue'
+import { renderMarkdown } from '../lib/markdown'
 
 const props = defineProps<{ modelValue: string }>()
 const emit = defineEmits<{ 'update:modelValue': [value: string] }>()
 
-const host = ref<HTMLElement | null>(null)
-let crepe: { getMarkdown(): string; destroy(): Promise<void> } | null = null
-
-// Crepe 的 image-block 节点要求 caption 是 string——`![](url)` 的 title
-// 是 null，直接 RangeError 崩掉整篇渲染。进编辑器前给无 title 的图片
-// 塞上空 title，出编辑器时再清掉，round-trip 对用户透明。
-function normalizeIn(md: string): string {
-  // "" 会被 remark 当没 title 解析回 null，要真塞一个空格。
-  return md.replace(/!\[([^\]]*)\]\(([^\s)]+)\)/g, '![$1]($2 " ")')
-}
-function normalizeOut(md: string): string {
-  return md.replace(/!\[([^\]]*)\]\(([^\s)]+) " "\)/g, '![$1]($2)')
-}
-
-onMounted(async () => {
-  // 动态 import：这个包很大（编辑器全家桶），只有进了管理页才下载。
-  const { Crepe } = await import('@milkdown/crepe')
-
-  if (!host.value) return
-  const editor = new Crepe({
-    root: host.value,
-    defaultValue: normalizeIn(props.modelValue),
-    features,
-    featureConfigs: {
-      placeholder: { text: '写点什么…' },
-    },
-  })
-  await editor.create()
-  crepe = editor
-
-  // 每次内容变化就同步出去。Crepe 没暴露 v-model 式的接口，监听
-  // markdownUpdated 事件拿最新 markdown。
-  editor.on((api) => {
-    api.markdownUpdated((_ctx, markdown) => {
-      emit('update:modelValue', normalizeOut(markdown))
-    })
-  })
-})
-
-onBeforeUnmount(async () => {
-  await crepe?.destroy()
-  crepe = null
-})
+const html = computed(() => renderMarkdown(props.modelValue))
 </script>
 
 <template>
-  <div ref="host" class="post-editor rounded-md border border-input" />
+  <div class="grid gap-3 lg:grid-cols-2">
+    <div class="space-y-1.5">
+      <label class="text-xs font-medium">
+        正文
+        <span class="ml-1 font-normal text-muted-foreground">
+          Markdown + LaTeX + HTML，{{ modelValue.length }} 字符
+        </span>
+      </label>
+      <textarea
+        :value="modelValue"
+        rows="20"
+        spellcheck="false"
+        placeholder="写点什么…"
+        class="w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-xs leading-relaxed"
+        @input="emit('update:modelValue', ($event.target as HTMLTextAreaElement).value)"
+      />
+      <p class="text-[11px] text-muted-foreground/70">
+        :::card 标题 | 描述 | url 是链接卡片；$...$ 是公式
+      </p>
+    </div>
+
+    <div class="space-y-1.5">
+      <p class="text-xs font-medium text-muted-foreground">预览</p>
+      <!-- eslint-disable vue/no-v-html -->
+      <div
+        class="editorial-body prose min-h-[26rem] max-w-none rounded-md border border-border/40 px-4 py-3 text-sm dark:prose-invert"
+        v-html="html"
+      />
+      <!-- eslint-enable vue/no-v-html -->
+    </div>
+  </div>
 </template>
-
-<style>
-/*
- * Crepe 的深色适配：官方深色主题是一份完整 CSS，不能和浅色同时引入
- * （同 scope 会互相覆盖）。这里只覆盖变量。
- */
-.dark .post-editor .milkdown {
-  --crepe-color-background: hsl(240 6% 9%);
-  --crepe-color-on-background: #e6e6e6;
-  --crepe-color-surface: hsl(240 6% 7%);
-  --crepe-color-surface-low: hsl(240 5% 12%);
-  --crepe-color-on-surface: #d1d1d1;
-  --crepe-color-on-surface-variant: #a9a9a9;
-  --crepe-color-outline: hsl(240 4% 30%);
-  --crepe-color-primary: #b5b5b5;
-  --crepe-color-secondary: #4d4d4d;
-  --crepe-color-on-secondary: #d6d6d6;
-  --crepe-color-inverse: #e5e5e5;
-  --crepe-color-on-inverse: #2a2a2a;
-  --crepe-color-inline-code: #ff6666;
-  --crepe-color-error: #ff6666;
-  --crepe-color-hover: hsl(240 5% 16%);
-  --crepe-color-selected: hsl(240 5% 20%);
-  --crepe-color-inline-area: #2b2b2b;
-}
-
-/* 编辑器跟站点字体走，不用它自带的 serif 标题字体。 */
-.post-editor .milkdown {
-  --crepe-font-title: inherit;
-  --crepe-font-default: inherit;
-}
-</style>
