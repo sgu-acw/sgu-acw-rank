@@ -288,7 +288,7 @@ onMounted(async () => {
                     v-for="p in camp.problems"
                     :key="p.key"
                     class="px-2 py-2 text-center font-mono text-[10px] font-medium"
-                    :title="`${p.platform}:${p.key}`"
+                    :title="`${p.platform}:${p.key}${p.name ? ` — ${p.name}` : ''}`"
                   >
                     {{ p.key }}
                   </th>
