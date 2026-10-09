@@ -470,7 +470,12 @@ onMounted(load)
                   <span class="w-20 shrink-0 font-mono text-[11px] text-muted-foreground">
                     {{ PLATFORM_META[p.platform]?.label ?? p.platform }}
                   </span>
-                  <span class="min-w-0 flex-1 truncate font-mono text-sm">{{ p.key }}</span>
+                  <span class="min-w-0 flex-1 truncate text-sm" :title="p.name">
+                    {{ p.name || p.key }}
+                  </span>
+                  <span class="shrink-0 font-mono text-[11px] text-muted-foreground/70">
+                    {{ p.key }}
+                  </span>
                   <button
                     type="button"
                     class="shrink-0 text-muted-foreground transition-colors hover:text-destructive"

@@ -1041,6 +1041,9 @@ export interface CampAdminProblem {
   platform: Platform
   key: string
   position: number
+  /** 题名。管理页题目列表显示用。 */
+  name: string
+  rating: number | null
 }
 
 export interface CampAdminDetail extends CampSummary {
