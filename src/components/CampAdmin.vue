@@ -532,7 +532,7 @@ onMounted(load)
           </Card>
 
           <!-- 榜单。管理员这里也要看——不然得翻到前台页面。 -->
-          <Card v-if="detail.leaderboard.length">
+          <Card v-if="detail.leaderboard?.length">
             <CardHeader class="pb-2">
               <CardTitle class="text-sm font-medium">
                 榜单
@@ -558,7 +558,7 @@ onMounted(load)
                     </tr>
                   </thead>
                   <tbody class="divide-y divide-border/40">
-                    <tr v-for="entry in detail.leaderboard" :key="entry.user_id">
+                    <tr v-for="entry in detail.leaderboard ?? []" :key="entry.user_id">
                       <td
                         class="px-3 py-2.5 text-center font-mono text-xs"
                         :class="entry.rank <= 3 ? 'font-semibold text-foreground' : 'text-muted-foreground'"
