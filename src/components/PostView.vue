@@ -37,7 +37,7 @@ onMounted(async () => {
   }
   try {
     post.value = await postApi.detail(slug.value)
-    document.title = `${post.value.title} - SGU ACW`
+    document.title = `${post.value.title} - 算法竞赛工作坊`
   } catch (err) {
     error.value = err instanceof ApiError ? err.message : '加载失败，请稍后重试'
   } finally {
