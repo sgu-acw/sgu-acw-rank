@@ -43,17 +43,20 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <div class="flex items-start gap-2.5 px-3 py-2.5 sm:gap-3 sm:px-4 sm:py-3">
+  <div
+    class="flex items-start gap-2.5 px-3 py-2.5 sm:gap-3 sm:px-4 sm:py-3"
+    :class="problem.done && showProgress ? 'bg-emerald-500/5' : ''"
+  >
     <!-- 完成状态。未登录时整块不渲染，避免显示成「全都没做」。 -->
     <span
       v-if="showProgress"
       class="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border text-[10px]"
       :class="
         problem.done
-          ? 'border-emerald-600/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-500'
-          : 'border-border text-transparent'
+          ? 'border-emerald-600/50 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
+          : 'border-border/50 text-transparent'
       "
-      :title="problem.done ? '已完成' : '未完成'"
+      :title="problem.done ? '已解决' : '未解决'"
     >
       ✓
     </span>
@@ -65,6 +68,7 @@ const emit = defineEmits<{
           target="_blank"
           rel="noreferrer"
           class="text-sm font-medium underline-offset-4 transition-colors hover:text-primary hover:underline"
+          :class="problem.done && showProgress ? 'text-emerald-700 dark:text-emerald-400' : ''"
         >
           {{ problem.name || problem.key }}
         </a>

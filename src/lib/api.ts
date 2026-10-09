@@ -979,6 +979,8 @@ export interface CampProblem {
   name: string
   rating: number | null
   url: string
+  /** 当前查看的人过了没有。未报名者恒为 false——题面本身不给他们看。 */
+  done: boolean
 }
 
 /** 排行榜里的一人。 */

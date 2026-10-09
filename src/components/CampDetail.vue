@@ -233,11 +233,27 @@ onMounted(async () => {
               target="_blank"
               rel="noreferrer"
               class="row-action flex items-center gap-3 px-4 py-2.5"
+              :class="p.done ? 'bg-emerald-500/5' : ''"
             >
+              <!-- 绿色对号表示「我过了」。题单那边是同款标记。 -->
+              <span
+                class="flex h-4 w-4 shrink-0 items-center justify-center rounded-full border text-[10px]"
+                :class="
+                  p.done
+                    ? 'border-emerald-600/50 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
+                    : 'border-border/50 text-transparent'
+                "
+                :title="p.done ? '已解决' : '未解决'"
+              >
+                ✓
+              </span>
               <span class="w-20 shrink-0 font-mono text-[11px] text-muted-foreground">
                 {{ platformLabel(p.platform) }}
               </span>
-              <span class="min-w-0 flex-1 truncate text-sm">
+              <span
+                class="min-w-0 flex-1 truncate text-sm"
+                :class="p.done ? 'text-emerald-700 dark:text-emerald-400' : ''"
+              >
                 {{ p.name || p.key }}
               </span>
               <span class="shrink-0 font-mono text-xs text-muted-foreground">{{ p.key }}</span>
