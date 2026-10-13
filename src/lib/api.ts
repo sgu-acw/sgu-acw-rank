@@ -1176,6 +1176,14 @@ export const campAdminApi = {
     api.post<CampAdminProblem[]>(`/admin/camps/${id}/problems/reorder`, { ids }),
   addProblem: (id: number, platform: Platform, key: string) =>
     api.post(`/admin/camps/${id}/problems`, { platform, key }),
+  /**
+   * 批量导入题目。items 和 problem_list_id 可以一起给，重复的跳过。
+   * 返回 added / skipped / failed。
+   */
+  importProblems: (
+    id: number,
+    payload: { items?: { platform: Platform; key: string }[]; problem_list_id?: number },
+  ) => api.post<{ added: number; skipped: number; failed: string[] }>(`/admin/camps/${id}/problems/import`, payload),
   removeProblem: (id: number, problemId: number) =>
     api.delete(`/admin/camps/${id}/problems/${problemId}`),
   addMember: (id: number, userId: number) =>

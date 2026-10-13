@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
-import { ArrowDown, ArrowLeft, ArrowUp, Download, GripVertical, Loader2, Plus, Search, Trash2, Trophy, X } from 'lucide-vue-next'
+import { ArrowDown, ArrowLeft, ArrowUp, ChevronRight, Download, GripVertical, Loader2, Plus, Search, Trash2, Trophy, X } from 'lucide-vue-next'
 import Sortable from 'sortablejs'
 import ActionNotice from './ui/ActionNotice.vue'
 import { Button } from './ui/button'
@@ -212,6 +212,101 @@ async function addProblem() {
     await campAdminApi.addProblem(id, platform, key)
     newKey.value = ''; lookup.value = info.name
   }, '题目已添加')
+}
+
+// ------------------------------------------------------------------ 批量导入
+//
+// 两条路：整张题单拉过来，或者把「平台:题号」文本粘进来解析。
+// 重复的后端跳过，别一条报错把整个导入打死。
+
+const importOpen = ref(false)
+const importLists = ref<{ id: number; label: string }[]>([])
+const importListId = ref<number | null>(null)
+const importText = ref('')
+const importDefaultPlatform = ref<Platform>('luogu')
+const importResult = ref('')
+
+const PLATFORM_PREFIXES: Record<string, Platform> = {
+  luogu: 'luogu',
+  codeforces: 'codeforces',
+  cf: 'codeforces',
+  atcoder: 'atcoder',
+  ac: 'atcoder',
+  nowcoder: 'nowcoder',
+  nc: 'nowcoder',
+  '\u6d1b\u8c37': 'luogu',   // 洛谷
+  '\u725b\u5ba2': 'nowcoder', // 牛客
+}
+
+function parseImportText(): { items: { platform: Platform; key: string }[]; failed: string[] } {
+  const items: { platform: Platform; key: string }[] = []
+  const failed: string[] = []
+  for (const raw of importText.value.split('\n')) {
+    const line = raw.trim()
+    if (!line || line.startsWith('#') || line.startsWith('//')) continue
+    // 「平台:题号」「平台 题号」「题号」（走默认平台）三种写法。
+    const m = line.match(/^([A-Za-z\u4e00-\u9fff]+)[\s:：]+(.+)$/)
+    const prefix = m ? PLATFORM_PREFIXES[m[1].toLowerCase()] : undefined
+    if (m && prefix) {
+      items.push({ platform: prefix, key: m[2].trim() })
+    } else if (line.includes(':') || line.includes(' ')) {
+      // 看起来想写平台前缀但不认识，进 failed 而不是悄悄按默认平台。
+      failed.push(line)
+    } else {
+      items.push({ platform: importDefaultPlatform.value, key: line })
+    }
+  }
+  return { items, failed }
+}
+
+async function runImport(source: 'list' | 'text') {
+  if (!detail.value || busy.value || locked.value) return
+  const id = detail.value.id
+  busy.value = true
+  error.value = ''
+  try {
+    let payload: Parameters<typeof campAdminApi.importProblems>[1] = {}
+    if (source === 'list') {
+      if (!importListId.value) { error.value = '选一张题单'; return }
+      payload.problem_list_id = importListId.value
+    } else {
+      const { items, failed } = parseImportText()
+      if (!items.length && !failed.length) { error.value = '没有可导入的题'; return }
+      payload.items = items
+      if (failed.length) {
+        importResult.value = `无法识别 ${failed.length} 行：${failed.slice(0, 3).join('、')}${failed.length > 3 ? '…' : ''}`
+      }
+    }
+    const r = await campAdminApi.importProblems(id, payload)
+    importResult.value = [
+      `导入 ${r.added} 道`,
+      r.skipped ? `跳过 ${r.skipped} 道重复` : '',
+      r.failed.length ? `${r.failed.length} 条无法识别` : '',
+    ].filter(Boolean).join('，')
+    if (r.failed.length) {
+      importResult.value += `（${r.failed.slice(0, 3).join('、')}${r.failed.length > 3 ? '…' : ''}）`
+    }
+    await loadDetail(id)
+  } catch (err) {
+    error.value = message(err)
+  } finally {
+    busy.value = false
+  }
+}
+
+async function openImport() {
+  importOpen.value = !importOpen.value
+  importResult.value = ''
+  if (!importOpen.value || importLists.value.length) return
+  try {
+    const lists = await problemListApi.list({ include_nested: true })
+    importLists.value = lists.map((l) => ({
+      id: l.id,
+      label: `${l.kind === 'collection' ? '合集' : '题单'} · ${l.title}${l.item_count ? `（${l.item_count}）` : ''}`,
+    }))
+  } catch (err) {
+    error.value = message(err)
+  }
 }
 async function removeProblem(id: number, name: string) {
   if (!detail.value || busy.value || locked.value || !await confirmAction(`从集训中移除「${name}」？过题统计会随题目列表重新计算。`, '移除题目')) return
@@ -450,6 +545,38 @@ onUnmounted(() => { disposed = true; ++requestId; sortable?.destroy(); window.re
                     <Button type="submit" :disabled="busy || !newKey.trim()" class="w-full sm:w-auto"><Plus class="mr-1 h-4 w-4" />添加题目</Button>
                   </div>
                   <p v-if="lookup" class="text-xs text-muted-foreground">最近添加：{{ lookup }}</p>
+
+                  <div class="border-t border-border/40 pt-2">
+                    <button type="button" class="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground" @click="openImport">
+                      <ChevronRight class="h-3.5 w-3.5 transition-transform" :class="{ 'rotate-90': importOpen }" />批量导入
+                    </button>
+                    <div v-if="importOpen" class="mt-2 space-y-2.5">
+                      <div class="flex flex-wrap items-center gap-2">
+                        <select v-model="importListId" class="h-9 min-w-0 flex-1 rounded-md border border-input bg-background px-2 text-sm" :disabled="busy">
+                          <option :value="null">选择题单 / 合集</option>
+                          <option v-for="l in importLists" :key="l.id" :value="l.id">{{ l.label }}</option>
+                        </select>
+                        <Button size="sm" variant="outline" :disabled="busy || !importListId" @click="runImport('list')">整单导入</Button>
+                      </div>
+                      <div class="space-y-1.5">
+                        <div class="flex items-center justify-between gap-2">
+                          <p class="text-xs text-muted-foreground">或按行粘贴「平台:题号」</p>
+                          <select v-model="importDefaultPlatform" class="h-7 rounded border border-input bg-background px-1.5 text-xs" :disabled="busy">
+                            <option v-for="p in PLATFORMS" :key="p" :value="p">无前缀按{{ PLATFORM_META[p].label }}</option>
+                          </select>
+                        </div>
+                        <textarea
+                          v-model="importText"
+                          rows="4"
+                          placeholder="luogu:P1000\ncf:1234A\nac:abc300_a\nP1002"
+                          class="w-full rounded-md border border-input bg-background p-2 font-mono text-xs"
+                          :disabled="busy"
+                        />
+                        <Button size="sm" variant="outline" :disabled="busy || !importText.trim()" @click="runImport('text')">导入粘贴文本</Button>
+                      </div>
+                      <p v-if="importResult" class="text-xs text-emerald-600 dark:text-emerald-500">{{ importResult }}</p>
+                    </div>
+                  </div>
                 </form>
               </CardContent>
             </Card>
