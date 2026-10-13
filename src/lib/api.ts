@@ -9,7 +9,7 @@
  */
 
 export interface ApiErrorBody {
-  detail?: string
+  detail?: string | { msg?: string; loc?: (string | number)[] }[]
 }
 
 /** 后端返回了非 2xx 时抛出，detail 是可以直接显示给用户的中文说明。 */
@@ -30,6 +30,24 @@ export class ApiError extends Error {
   }
 }
 
+export interface PublicUser {
+  id: number
+  display_name: string
+  student_id: string
+  enroll_year: number
+  college_code: string
+  major_code: string
+  college_name: string | null
+  major_name: string | null
+  class_label: string | null
+  role: string
+}
+
+export interface AcademicOptions {
+  colleges: string[]
+  majors: Record<string, string[]>
+}
+
 export interface User {
   id: number
   student_id: string
@@ -41,10 +59,12 @@ export interface User {
   class_no: number
   role: 'root' | 'admin' | 'member'
   status: 'active' | 'disabled'
+  /** 两步验证是否已开启。 */
+  totp_enabled?: boolean
   created_at: string
 }
 
-async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+async function request<T>(path: string, init: RequestInit = {}, format: 'json' | 'blob' = 'json'): Promise<T> {
   let response: Response
   try {
     response = await fetch(`/api${path}`, {
@@ -64,6 +84,8 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
     return undefined as T
   }
 
+  if (response.ok && format === 'blob') return await response.blob() as T
+
   const text = await response.text()
   let body: unknown = null
   if (text) {
@@ -80,7 +102,9 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
     const retryAfter = retryAfterRaw ? Number(retryAfterRaw) : null
     throw new ApiError(
       response.status,
-      detail || `请求失败（${response.status}）`,
+      typeof detail === 'string' ? detail : Array.isArray(detail)
+        ? detail.map(item => item.msg || '输入格式不正确').join('；')
+        : `请求失败（${response.status}）`,
       Number.isFinite(retryAfter) ? retryAfter : null,
     )
   }
@@ -103,6 +127,14 @@ export const api = {
 // 具体接口
 // --------------------------------------------------------------------------- //
 
+export interface PasskeyEntry {
+  id: number
+  name: string
+  transports: string
+  created_at: string
+  last_used_at: string | null
+}
+
 export const authApi = {
   /**
    * 当前登录状态。未登录时返回 `{ user: null }` 而不是抛错，所以页面加载时
@@ -112,8 +144,41 @@ export const authApi = {
 
   me: () => api.get<User>('/auth/me'),
 
+  /**
+   * 密码登录。开了两步验证的账号返回 `{totp_required: true, ticket}`——
+   * 票据要接着交给 ``loginTotp`` 换真会话，不能当登录成功。
+   */
   login: (studentId: string, password: string) =>
-    api.post<User>('/auth/login', { student_id: studentId, password }),
+    api.post<{ totp_required: false; user: User } | { totp_required: true; ticket: string }>(
+      '/auth/login',
+      { student_id: studentId, password },
+    ),
+
+  /** 两步验证第二步：票据 + 验证码 → 会话。 */
+  loginTotp: (ticket: string, code: string) =>
+    api.post<{ totp_required: false; user: User }>('/auth/login/totp', { ticket, code }),
+
+  /** 通行密钥登录第一步：匿名拿挑战。 */
+  passkeyLoginBegin: () => api.post<{ options: Record<string, unknown> }>('/auth/passkey/login/begin'),
+  /** 通行密钥登录第二步：签名挑战 → 会话。 */
+  passkeyLoginComplete: (challenge: string, credential: Record<string, unknown>) =>
+    api.post<{ user: User; totp_required: false }>('/auth/passkey/login/complete', {
+      challenge,
+      credential,
+    }),
+
+  /** 自己账号的两步验证开关。 */
+  totpBegin: () => api.post<{ secret: string; otpauth_uri: string; qr_svg: string }>('/auth/me/totp/begin'),
+  totpEnable: (code: string) => api.post<{ ok: boolean }>('/auth/me/totp/enable', { code }),
+  totpDisable: (code: string) => api.post<{ ok: boolean }>('/auth/me/totp/disable', { code }),
+
+  /** 自己账号的通行密钥管理。 */
+  passkeys: () => api.get<PasskeyEntry[]>('/me/passkeys'),
+  passkeyRegisterBegin: () =>
+    api.post<{ options: Record<string, unknown> }>('/me/passkeys/register/begin'),
+  passkeyRegisterComplete: (challenge: string, credential: Record<string, unknown>, name: string) =>
+    api.post<PasskeyEntry>('/me/passkeys/register/complete', { challenge, credential, name }),
+  passkeyRemove: (id: number) => api.delete(`/me/passkeys/${id}`),
 
   register: (payload: {
     invite_code: string
@@ -133,6 +198,10 @@ export const authApi = {
     }),
 }
 
+export const usersApi = {
+  detail: (id: number) => api.get<PublicUser>(`/users/${id}`),
+}
+
 export const metaApi = {
   bootstrap: () => api.get<{ has_users: boolean; user_count: number }>('/bootstrap'),
 }
@@ -149,6 +218,8 @@ export interface PlatformAccount {
   /** 未验证时才有，是要填进平台签名的那串码。 */
   verify_token?: string | null
   verify_expires_at?: string | null
+  /** 账号状态标记：privacy = 隐私保护，unverified = 未实名。null 正常。 */
+  sync_flag?: 'privacy' | 'unverified' | null
   created_at: string
 }
 
@@ -490,6 +561,8 @@ export const adminApi = {
   /** 成员详情的管理员视角。普通成员调用会 403。 */
   memberDetail: (userId: number) => api.get<AdminMemberDetail>(`/admin/members/${userId}`),
 
+  academics: () => api.get<AcademicOptions>('/admin/academics'),
+
   stats: () =>
     api.get<{
       user_count: number
@@ -529,6 +602,8 @@ export const adminApi = {
       major_override?: string
       /** 「可发文章」开关。 */
       can_post?: boolean
+      /** 班级序号，0 = 未分班。 */
+      class_no?: number
     },
   ) => api.patch<AdminUser>(`/admin/users/${id}`, payload),
 
@@ -882,6 +957,12 @@ export const problemListApi = {
       `/problem-lists/lookup/problem?platform=${platform}&key=${encodeURIComponent(key)}`,
     ),
 
+  purgeProblemCache: (platform?: Platform) =>
+    api.post<{ deleted: number; platform: string | null }>(
+      `/problem-lists/purge-problem-cache${platform ? `?platform=${platform}` : ''}`,
+      {},
+    ),
+
   /** 整批刷新 CF 题库。一次拿回一万多题。 */
   refreshCodeforces: () =>
     api.post<{ total: number; added: number; updated: number }>(
@@ -933,6 +1014,7 @@ export interface AdminAccountDetail {
   last_error: string | null
   consecutive_failures: number
   rating_failures: number
+  sync_flag: 'privacy' | 'unverified' | null
 
   created_at: string
   solved_count: number
@@ -991,13 +1073,21 @@ export interface CampLeaderboardEntry {
   student_id: string
   enroll_year: number
   class_label: string | null
+  college_name: string | null
+  major_name: string | null
   solved_count: number
   /** 「平台:题号」→ 是否通过。 */
   per_problem: Record<string, boolean>
 }
 
-/** 集训详情。题目和排行榜只有报名了（或管理员）才返回。 */
-export interface CampDetail {
+export interface CampResultStatus {
+  phase: 'scheduled' | 'running' | 'finalizing' | 'finalized'
+  finalized_at: string | null
+  pending_accounts: number
+}
+
+/** 题目和排行榜只有已报名且已经开始才返回，管理员预览走管理接口。 */
+export interface CampDetail extends CampResultStatus {
   id: number
   name: string
   description: string
@@ -1005,12 +1095,16 @@ export interface CampDetail {
   end_at: string
   started: boolean
   ended: boolean
+  /** 生效的开放报名 / 开始显示时间。 */
+  register_open: string | null
+  visible_from: string | null
   registered: boolean
   registration_count: number
   problem_count: number
   /** 涉及的平台。报名前就显示——「需要哪些账号」是报名决策的一部分。 */
   platforms: Platform[]
   can_register: boolean
+  can_unregister: boolean
   register_reason: string
   problems: CampProblem[]
   leaderboard: CampLeaderboardEntry[]
@@ -1025,6 +1119,9 @@ export interface CampSummary {
   end_at: string
   started: boolean
   ended: boolean
+  /** 生效的开放报名 / 开始显示时间。null = 不设限制。 */
+  register_open: string | null
+  visible_from: string | null
   registration_count: number
   problem_count: number
 }
@@ -1046,32 +1143,75 @@ export interface CampAdminProblem {
   rating: number | null
 }
 
-export interface CampAdminDetail extends CampSummary {
+export interface CampAdminDetail extends CampSummary, CampResultStatus {
   created_by: number
+  /** 编辑表单用的原始字段：_at 非空 = 绝对模式，否则按 _days 回推。 */
+  register_open_at: string | null
+  register_open_days: number | null
+  visible_at: string | null
+  visible_days: number | null
   problems: CampAdminProblem[]
   registrations: { user_id: number; display_name: string; registered_at: string }[]
   /** 最终榜单。管理员在管理页也要能看到谁过了什么。 */
   leaderboard: CampLeaderboardEntry[]
 }
 
+/** 开放报名 / 开始显示的模式化时间。_at = 绝对时间，_days = 开始前偏移天数。 */
+export interface CampTimingPayload {
+  register_open_at?: string | null
+  register_open_days?: number | null
+  visible_at?: string | null
+  visible_days?: number | null
+}
+
 export const campAdminApi = {
   list: () => api.get<CampSummary[]>('/admin/camps'),
   detail: (id: number) => api.get<CampAdminDetail>(`/admin/camps/${id}`),
-  create: (payload: { name: string; description: string; start_at: string; end_at: string }) =>
+  create: (payload: CampTimingPayload & { name: string; description: string; start_at: string; end_at: string }) =>
     api.post<CampSummary>('/admin/camps', payload),
-  update: (id: number, payload: Partial<{ name: string; description: string; start_at: string; end_at: string }>) =>
+  update: (id: number, payload: Partial<{ name: string; description: string; start_at: string; end_at: string } & CampTimingPayload>) =>
     api.put<CampSummary>(`/admin/camps/${id}`, payload),
   remove: (id: number) => api.delete(`/admin/camps/${id}`),
   reorderProblems: (id: number, ids: number[]) =>
     api.post<CampAdminProblem[]>(`/admin/camps/${id}/problems/reorder`, { ids }),
   addProblem: (id: number, platform: Platform, key: string) =>
-    api.post(`/admin/camps/${id}/problems`, { platform, key, position: 0 }),
+    api.post(`/admin/camps/${id}/problems`, { platform, key }),
   removeProblem: (id: number, problemId: number) =>
     api.delete(`/admin/camps/${id}/problems/${problemId}`),
   addMember: (id: number, userId: number) =>
     api.post(`/admin/camps/${id}/members`, { user_id: userId }),
   removeMember: (id: number, userId: number) =>
     api.delete(`/admin/camps/${id}/members/${userId}`),
+  export: (id: number, format: 'xlsx' | 'csv' | 'json') =>
+    request<Blob>(`/admin/camps/${id}/export?format=${format}`, {}, 'blob'),
+  exportUrl: (id: number, format: 'xlsx' | 'csv' | 'json') =>
+    `/api/admin/camps/${id}/export?format=${format}`,
+}
+
+// --------------------------------------------------------------------------- //
+// 管理员站内信
+// --------------------------------------------------------------------------- //
+
+export interface AdminNotification {
+  id: number
+  title: string
+  body: string
+  href: string
+  occurrences: number
+  revision: number
+  created_at: string
+  updated_at: string
+  resolved_at: string | null
+  read: boolean
+}
+
+export const notificationApi = {
+  list: (page = 1, unreadOnly = false) => api.get<{
+    items: AdminNotification[]; total: number; unread_count: number
+  }>(`/admin/notifications?page=${page}&unread_only=${unreadOnly}`),
+  unread: () => api.get<{ count: number }>('/admin/notifications/unread-count'),
+  read: (id: number) => api.post(`/admin/notifications/${id}/read`),
+  readAll: () => api.post('/admin/notifications/read-all'),
 }
 
 // --------------------------------------------------------------------------- //
@@ -1134,4 +1274,133 @@ export const postAdminApi = {
     api.post<AdminPostSummary>(`/admin/posts/${id}/popup`, { on, until }),
   setPublished: (id: number, published: boolean) =>
     api.post<AdminPostSummary>(`/admin/posts/${id}/publish`, { published }),
+}
+
+export interface WorkshopOverride {
+  id: number
+  label: string
+  note: string
+  start_at: string | null
+  until: string | null
+  updated_at: string
+}
+
+export const workshopApi = {
+  override: () => api.get<WorkshopOverride | null>('/workshop/override'),
+  schedule: () => api.get<WorkshopOverride[]>('/workshop/schedule'),
+  setOverride: (payload: {
+    label: string
+    note?: string
+    start_at?: string | null
+    until?: string | null
+  }) => api.put<WorkshopOverride>('/admin/workshop/override', payload),
+  updateOverride: (
+    id: number,
+    payload: { label?: string; note?: string; start_at?: string | null; until?: string | null },
+  ) => api.patch<WorkshopOverride>(`/admin/workshop/override/${id}`, payload),
+  deleteOverride: (id: number) => api.delete(`/admin/workshop/override/${id}`),
+  clearOverride: () => api.delete('/admin/workshop/override'),
+}
+
+
+// --------------------------------------------------------------------------- //
+// Web Push
+// --------------------------------------------------------------------------- //
+
+export interface PushAnnounceResult {
+  audience: number
+  sent: number
+  failed: number
+  dead: number
+}
+
+export const pushApi = {
+  vapidKey: () => api.get<{ key: string; configured: boolean }>('/push/vapid-key'),
+  subscribe: (payload: { endpoint: string; p256dh: string; auth: string }) =>
+    api.post('/push/subscribe', payload),
+  unsubscribe: (endpoint: string) => api.post('/push/unsubscribe', { endpoint }),
+  announce: (payload: {
+    title: string
+    body?: string
+    url?: string
+    audience?: string
+  }) => api.post<PushAnnounceResult>('/admin/push/announce', payload),
+}
+
+// --------------------------------------------------------------------------- //
+// 线下报名
+// --------------------------------------------------------------------------- //
+
+export interface SignupFieldDef {
+  key: string
+  label: string
+  type: 'text' | 'textarea' | 'number' | 'select' | 'multiselect' | 'checkbox' | 'phone' | 'email'
+  required: boolean
+  options: string[]
+  hint: string
+}
+
+/** 多选字段的值是数组，其余是 string/boolean。 */
+export type SignupAnswer = string | boolean | string[]
+
+export interface SignupSummary {
+  id: number
+  name: string
+  description: string
+  open_at: string
+  close_at: string | null
+  status: 'upcoming' | 'open' | 'closed'
+  capacity: number | null
+  entry_count: number
+  my_entry: boolean
+  fields: SignupFieldDef[]
+  /** 前置条件：这些平台的账号都要已验证。空 = 不设限制。 */
+  required_platforms: Platform[]
+  /** 前置条件：仅限这些入学年级。空 = 不限。 */
+  required_years: number[]
+}
+
+export interface SignupEntry {
+  id: number
+  user_id: number
+  display_name: string
+  student_id: string
+  class_label: string | null
+  answers: Record<string, SignupAnswer>
+  created_at: string
+  updated_at: string
+}
+
+export const signupApi = {
+  list: () => api.get<SignupSummary[]>('/signups'),
+  detail: (id: number) => api.get<SignupSummary>(`/signups/${id}`),
+  myEntry: (id: number) => api.get<{ answers: Record<string, SignupAnswer> }>(`/signups/${id}/entries/me`),
+  submit: (id: number, answers: Record<string, SignupAnswer>) =>
+    api.post<{ ok: boolean; message: string }>(`/signups/${id}/entries`, { answers }),
+  withdraw: (id: number) => api.delete(`/signups/${id}/entries/me`),
+}
+
+export interface SignupPayload {
+  name: string
+  description?: string
+  fields?: Omit<SignupFieldDef, 'key'>[]
+  /** 前置条件：这些平台的账号都要绑定并验证。 */
+  required_platforms?: Platform[]
+  /** 前置条件：仅限这些入学年级。 */
+  required_years?: number[]
+  open_at: string
+  close_at?: string | null
+  capacity?: number | null
+}
+
+export const signupAdminApi = {
+  list: () => api.get<SignupSummary[]>('/admin/signups'),
+  create: (payload: SignupPayload) => api.post<SignupSummary>('/admin/signups', payload),
+  update: (id: number, payload: Partial<SignupPayload>) =>
+    api.put<SignupSummary>(`/admin/signups/${id}`, payload),
+  remove: (id: number) => api.delete(`/admin/signups/${id}`),
+  entries: (id: number) => api.get<SignupEntry[]>(`/admin/signups/${id}/entries`),
+  removeEntry: (signupId: number, entryId: number) =>
+    api.delete(`/admin/signups/${signupId}/entries/${entryId}`),
+  exportUrl: (id: number) => `/api/admin/signups/${id}/export`,
 }

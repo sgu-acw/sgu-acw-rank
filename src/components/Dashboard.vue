@@ -34,7 +34,7 @@ const maxDaily = computed(() => {
 const recentDays = computed(() => data.value?.days.slice(-14) ?? [])
 
 function go(path: string) {
-  window.location.href = path
+  import('astro:transitions/client').then(({ navigate }) => navigate(path))
 }
 
 async function load() {

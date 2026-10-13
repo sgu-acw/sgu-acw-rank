@@ -6,13 +6,14 @@
  * 不在这里处理后续导航，交给调用方传 onSuccess。
  */
 import { computed, onMounted, ref } from 'vue'
-import { AlertCircle, Loader2 } from 'lucide-vue-next'
+import { AlertCircle, Fingerprint, Loader2 } from 'lucide-vue-next'
 import { Alert } from './ui/alert'
 import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Input } from './ui/input'
-import { ApiError, isStudentIdShaped, normalizeStudentId } from '../lib/api'
+import { ApiError, authApi, isStudentIdShaped, normalizeStudentId } from '../lib/api'
 import { useAuth } from '../lib/auth'
+import { getPasskey, passkeySupported } from '../lib/webauthn'
 
 const props = withDefaults(
   defineProps<{
@@ -24,7 +25,7 @@ const props = withDefaults(
   { initialMode: 'login', redirectTo: '/me' },
 )
 
-const { login, register, user, ensureLoaded } = useAuth()
+const { login, register, finishTotpLogin, loginWithPasskey, user, ensureLoaded } = useAuth()
 
 const mode = ref<'login' | 'register'>(props.initialMode)
 const submitting = ref(false)
@@ -33,6 +34,11 @@ const error = ref('')
 const checking = ref(true)
 
 const studentId = ref('')
+
+// 两步验证第二步的状态：密码过了，差一个 TOTP 码。
+const totpTicket = ref('')
+const totpCode = ref('')
+const canPasskey = ref(false)
 const password = ref('')
 const displayName = ref('')
 const inviteCode = ref('')
@@ -98,6 +104,7 @@ onMounted(async () => {
   } finally {
     checking.value = false
   }
+  canPasskey.value = passkeySupported()
 })
 async function submit() {
   if (!canSubmit.value) return
@@ -107,7 +114,14 @@ async function submit() {
 
   try {
     if (mode.value === 'login') {
-      await login(normalizeStudentId(studentId.value), password.value)
+      const r = await login(normalizeStudentId(studentId.value), password.value)
+      // 开了两步验证：转去填码，别直接跳走。
+      if (typeof r === 'object' && 'totpRequired' in r && r.totpRequired) {
+        totpTicket.value = r.ticket
+        totpCode.value = ''
+        submitting.value = false
+        return
+      }
     } else {
       await register({
         invite_code: inviteCode.value.trim().toUpperCase(),
@@ -123,6 +137,41 @@ async function submit() {
     } else {
       error.value = '出了点问题，请稍后重试'
     }
+    submitting.value = false
+  }
+}
+
+// 第二步：票据 + 验证码 → 会话。
+async function submitTotp() {
+  if (!totpTicket.value || !totpCode.value.trim() || submitting.value) return
+  submitting.value = true
+  error.value = ''
+  try {
+    await finishTotpLogin(totpTicket.value, totpCode.value.trim())
+    window.location.href = props.redirectTo
+  } catch (err) {
+    error.value = err instanceof ApiError ? err.message : '出了点问题，请稍后重试'
+    submitting.value = false
+    if (err instanceof ApiError && err.message.includes('票据')) {
+      // 票据过期就退回密码步
+      totpTicket.value = ''
+      totpCode.value = ''
+    }
+  }
+}
+
+// 通行密钥登录：浏览器自己挑账号的密钥，不用先输学号。
+async function usePasskey() {
+  if (!canPasskey.value || submitting.value) return
+  submitting.value = true
+  error.value = ''
+  try {
+    const { options } = await authApi.passkeyLoginBegin()
+    const credential = await getPasskey(options)
+    await loginWithPasskey(String((options as Record<string, unknown>).challenge), credential)
+    window.location.href = props.redirectTo
+  } catch (err) {
+    error.value = err instanceof ApiError ? err.message : (err as Error).message || '出了点问题，请稍后重试'
     submitting.value = false
   }
 }
@@ -169,7 +218,35 @@ async function submit() {
         <span class="text-sm">{{ error }}</span>
       </Alert>
 
-      <form class="space-y-4" @submit.prevent="submit">
+      <!-- 第二步：两步验证码 -->
+      <form v-if="totpTicket" class="space-y-4" @submit.prevent="submitTotp">
+        <div class="space-y-1.5">
+          <label for="totp-code" class="text-sm font-medium">两步验证码</label>
+          <Input
+            id="totp-code"
+            v-model="totpCode"
+            placeholder="认证器里的 6 位数字"
+            autocomplete="one-time-code"
+            inputmode="numeric"
+            maxlength="8"
+            class="font-mono tracking-widest"
+          />
+          <p class="text-xs text-muted-foreground">密码已通过，还差验证器上的动态码</p>
+        </div>
+        <Button type="submit" class="w-full" :disabled="!totpCode.trim()">
+          <Loader2 v-if="submitting" class="mr-2 h-4 w-4 animate-spin" />
+          验证并登录
+        </Button>
+        <button
+          type="button"
+          class="w-full text-center text-xs text-muted-foreground hover:text-foreground"
+          @click="totpTicket = ''; totpCode = ''; error = ''"
+        >
+          返回重新输入密码
+        </button>
+      </form>
+
+      <form v-else class="space-y-4" @submit.prevent="submit">
         <div v-if="mode === 'register'" class="space-y-1.5">
           <label for="invite" class="text-sm font-medium">邀请码</label>
           <Input
@@ -226,6 +303,18 @@ async function submit() {
         <Button type="submit" class="w-full" :disabled="!canSubmit">
           <Loader2 v-if="submitting" class="mr-2 h-4 w-4 animate-spin" />
           {{ mode === 'login' ? '登录' : '注册并登录' }}
+        </Button>
+
+        <Button
+          v-if="mode === 'login' && canPasskey"
+          type="button"
+          variant="outline"
+          class="w-full"
+          :disabled="submitting"
+          @click="usePasskey"
+        >
+          <Fingerprint class="mr-2 h-4 w-4" />
+          用通行密钥登录
         </Button>
 
         <p v-if="blockedReason" class="text-center text-xs text-muted-foreground">

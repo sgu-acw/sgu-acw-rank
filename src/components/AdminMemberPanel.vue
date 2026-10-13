@@ -57,6 +57,8 @@ function problemOf(account: AdminMemberDetail['accounts'][number]): string {
       ? `未验证，已尝试 ${account.verify_attempts} 次`
       : '未验证'
   }
+  if (account.sync_flag === 'privacy') return '开了隐私保护'
+  if (account.sync_flag === 'unverified') return '未实名'
   if (account.consecutive_failures > 0) {
     return `连续 ${account.consecutive_failures} 次抓取失败`
   }

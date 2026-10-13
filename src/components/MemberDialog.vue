@@ -34,21 +34,31 @@ onUnmounted(() => {
 
 <template>
   <!--
-    遮罩。点空白处关闭，这是弹窗的常规预期。
-
-    窄屏下改成贴底的整屏面板：留 16px 边距在手机上很浪费，而且顶部的关闭
-    按钮会跟系统状态栏打架。所以移动端铺满，桌面端才居中留白。
+    Teleport 到 body：position:fixed 一旦某个祖先上有 transform / filter /
+    backdrop-filter / will-change，就会被锚到那个祖先而不是视口——
+    低排名行点开弹窗会跑到页面顶部看不见。挂到 body 下就免疫了。
   -->
+  <Teleport to="body">
   <div
-    class="fixed inset-0 z-50 flex items-stretch justify-center overflow-y-auto bg-background/80 backdrop-blur-sm sm:items-start sm:p-4 md:p-8"
+    class="fixed inset-0 z-50 overflow-y-auto bg-background/80 backdrop-blur-sm"
     role="dialog"
     aria-modal="true"
     @click.self="emit('close')"
   >
+    <!--
+      滚动区（外层）和撑高器（min-h-full 的 flex 内层）必须分开：
+      直接把 flex + overflow-y-auto 写在同一层时，子项被 items-stretch
+      钉在视口高度，内容再高也长不出滚动区——Edge 里整个弹窗就滚不动。
+      min-h-full 让包装层跟着内容长，滚动区自然有东西可滚。
+    -->
     <div
-      class="relative w-full rounded-none border-border/60 bg-background p-4 shadow-lg sm:max-w-2xl sm:rounded-lg sm:border sm:p-5"
-      style="padding-bottom: calc(1rem + env(safe-area-inset-bottom))"
+      class="flex min-h-full w-full items-stretch justify-center sm:items-start sm:p-4 md:p-8"
+      @click.self="emit('close')"
     >
+      <div
+        class="relative w-full rounded-none border-border/60 bg-background p-4 shadow-lg sm:max-w-2xl sm:rounded-lg sm:border sm:p-5"
+        style="padding-bottom: calc(1rem + env(safe-area-inset-bottom))"
+      >
       <!--
         关闭按钮。移动端固定在右上角并加大到 40px，方便拇指点。
       -->
@@ -62,6 +72,8 @@ onUnmounted(() => {
       </button>
 
       <MemberProfileBody :user-id="props.entry.user_id" :entry="props.entry" />
+      </div>
     </div>
   </div>
+  </Teleport>
 </template>

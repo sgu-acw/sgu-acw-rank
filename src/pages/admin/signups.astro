@@ -1,0 +1,10 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import SignupAdmin from '../../components/SignupAdmin.vue';
+---
+
+<BaseLayout title="算法竞赛工作坊 - 报名管理">
+  <div class="mx-auto w-full max-w-6xl">
+    <SignupAdmin client:only="vue" />
+  </div>
+</BaseLayout>

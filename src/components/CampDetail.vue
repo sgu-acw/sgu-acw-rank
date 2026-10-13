@@ -1,349 +1,125 @@
 <script setup lang="ts">
-/**
- * 单次集训的详情页。
- *
- * 四种状态：
- * - 未登录：能看到名字和时间，题目排行榜不显示，提示登录
- * - 已登录未报名：显示需要哪些平台的账号，能报就显示报名按钮
- * - 已报名：题目列表 + 排行榜
- * - 管理员：始终能看题目和排行榜
- */
-import { computed, onMounted, ref } from 'vue'
-import {
-  CircleCheck,
-  Loader2,
-  LogIn,
-  Minus,
-  Settings,
-  Trophy,
-} from 'lucide-vue-next'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { ArrowLeft, CircleCheck, Loader2, LogIn, RefreshCw, Settings } from 'lucide-vue-next'
 import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
-import {
-  ApiError,
-  campApi,
-  PLATFORM_META,
-  type CampDetail,
-  type Platform,
-} from '../lib/api'
-import { difficultyLabel } from '../lib/format'
+import ActionNotice from './ui/ActionNotice.vue'
+import CampLeaderboard from './CampLeaderboard.vue'
+import CampResultNotice from './CampResultNotice.vue'
+import { ApiError, campApi, PLATFORM_META, type CampDetail } from '../lib/api'
 import { useAuth } from '../lib/auth'
-
+import { confirmAction } from '../lib/confirm'
 const { user, isAdmin, ensureLoaded } = useAuth()
-
 const camp = ref<CampDetail | null>(null)
 const loading = ref(true)
+const refreshing = ref(false)
 const error = ref('')
 const busy = ref(false)
-const actionError = ref('')
-
-const id = computed(() => {
-  const raw = new URLSearchParams(window.location.search).get('id')
-  return raw ? Number(raw) : 0
-})
-
-/** 未开始时的倒计时文案。 */
+const notice = ref('')
+const now = ref(Date.now())
+const id = ref(0)
+let timer: ReturnType<typeof setInterval> | undefined
+let disposed = false
+let lastFetch = 0
+let lastBoundary = ''
 const countdown = computed(() => {
   if (!camp.value || camp.value.started) return ''
-  const ms = Date.parse(camp.value.start_at) - Date.now()
-  if (ms <= 0) return ''
-  const hours = Math.floor(ms / 3_600_000)
-  const days = Math.floor(hours / 24)
-  if (days >= 1) return `${days} 天后开始`
-  if (hours >= 1) return `${hours} 小时后开始`
-  return `${Math.max(1, Math.floor(ms / 60_000))} 分钟后开始`
+  const minutes = Math.max(0, Math.ceil((Date.parse(camp.value.start_at) - now.value) / 60000))
+  return minutes >= 1440 ? `${Math.floor(minutes / 1440)} 天后开始` : minutes >= 60 ? `${Math.floor(minutes / 60)} 小时后开始` : minutes ? `${minutes} 分钟后开始` : '正在开放题目…'
 })
-
-function fmt(iso: string): string {
-  const d = new Date(iso)
-  return `${d.getMonth() + 1}月${d.getDate()}日 ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
-}
-
-function platformLabel(p: Platform): string {
-  return PLATFORM_META[p]?.label ?? p
-}
-
-function go(path: string) {
-  window.location.href = path
-}
-
+const canCancel = computed(() => camp.value?.can_unregister && now.value < Date.parse(camp.value.start_at))
+const canRegister = computed(() => camp.value?.can_register && now.value < Date.parse(camp.value.end_at))
+function fmt(iso: string) { return new Date(iso).toLocaleString('zh-CN', { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }) }
 async function load() {
-  loading.value = true
-  error.value = ''
+  if (refreshing.value || !id.value) return
+  refreshing.value = true
   try {
-    camp.value = await campApi.detail(id.value)
-  } catch (err) {
-    error.value = err instanceof ApiError ? err.message : '加载失败，请稍后重试'
-  } finally {
-    loading.value = false
-  }
+    const data = await campApi.detail(id.value)
+    if (!disposed) { camp.value = data; error.value = ''; lastFetch = Date.now() }
+  } catch (err) { if (!disposed) error.value = err instanceof ApiError ? err.message : '读取失败，请稍后重试' }
+  finally { refreshing.value = false; loading.value = false }
 }
-
 async function register() {
-  if (!camp.value) return
-  busy.value = true
-  actionError.value = ''
-  try {
-    await campApi.register(camp.value.id)
-    await load()
-  } catch (err) {
-    actionError.value = err instanceof ApiError ? err.message : '报名失败'
-  } finally {
-    busy.value = false
-  }
+  if (!camp.value || busy.value || !canRegister.value) return
+  busy.value = true; error.value = ''
+  try { await campApi.register(camp.value.id); notice.value = '报名成功'; await load() }
+  catch (err) { error.value = err instanceof ApiError ? err.message : '报名失败，请重试' }
+  finally { busy.value = false }
 }
-
 async function unregister() {
-  if (!camp.value || !window.confirm('确定取消报名？')) return
-  busy.value = true
-  actionError.value = ''
-  try {
-    await campApi.unregister(camp.value.id)
-    await load()
-  } catch (err) {
-    actionError.value = err instanceof ApiError ? err.message : '操作失败'
-  } finally {
-    busy.value = false
+  if (!camp.value || busy.value || !canCancel.value || !await confirmAction('取消这次集训的报名？开始前可以重新报名。', '取消报名')) return
+  busy.value = true; error.value = ''
+  try { await campApi.unregister(camp.value.id); notice.value = '已取消报名'; await load() }
+  catch (err) { error.value = err instanceof ApiError ? err.message : '取消失败，请重试' }
+  finally { busy.value = false }
+}
+function tick() {
+  now.value = Date.now()
+  if (document.hidden || busy.value || !camp.value) return
+  const boundary = now.value >= Date.parse(camp.value.end_at) ? 'ended' : now.value >= Date.parse(camp.value.start_at) ? 'started' : 'scheduled'
+  if (boundary !== lastBoundary || (camp.value.phase !== 'finalized' && now.value - lastFetch >= 60000)) {
+    lastBoundary = boundary; lastFetch = now.value; void load()
   }
 }
-
 onMounted(async () => {
-  await ensureLoaded()
-  await load()
+  const raw = Number(new URLSearchParams(location.search).get('id'))
+  if (!Number.isSafeInteger(raw) || raw <= 0) { error.value = '集训地址不完整，请返回列表选择集训。'; loading.value = false; return }
+  id.value = raw
+  await ensureLoaded(); await load()
+  if (disposed) return
+  tick(); timer = setInterval(tick, 1000)
+  document.addEventListener('visibilitychange', tick)
 })
+onUnmounted(() => { disposed = true; clearInterval(timer); document.removeEventListener('visibilitychange', tick) })
 </script>
 
 <template>
-  <div class="mx-auto w-full max-w-4xl space-y-4">
-    <div v-if="loading" class="flex items-center gap-2 py-10 text-sm text-muted-foreground">
-      <Loader2 class="h-4 w-4 animate-spin" />
-      正在读取…
+  <div class="mx-auto w-full min-w-0 max-w-4xl space-y-4">
+    <div class="flex flex-wrap items-center gap-2">
+      <a href="/camps" class="mr-auto inline-flex min-h-11 items-center gap-2 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft class="h-4 w-4" />全部集训</a>
+      <a v-if="isAdmin && camp" :href="`/camps/admin?id=${camp.id}`" class="inline-flex min-h-11 items-center gap-1 px-2 text-sm text-muted-foreground hover:text-foreground"><Settings class="h-4 w-4" />管理这场集训</a>
+      <Button v-if="id" variant="outline" :disabled="refreshing || busy" @click="load"><RefreshCw class="mr-2 h-4 w-4" :class="refreshing && 'animate-spin'" />刷新</Button>
     </div>
-
-    <p v-else-if="error" class="py-10 text-sm text-destructive">{{ error }}</p>
-
+    <div v-if="error" role="alert" class="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">{{ error }} <button v-if="id" class="ml-2 min-h-11 underline" :disabled="refreshing" @click="load">重试</button></div>
+    <ActionNotice :message="notice" />
+    <p v-if="loading" class="flex items-center gap-2 py-10 text-sm text-muted-foreground"><Loader2 class="h-4 w-4 animate-spin" />正在读取集训…</p>
     <template v-else-if="camp">
-      <!-- 头部：名字、时间、状态 -->
-      <div class="space-y-1.5">
-        <div class="flex flex-wrap items-center gap-2">
-          <h1 class="text-lg font-semibold">{{ camp.name }}</h1>
-          <span
-            v-if="camp.ended"
-            class="text-xs font-medium text-muted-foreground"
-          >已结束</span>
-          <span
-            v-else-if="!camp.started"
-            class="text-xs font-medium text-amber-600 dark:text-amber-500"
-          >未开始</span>
-          <span
-            v-else
-            class="text-xs font-medium text-emerald-600 dark:text-emerald-500"
-          >进行中</span>
-
-          <Button
-            v-if="isAdmin"
-            variant="ghost"
-            size="sm"
-            class="ml-auto h-7 gap-1 px-2 text-xs text-muted-foreground"
-            @click="go('/camps/admin')"
-          >
-            <Settings class="h-3.5 w-3.5" />
-            管理
-          </Button>
-        </div>
-        <p class="text-xs text-muted-foreground">
-          {{ fmt(camp.start_at) }} 开放题目，{{ fmt(camp.end_at) }} 截止报名与统计
-          <span v-if="countdown" class="ml-1">（{{ countdown }}）</span>
-        </p>
-        <p v-if="camp.description" class="text-sm text-muted-foreground">
-          {{ camp.description }}
-        </p>
+      <div class="space-y-2">
+        <h1 class="break-words text-xl font-semibold">{{ camp.name }}</h1>
+        <p class="text-sm text-muted-foreground">{{ fmt(camp.start_at) }} 开始 · {{ fmt(camp.end_at) }} 截止 <span v-if="countdown">（{{ countdown }}）</span></p>
+        <p class="text-xs text-muted-foreground">{{ camp.registration_count }} 人报名 · {{ camp.problem_count }} 道题 · 时间按本地时区显示</p>
+        <p v-if="camp.description" class="whitespace-pre-wrap break-words text-sm leading-relaxed text-muted-foreground">{{ camp.description }}</p>
       </div>
-
-      <!-- 未登录：引导登录 -->
-      <Card v-if="!user">
-        <CardContent class="flex items-center gap-3 py-6">
-          <LogIn class="h-4 w-4 shrink-0 text-muted-foreground" />
-          <p class="flex-1 text-sm text-muted-foreground">登录后可以报名</p>
-          <Button size="sm" @click="go('/login')">登录</Button>
-        </CardContent>
-      </Card>
-
-      <!-- 已登录未报名。管理员也走这个——在前台他就是普通用户。 -->
+      <CampResultNotice :status="camp" />
+      <Card v-if="!user"><CardContent class="flex flex-wrap items-center gap-3 py-5"><LogIn class="h-4 w-4 text-muted-foreground" /><p class="mr-auto text-sm text-muted-foreground">{{ camp.ended ? '报名已截止，已报名成员登录后可查看成绩。' : '登录后可以报名集训。' }}</p><a href="/login" class="inline-flex min-h-11 items-center rounded-md bg-primary px-4 text-sm text-primary-foreground">登录</a></CardContent></Card>
       <Card v-else-if="!camp.registered">
-        <CardContent class="space-y-3 py-6">
-          <div class="flex flex-wrap items-center gap-2 text-sm">
-            <span class="text-muted-foreground">需要至少一个已验证账号：</span>
-            <span
-              v-for="p in camp.platforms"
-              :key="p"
-              class="rounded-md bg-muted px-2 py-0.5 font-mono text-xs"
-            >
-              {{ platformLabel(p) }}
-            </span>
-          </div>
-          <div class="flex items-center gap-3">
-            <Button
-              v-if="camp.can_register"
-              :disabled="busy"
-              @click="register"
-            >
-              <Loader2 v-if="busy" class="mr-1.5 h-3.5 w-3.5 animate-spin" />
-              报名
-            </Button>
-            <p v-else class="text-sm text-muted-foreground">{{ camp.register_reason }}</p>
-          </div>
-          <p v-if="camp.can_register && camp.register_reason" class="text-xs text-muted-foreground/70">
-            {{ camp.register_reason }}
-          </p>
-          <p v-if="!camp.can_register" class="text-xs text-muted-foreground/70">
-            到「个人中心 → 平台账号」绑定并验证后再来。
-          </p>
-          <p v-if="actionError" class="text-sm text-destructive">{{ actionError }}</p>
-        </CardContent>
-      </Card>
-
-      <!-- 已报名但还没开始 -->
-      <Card v-else-if="camp.registered && !camp.started">
-        <CardContent class="flex items-center gap-3 py-6">
-          <CircleCheck class="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-500" />
-          <p class="flex-1 text-sm text-muted-foreground">
-            已报名。题目 {{ fmt(camp.start_at) }} 开放。
-          </p>
-          <Button variant="ghost" size="sm" :disabled="busy" @click="unregister">
-            取消报名
-          </Button>
-        </CardContent>
-      </Card>
-
-      <!-- 题目列表（报名了或管理员才渲染） -->
-      <Card v-if="camp.problems.length">
-        <CardHeader class="pb-3">
-          <div class="flex items-center justify-between">
-            <CardTitle class="text-sm font-medium">题目</CardTitle>
-            <span class="text-xs text-muted-foreground">{{ camp.problems.length }} 题</span>
-          </div>
-        </CardHeader>
-        <CardContent class="p-0">
-          <div class="divide-y divide-border/40 border-t border-border/40">
-            <a
-              v-for="p in camp.problems"
-              :key="`${p.platform}:${p.key}`"
-              :href="p.url"
-              target="_blank"
-              rel="noreferrer"
-              class="row-action flex items-center gap-3 px-4 py-2.5"
-              :class="p.done ? 'bg-emerald-500/5' : ''"
-            >
-              <!-- 绿色对号表示「我过了」。题单那边是同款标记。 -->
-              <span
-                class="flex h-4 w-4 shrink-0 items-center justify-center rounded-full border text-[10px]"
-                :class="
-                  p.done
-                    ? 'border-emerald-600/50 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
-                    : 'border-border/50 text-transparent'
-                "
-                :title="p.done ? '已解决' : '未解决'"
-              >
-                ✓
-              </span>
-              <span class="w-20 shrink-0 font-mono text-[11px] text-muted-foreground">
-                {{ platformLabel(p.platform) }}
-              </span>
-              <span
-                class="min-w-0 flex-1 truncate text-sm"
-                :class="p.done ? 'text-emerald-700 dark:text-emerald-400' : ''"
-              >
-                {{ p.name || p.key }}
-              </span>
-              <span class="shrink-0 font-mono text-xs text-muted-foreground">{{ p.key }}</span>
-              <span v-if="p.rating" class="shrink-0 font-mono text-[11px] text-muted-foreground">
-                {{ difficultyLabel(p.platform, p.rating) }}
-              </span>
-            </a>
-          </div>
-        </CardContent>
-      </Card>
-
-      <!-- 排行榜 -->
-      <Card v-if="camp.leaderboard.length">
-        <CardHeader class="pb-3">
-          <div class="flex items-center justify-between">
-            <CardTitle class="flex items-center gap-1.5 text-sm font-medium">
-              <Trophy class="h-4 w-4 text-muted-foreground" />
-              排行榜
-            </CardTitle>
-            <span class="text-xs text-muted-foreground">{{ camp.leaderboard.length }} 人</span>
-          </div>
-        </CardHeader>
-        <CardContent class="p-0">
-          <div class="overflow-x-auto border-t border-border/40">
-            <table class="w-full text-sm">
-              <thead>
-                <tr class="border-b border-border/40 text-left text-xs text-muted-foreground">
-                  <th class="w-10 px-3 py-2 text-center font-medium">#</th>
-                  <th class="px-3 py-2 font-medium">姓名</th>
-                  <th class="px-3 py-2 text-right font-medium">过题</th>
-                  <th
-                    v-for="p in camp.problems"
-                    :key="p.key"
-                    class="px-2 py-2 text-center font-mono text-[10px] font-medium"
-                    :title="`${p.platform}:${p.key}${p.name ? ` — ${p.name}` : ''}`"
-                  >
-                    {{ p.key }}
-                  </th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-border/40">
-                <tr
-                  v-for="entry in camp.leaderboard"
-                  :key="entry.user_id"
-                  class="row-action"
-                >
-                  <td
-                    class="px-3 py-2.5 text-center font-mono text-xs"
-                    :class="entry.rank <= 3 ? 'font-semibold text-foreground' : 'text-muted-foreground'"
-                  >
-                    {{ entry.rank }}
-                  </td>
-                  <td class="px-3 py-2.5">
-                    <button
-                      class="font-medium underline-offset-4 transition-colors hover:text-primary hover:underline"
-                      @click="go(`/member?id=${entry.user_id}`)"
-                    >
-                      {{ entry.display_name }}
-                    </button>
-                    <span
-                      v-if="entry.class_label"
-                      class="ml-1.5 text-[11px] text-muted-foreground/70"
-                    >
-                      {{ entry.class_label }}
-                    </span>
-                  </td>
-                  <td class="px-3 py-2.5 text-right font-mono font-semibold">
-                    {{ entry.solved_count }}
-                  </td>
-                  <td
-                    v-for="p in camp.problems"
-                    :key="p.key"
-                    class="px-2 py-2.5 text-center"
-                  >
-                    <CircleCheck
-                      v-if="entry.per_problem[`${p.platform}:${p.key}`]"
-                      class="mx-auto h-4 w-4 text-emerald-600 dark:text-emerald-500"
-                    />
-                    <Minus v-else class="mx-auto h-4 w-4 text-muted-foreground/30" />
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
-
-      <p v-if="camp.ended" class="text-xs text-muted-foreground/60">
-        已截止，榜单为最终结果
-      </p>
+<CardContent class="space-y-3 py-5">
+        <template v-if="!camp.ended">
+          <p v-if="camp.platforms.length" class="text-sm">至少绑定并验证一个集训平台的账号：</p>
+          <div class="flex flex-wrap gap-2"><span v-for="p in camp.platforms" :key="p" class="rounded-md bg-muted px-2 py-1 text-xs">{{ PLATFORM_META[p]?.label || p }}</span></div>
+        </template>
+        <p v-if="camp.register_reason" class="text-sm text-muted-foreground">{{ camp.register_reason }}</p>
+        <div class="flex flex-wrap gap-2"><Button v-if="canRegister" :disabled="busy || refreshing" @click="register"><Loader2 v-if="busy" class="mr-2 h-4 w-4 animate-spin" />报名集训</Button><a v-if="!camp.ended && camp.platforms.length" href="/me" class="inline-flex min-h-11 items-center px-2 text-sm text-primary hover:underline">管理平台账号 →</a></div>
+        <p v-if="isAdmin" class="text-xs text-muted-foreground">管理员在成员页面也需要报名；预览题目请使用上方“管理这场集训”。</p>
+      </CardContent>
+</Card>
+      <Card v-else><CardContent class="flex flex-wrap items-center gap-3 py-5"><CircleCheck class="h-4 w-4 shrink-0 text-emerald-600" /><p class="min-w-0 flex-1 text-sm">{{ !camp.started ? `已报名，题目将在 ${fmt(camp.start_at)} 开放。` : '已报名，成绩定期自动更新。' }}</p><Button v-if="canCancel" variant="outline" :disabled="busy || refreshing" @click="unregister">取消报名</Button></CardContent></Card>
+      <template v-if="camp.registered && camp.started">
+        <Card>
+          <CardHeader><CardTitle class="text-sm">题目 · {{ camp.problems.length }}</CardTitle></CardHeader>
+          <CardContent class="p-0">
+            <p v-if="!camp.problems.length" class="px-6 py-8 text-sm text-muted-foreground">管理员尚未添加题目，请稍后刷新。</p>
+            <div class="divide-y divide-border/40 border-t border-border/40">
+              <a v-for="p in camp.problems" :key="`${p.platform}:${p.key}`" :href="p.url" target="_blank" rel="noreferrer" class="row-action flex min-h-16 items-center gap-3 px-4 py-3" :class="p.done ? 'bg-emerald-500/5' : ''">
+                <CircleCheck class="h-5 w-5 shrink-0" :class="p.done ? 'text-emerald-600 dark:text-emerald-500' : 'text-muted-foreground/30'" :aria-label="p.done ? '已通过' : '未通过'" />
+                <div class="min-w-0 flex-1"><p class="break-words text-sm font-medium">{{ p.name || p.key }}</p><p class="mt-1 break-all text-xs text-muted-foreground">{{ PLATFORM_META[p.platform]?.label || p.platform }} · {{ p.key }}</p></div>
+                <span class="shrink-0 text-xs text-muted-foreground">做题 ↗</span>
+              </a>
+            </div>
+          </CardContent>
+        </Card>
+        <CampLeaderboard :entries="camp.leaderboard" :problems="camp.problems" />
+      </template>
     </template>
   </div>
 </template>

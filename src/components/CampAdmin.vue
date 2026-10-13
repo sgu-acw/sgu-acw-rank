@@ -1,666 +1,494 @@
 <script setup lang="ts">
-/**
- * 集训管理。
- *
- * 左边是集训列表（新建在上），右边是选中那一份的编辑区：
- * 改名改时间、加题删题、看报名名单、手动加人、导出、删除。
- */
-import { computed, onMounted, ref, watch } from 'vue'
-import {
-  Check,
-  Download,
-  GripVertical,
-  Loader2,
-  Plus,
-  Search,
-  Trash2,
-  Trophy,
-  UserPlus,
-  X,
-} from 'lucide-vue-next'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { ArrowDown, ArrowLeft, ArrowUp, Download, GripVertical, Loader2, Plus, Search, Trash2, Trophy, X } from 'lucide-vue-next'
 import Sortable from 'sortablejs'
+import ActionNotice from './ui/ActionNotice.vue'
 import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Input } from './ui/input'
 import AdminWorkspaceNav from './AdminWorkspaceNav.vue'
-import {
-  adminApi,
-  ApiError,
-  campAdminApi,
-  PLATFORM_META,
-  problemListApi,
-  type AdminUser,
-  type CampAdminDetail,
-  type CampSummary,
-  type Platform,
-} from '../lib/api'
+import RefreshButton from './ui/RefreshButton.vue'
+import CampLeaderboard from './CampLeaderboard.vue'
+import CampResultNotice from './CampResultNotice.vue'
+import CampTimingField from './CampTimingField.vue'
+import { adminApi, ApiError, campAdminApi, PLATFORM_META, problemListApi, type AdminUser, type CampAdminDetail, type CampSummary, type Platform } from '../lib/api'
+import { useAuth } from '../lib/auth'
+import { confirmAction } from '../lib/confirm'
 
+const { user, isAdmin, ensureLoaded } = useAuth()
 const camps = ref<CampSummary[]>([])
 const loading = ref(true)
 const error = ref('')
 const notice = ref('')
-
+const query = ref('')
 const activeId = ref<number | null>(null)
 const detail = ref<CampAdminDetail | null>(null)
 const detailLoading = ref(false)
-
-// 新建表单
+const busy = ref(false)
 const creating = ref(false)
-function toLocalInput(iso: string): string {
-  // datetime-local 要的是本地时间的 YYYY-MM-DDTHH:mm
-  const d = new Date(iso)
-  const pad = (n: number) => String(n).padStart(2, '0')
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
-}
-
 const newName = ref('')
 const newDesc = ref('')
-// 默认「现在开始、两小时后结束」——常见集训时长，少调两个字段
-const newStart = ref(toLocalInput(new Date().toISOString()))
-const newEnd = ref(toLocalInput(new Date(Date.now() + 2 * 3600 * 1000).toISOString()))
-
-// 编辑表单（选中一份后填充）
+const newStart = ref('')
+const newEnd = ref('')
+// 开放报名 / 开始显示：relative = 开始前 N 天（默认 3），absolute = 指定时间
+const newRegMode = ref<'relative' | 'absolute'>('relative')
+const newRegDays = ref(3)
+const newRegAt = ref('')
+const newVisMode = ref<'relative' | 'absolute'>('relative')
+const newVisDays = ref(3)
+const newVisAt = ref('')
 const editName = ref('')
 const editDesc = ref('')
 const editStart = ref('')
 const editEnd = ref('')
-const saving = ref(false)
-
-// 拖拽排序：容器 + Sortable 实例。选中集训变了要重建。
+const editRegMode = ref<'relative' | 'absolute'>('relative')
+const editRegDays = ref(3)
+const editRegAt = ref('')
+const editVisMode = ref<'relative' | 'absolute'>('relative')
+const editVisDays = ref(3)
+const editVisAt = ref('')
+const newPlatform = ref<Platform>('luogu')
+const newKey = ref('')
+const lookup = ref('')
+const memberQuery = ref('')
+const memberResults = ref<AdminUser[]>([])
 const problemsEl = ref<HTMLElement | null>(null)
+const PLATFORMS = Object.keys(PLATFORM_META) as Platform[]
 let sortable: Sortable | null = null
+let requestId = 0
+let disposed = false
+const filtered = computed(() => camps.value.filter(c => c.name.toLowerCase().includes(query.value.toLowerCase())))
+const locked = computed(() => !!detail.value?.ended || (!!detail.value && Date.now() >= Date.parse(detail.value.end_at)))
+/** 开始后：开放报名/开始显示已经生效，改它们只会把集训藏起来。 */
+const timingLocked = computed(() => locked.value || (!!detail.value && Date.now() >= Date.parse(detail.value.start_at)))
+const registeredIds = computed(() => new Set(detail.value?.registrations.map(r => r.user_id) ?? []))
+const dirty = computed(() => {
+  const d = detail.value
+  if (!d) return false
+  if (editName.value !== d.name || editDesc.value !== d.description) return true
+  if (editStart.value !== toLocal(d.start_at) || editEnd.value !== toLocal(d.end_at)) return true
+  const regMode = d.register_open_at ? 'absolute' : 'relative'
+  if (editRegMode.value !== regMode) return true
+  if (regMode === 'absolute' ? editRegAt.value !== toLocal(d.register_open_at!) : editRegDays.value !== (d.register_open_days ?? 3)) return true
+  const visMode = d.visible_at ? 'absolute' : 'relative'
+  if (editVisMode.value !== visMode) return true
+  if (visMode === 'absolute' ? editVisAt.value !== toLocal(d.visible_at!) : editVisDays.value !== (d.visible_days ?? 3)) return true
+  return false
+})
 
+function toLocal(iso: string) {
+  const d = new Date(iso)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+function validTimes(start: string, end: string) {
+  return Number.isFinite(Date.parse(start)) && Number.isFinite(Date.parse(end)) && Date.parse(end) > Date.parse(start)
+}
+function message(err: unknown) { return err instanceof ApiError ? err.message : '操作失败，请稍后重试' }
+function updateUrl() {
+  const url = new URL(location.href)
+  if (activeId.value) url.searchParams.set('id', String(activeId.value))
+  else url.searchParams.delete('id')
+  history.replaceState(history.state, '', url)
+}
+async function loadList() { camps.value = await campAdminApi.list() }
+async function loadDetail(id: number, resetForm = true) {
+  const token = ++requestId
+  detailLoading.value = !detail.value || detail.value.id !== id
+  try {
+    const data = await campAdminApi.detail(id)
+    if (disposed || token !== requestId || activeId.value !== id) return
+    detail.value = data
+    if (resetForm) {
+      editName.value = data.name; editDesc.value = data.description
+      editStart.value = toLocal(data.start_at); editEnd.value = toLocal(data.end_at)
+      editRegMode.value = data.register_open_at ? 'absolute' : 'relative'
+      editRegDays.value = data.register_open_days ?? 3
+      editRegAt.value = data.register_open_at ? toLocal(data.register_open_at) : ''
+      editVisMode.value = data.visible_at ? 'absolute' : 'relative'
+      editVisDays.value = data.visible_days ?? 3
+      editVisAt.value = data.visible_at ? toLocal(data.visible_at) : ''
+    }
+  } catch (err) {
+    if (token === requestId) error.value = message(err)
+  } finally { if (token === requestId) detailLoading.value = false }
+}
+async function leaveDetail() {
+  return !dirty.value || await confirmAction('还有未保存的集训信息，离开后会丢失这些修改。', '放弃修改？')
+}
+async function select(id: number) {
+  if (busy.value || !await leaveDetail()) return
+  activeId.value = id; detail.value = null; creating.value = false
+  error.value = ''; notice.value = ''; memberResults.value = []; memberQuery.value = ''; newKey.value = ''; lookup.value = ''
+  updateUrl()
+  await loadDetail(id)
+}
+async function back() {
+  if (busy.value || !await leaveDetail()) return
+  ++requestId; activeId.value = null; detail.value = null; detailLoading.value = false; creating.value = false
+  error.value = ''; updateUrl()
+}
+async function refresh() {
+  if (busy.value) return
+  busy.value = true; error.value = ''
+  try {
+    await loadList()
+    if (activeId.value) await loadDetail(activeId.value, !dirty.value)
+  } catch (err) { error.value = message(err) }
+  finally { loading.value = false; busy.value = false }
+}
+async function mutate(task: () => Promise<unknown>, success: string, resetForm = false) {
+  if (busy.value) return false
+  busy.value = true; error.value = ''; notice.value = ''
+  try {
+    await task()
+    notice.value = success
+    await loadList()
+    if (activeId.value) await loadDetail(activeId.value, resetForm)
+    return true
+  } catch (err) { error.value = message(err); return false }
+  finally { busy.value = false }
+}
+async function startCreate() {
+  if (busy.value || !await leaveDetail()) return
+  ++requestId; activeId.value = null; detail.value = null; creating.value = true; updateUrl()
+  newName.value = ''; newDesc.value = ''
+  newStart.value = toLocal(new Date().toISOString())
+  newEnd.value = toLocal(new Date(Date.now() + 7200000).toISOString())
+  newRegMode.value = 'relative'; newRegDays.value = 3; newRegAt.value = ''
+  newVisMode.value = 'relative'; newVisDays.value = 3; newVisAt.value = ''
+}
+
+function timingPayload(mode: 'relative' | 'absolute', days: number, at: string, key: 'register_open' | 'visible'): Record<string, string | number | null> {
+  if (mode === 'absolute') {
+    if (!at) return {}
+    return { [`${key}_at`]: new Date(at).toISOString() }
+  }
+  return { [`${key}_days`]: days }
+}
+async function create() {
+  if (!newName.value.trim() || !validTimes(newStart.value, newEnd.value)) return
+  await mutate(async () => {
+    const created = await campAdminApi.create({
+      name: newName.value.trim(),
+      description: newDesc.value.trim(),
+      start_at: new Date(newStart.value).toISOString(),
+      end_at: new Date(newEnd.value).toISOString(),
+      ...timingPayload(newRegMode.value, newRegDays.value, newRegAt.value, 'register_open'),
+      ...timingPayload(newVisMode.value, newVisDays.value, newVisAt.value, 'visible'),
+    })
+    activeId.value = created.id; creating.value = false; updateUrl()
+  }, '集训已创建', true)
+}
+async function save() {
+  if (!detail.value || !editName.value.trim() || (!locked.value && !validTimes(editStart.value, editEnd.value))) return
+  const id = detail.value.id
+  await mutate(() => campAdminApi.update(id, {
+    name: editName.value.trim(),
+    description: editDesc.value.trim(),
+    ...(!locked.value ? {
+      start_at: new Date(editStart.value).toISOString(),
+      end_at: new Date(editEnd.value).toISOString(),
+    } : {}),
+    ...(!timingLocked.value ? {
+      ...timingPayload(editRegMode.value, editRegDays.value, editRegAt.value, 'register_open'),
+      ...timingPayload(editVisMode.value, editVisDays.value, editVisAt.value, 'visible'),
+    } : {}),
+  }), '集训信息已保存', true)
+}
+async function removeCamp() {
+  if (!detail.value || busy.value) return
+  const id = detail.value.id
+  if (!await confirmAction(`删除「${detail.value.name}」及其题目、报名记录和最终成绩？此操作不可恢复。`, '删除集训')) return
+  await mutate(async () => { await campAdminApi.remove(id); activeId.value = null; detail.value = null; updateUrl() }, '集训已删除')
+}
+async function addProblem() {
+  if (!detail.value || locked.value || !newKey.value.trim() || busy.value) return
+  const id = detail.value.id
+  const platform = newPlatform.value, key = newKey.value.trim()
+  await mutate(async () => {
+    const info = await problemListApi.lookup(platform, key)
+    if (info.missing_reason) throw new ApiError(400, info.missing_reason)
+    await campAdminApi.addProblem(id, platform, key)
+    newKey.value = ''; lookup.value = info.name
+  }, '题目已添加')
+}
+async function removeProblem(id: number, name: string) {
+  if (!detail.value || busy.value || locked.value || !await confirmAction(`从集训中移除「${name}」？过题统计会随题目列表重新计算。`, '移除题目')) return
+  const campId = detail.value.id
+  await mutate(() => campAdminApi.removeProblem(campId, id), '题目已移除')
+}
+async function reorder(from: number, to: number) {
+  if (!detail.value || busy.value || locked.value || to < 0 || to >= detail.value.problems.length || from === to) return
+  const id = detail.value.id
+  const items = [...detail.value.problems]
+  const [moved] = items.splice(from, 1); items.splice(to, 0, moved)
+  await mutate(() => campAdminApi.reorderProblems(id, items.map(p => p.id)), '题目顺序已保存')
+}
 function setupSortable() {
-  sortable?.destroy()
-  sortable = null
-  if (!problemsEl.value) return
+  sortable?.destroy(); sortable = null
+  if (!problemsEl.value || locked.value) return
   sortable = Sortable.create(problemsEl.value, {
-    handle: '[data-drag-handle]',
-    animation: 150,
-    delayOnTouchOnly: true,
-    delay: 200,
-    onEnd: (event) => {
-      if (event.oldIndex === undefined || event.newIndex === undefined) return
-      if (event.oldIndex === event.newIndex) return
-      void reorderProblems(event.oldIndex, event.newIndex)
+    handle: '[data-drag-handle]', animation: matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 150,
+    delayOnTouchOnly: true, delay: 200, disabled: busy.value,
+    onEnd(event) {
+      const from = event.oldIndex, to = event.newIndex
+      if (from === undefined || to === undefined || from === to) return
+      // 先恢复 Sortable 改过的 DOM，再让 Vue 根据服务器结果渲染顺序。
+      const parent = event.from
+      const remaining = [...parent.children].filter(el => el !== event.item)
+      parent.insertBefore(event.item, remaining[from] ?? null)
+      void reorder(from, to)
     },
   })
 }
-
-async function reorderProblems(from: number, to: number) {
-  if (!detail.value) return
-  const items = [...detail.value.problems]
-  const [moved] = items.splice(from, 1)
-  items.splice(to, 0, moved)
-  detail.value.problems = items
-
-  try {
-    const saved = await campAdminApi.reorderProblems(
-      detail.value.id,
-      items.map((p) => p.id),
-    )
-    detail.value.problems = saved
-  } catch (err) {
-    error.value = err instanceof ApiError ? err.message : '排序失败'
-    await loadDetail(detail.value.id)
-  }
-}
-
-// detail 变了要重建 Sortable——DOM 被 Vue 换过之后旧的把手还指着
-// 上一批元素。flush:'post' 等渲染完再调。
-watch(detail, setupSortable, { flush: 'post' })
-
-// 加题
-const PLATFORMS = Object.keys(PLATFORM_META) as Platform[]
-const newPlatform = ref<Platform>('codeforces')
-const newKey = ref('')
-const addingProblem = ref(false)
-const problemError = ref('')
-const lookup = ref<
-  | null
-  | { status: 'loading' }
-  | { status: 'ok'; name: string; rating: number | null }
-  | { status: 'bad'; reason: string }
->(null)
-
-// 加人
-const memberQuery = ref('')
-const memberResults = ref<AdminUser[]>([])
-const searching = ref(false)
-
-function fromLocalInput(v: string): string {
-  return new Date(v).toISOString()
-}
-
-async function load() {
-  loading.value = true
-  error.value = ''
-  try {
-    camps.value = await campAdminApi.list()
-    if (activeId.value) await loadDetail(activeId.value)
-  } catch (err) {
-    error.value = err instanceof ApiError ? err.message : '加载失败'
-  } finally {
-    loading.value = false
-  }
-}
-
-async function loadDetail(id: number) {
-  detailLoading.value = true
-  try {
-    detail.value = await campAdminApi.detail(id)
-    editName.value = detail.value.name
-    editDesc.value = detail.value.description
-    editStart.value = toLocalInput(detail.value.start_at)
-    editEnd.value = toLocalInput(detail.value.end_at)
-  } catch (err) {
-    error.value = err instanceof ApiError ? err.message : '加载失败'
-  } finally {
-    detailLoading.value = false
-  }
-}
-
-function select(id: number) {
-  activeId.value = id
-  memberResults.value = []
-  memberQuery.value = ''
-  newKey.value = ''
-  lookup.value = null
-  void loadDetail(id)
-}
-
-async function create() {
-  if (!newName.value.trim() || !newStart.value || !newEnd.value) return
-  creating.value = true
-  error.value = ''
-  try {
-    const camp = await campAdminApi.create({
-      name: newName.value.trim(),
-      description: newDesc.value.trim(),
-      start_at: fromLocalInput(newStart.value),
-      end_at: fromLocalInput(newEnd.value),
-    })
-    newName.value = ''
-    newDesc.value = ''
-    // 创建完重置回「现在 + 两小时」——下一次新建又是现成的
-    newStart.value = toLocalInput(new Date().toISOString())
-    newEnd.value = toLocalInput(new Date(Date.now() + 2 * 3600 * 1000).toISOString())
-    notice.value = '已创建'
-    await load()
-    select(camp.id)
-  } catch (err) {
-    error.value = err instanceof ApiError ? err.message : '创建失败'
-  } finally {
-    creating.value = false
-  }
-}
-
-async function save() {
-  if (!detail.value) return
-  saving.value = true
-  error.value = ''
-  try {
-    await campAdminApi.update(detail.value.id, {
-      name: editName.value.trim(),
-      description: editDesc.value.trim(),
-      start_at: fromLocalInput(editStart.value),
-      end_at: fromLocalInput(editEnd.value),
-    })
-    notice.value = '已保存'
-    await load()
-  } catch (err) {
-    error.value = err instanceof ApiError ? err.message : '保存失败'
-  } finally {
-    saving.value = false
-  }
-}
-
-async function removeCamp() {
-  if (!detail.value || !window.confirm(`确定删除「${detail.value.name}」？题目和报名记录一起删。`)) return
-  try {
-    await campAdminApi.remove(detail.value.id)
-    detail.value = null
-    activeId.value = null
-    notice.value = '已删除'
-    await load()
-  } catch (err) {
-    error.value = err instanceof ApiError ? err.message : '删除失败'
-  }
-}
-
-async function checkProblem() {
-  const value = newKey.value.trim()
-  if (!value) {
-    lookup.value = null
-    return
-  }
-  lookup.value = { status: 'loading' }
-  try {
-    const r = await problemListApi.lookup(newPlatform.value, value)
-    lookup.value = r.missing_reason
-      ? { status: 'bad', reason: r.missing_reason }
-      : { status: 'ok', name: r.name, rating: r.rating }
-  } catch (err) {
-    lookup.value = { status: 'bad', reason: err instanceof ApiError ? err.message : '查询失败' }
-  }
-}
-
-async function addProblem() {
-  if (!detail.value || !newKey.value.trim() || lookup.value?.status === 'bad') return
-  addingProblem.value = true
-  problemError.value = ''
-  try {
-    await campAdminApi.addProblem(detail.value.id, newPlatform.value, newKey.value.trim())
-    newKey.value = ''
-    lookup.value = null
-    await loadDetail(detail.value.id)
-  } catch (err) {
-    problemError.value = err instanceof ApiError ? err.message : '添加失败'
-  } finally {
-    addingProblem.value = false
-  }
-}
-
-async function removeProblem(problemId: number) {
-  if (!detail.value) return
-  try {
-    await campAdminApi.removeProblem(detail.value.id, problemId)
-    await loadDetail(detail.value.id)
-  } catch (err) {
-    error.value = err instanceof ApiError ? err.message : '删除失败'
-  }
-}
-
+watch(problemsEl, setupSortable, { flush: 'post' })
+watch(busy, value => sortable?.option('disabled', value))
 async function searchMembers() {
-  if (!memberQuery.value.trim()) return
-  searching.value = true
+  if (!memberQuery.value.trim() || busy.value) return
+  busy.value = true; error.value = ''
+  try { memberResults.value = (await adminApi.users({ q: memberQuery.value.trim(), page_size: 8 })).items }
+  catch (err) { error.value = message(err) }
+  finally { busy.value = false }
+}
+async function addMember(id: number) {
+  if (!detail.value || locked.value) return
+  const campId = detail.value.id
+  await mutate(() => campAdminApi.addMember(campId, id), '成员已加入，同步已安排')
+}
+async function removeMember(id: number, name: string) {
+  if (!detail.value || busy.value || locked.value || !await confirmAction(`从集训报名名单移除「${name}」？`, '移除报名成员')) return
+  const campId = detail.value.id
+  await mutate(() => campAdminApi.removeMember(campId, id), '成员已移除')
+}
+async function exportResults(format: 'xlsx' | 'csv' | 'json') {
+  if (!detail.value || busy.value) return
+  const id = detail.value.id
+  busy.value = true; error.value = ''
   try {
-    const page = await adminApi.users({ q: memberQuery.value.trim(), page_size: 8 })
-    memberResults.value = page.items
-  } catch (err) {
-    error.value = err instanceof ApiError ? err.message : '搜索失败'
-  } finally {
-    searching.value = false
-  }
+    const blob = await campAdminApi.export(id, format)
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a'); link.href = url; link.download = `camp-${id}.${format}`
+    link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000)
+    notice.value = detail.value.phase === 'finalized' ? '最终成绩已导出' : '当前成绩已导出，尚未封榜'
+  } catch (err) { error.value = message(err) }
+  finally { busy.value = false }
 }
 
-async function addMember(userId: number) {
-  if (!detail.value) return
-  try {
-    await campAdminApi.addMember(detail.value.id, userId)
-    await loadDetail(detail.value.id)
-  } catch (err) {
-    error.value = err instanceof ApiError ? err.message : '添加失败'
-  }
-}
+// ------------------------------------------------------------------ 导出排行榜 PNG
+//
+// 数据已经在 detail 里，不用额外拉：把 CampLeaderboard 渲到离屏容器
+// （export-light 强制浅色），html-to-image 截成 PNG 下载。
 
-async function removeMember(userId: number) {
-  if (!detail.value) return
-  try {
-    await campAdminApi.removeMember(detail.value.id, userId)
-    await loadDetail(detail.value.id)
-  } catch (err) {
-    error.value = err instanceof ApiError ? err.message : '移除失败'
-  }
-}
+const exportingPng = ref(false)
+const pngHost = ref<HTMLElement | null>(null)
 
-const registeredIds = computed(
-  () => new Set(detail.value?.registrations.map((r) => r.user_id) ?? []),
+// 导出筛选：年级/学院，渲之前过滤——和排行榜自带筛选同一套字段。
+const exportYear = ref<number | null>(null)
+const exportCollege = ref('')
+
+const exportYears = computed(() =>
+  [...new Set((detail.value?.leaderboard ?? []).map((e) => e.enroll_year).filter(Boolean))].sort(
+    (a, b) => b - a,
+  ),
+)
+const exportColleges = computed(() =>
+  [...new Set((detail.value?.leaderboard ?? []).map((e) => e.college_name).filter(Boolean))].sort() as string[],
+)
+const exportEntries = computed(() =>
+  (detail.value?.leaderboard ?? []).filter((e) => {
+    if (exportCollege.value && e.college_name !== exportCollege.value) return false
+    if (exportYear.value !== null && e.enroll_year !== exportYear.value) return false
+    return true
+  }),
 )
 
-onMounted(load)
+async function exportPng() {
+  if (!detail.value || busy.value || exportingPng.value) return
+  exportingPng.value = true
+  busy.value = true
+  error.value = ''
+  try {
+    await nextTick()
+    // 等一帧让组件渲染完 + 字体就绪。数据都是本地传入，不用等网络。
+    await new Promise((r) => setTimeout(r, 300))
+    if (!pngHost.value) throw new Error('渲染容器没准备好')
+    const { toPng } = await import('html-to-image')
+    const dataUrl = await Promise.race([
+      toPng(pngHost.value, {
+        pixelRatio: 2,
+        backgroundColor: '#ffffff',
+        // 跳过字体嵌入：嵌入要读所有样式表的 cssRules，页面里跨域的
+        // katex.min.css 会抛 SecurityError 让整个截取失败。站点用的是
+        // 系统字体，不嵌字体也不影响渲染。
+        skipFonts: true,
+        // 筛选条、横向滚动提示这类「操作控件」不进图。
+        filter: (node) => !(node instanceof HTMLElement && node.hasAttribute('data-export-hidden')),
+      }),
+      // html-to-image 内部要等 rAF——隐藏标签页永远不触发，真卡住时
+      // 报个错而不是无声挂死。
+      new Promise<string>((_, reject) =>
+        setTimeout(() => reject(new Error('截图超时，请把页面切到前台再试')), 15000),
+      ),
+    ])
+    const link = document.createElement('a')
+    link.href = dataUrl
+    link.download = `${detail.value.name}-排行榜.png`
+    link.click()
+  } catch (err) {
+    error.value = message(err)
+  } finally {
+    busy.value = false
+    exportingPng.value = false
+  }
+}
+function beforeUnload(event: Event) { if (dirty.value) { event.preventDefault() } }
+onMounted(async () => {
+  await ensureLoaded()
+  if (!isAdmin.value) { loading.value = false; return }
+  const id = Number(new URLSearchParams(location.search).get('id'))
+  if (Number.isSafeInteger(id) && id > 0) activeId.value = id
+  await refresh()
+  await nextTick(); setupSortable()
+  window.addEventListener('beforeunload', beforeUnload)
+})
+onUnmounted(() => { disposed = true; ++requestId; sortable?.destroy(); window.removeEventListener('beforeunload', beforeUnload) })
 </script>
 
 <template>
-  <div class="mx-auto w-full max-w-5xl space-y-4">
-    <AdminWorkspaceNav active="camps" />
-
-    <p v-if="error" class="text-sm text-destructive">{{ error }}</p>
-    <p v-if="notice" class="text-sm text-muted-foreground">{{ notice }}</p>
-
-    <div v-if="loading" class="flex items-center gap-2 py-10 text-sm text-muted-foreground">
-      <Loader2 class="h-4 w-4 animate-spin" />
-      正在读取…
-    </div>
-
-    <div v-else class="grid gap-4 lg:grid-cols-[280px_1fr]">
-      <!-- 左：集训列表 + 新建 -->
-      <div class="space-y-3">
-        <Card>
-          <CardHeader class="pb-2">
-            <CardTitle class="text-sm font-medium">新建集训</CardTitle>
-          </CardHeader>
-          <CardContent class="space-y-2">
-            <Input v-model="newName" placeholder="名称" class="h-8 text-sm" />
-            <Input v-model="newDesc" placeholder="说明（可选）" class="h-8 text-sm" />
-            <label class="block text-xs text-muted-foreground">开始时间</label>
-            <Input v-model="newStart" type="datetime-local" class="h-8 text-sm" />
-            <label class="block text-xs text-muted-foreground">截止时间</label>
-            <Input v-model="newEnd" type="datetime-local" class="h-8 text-sm" />
-            <Button
-              size="sm"
-              class="w-full"
-              :disabled="creating || !newName.trim() || !newStart || !newEnd"
-              @click="create"
-            >
-              <Loader2 v-if="creating" class="mr-1.5 h-3.5 w-3.5 animate-spin" />
-              <Plus v-else class="mr-1.5 h-3.5 w-3.5" />
-              创建
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card v-if="camps.length">
-          <CardContent class="p-1">
-            <button
-              v-for="camp in camps"
-              :key="camp.id"
-              type="button"
-              class="row-action flex w-full items-center gap-2 rounded-md px-3 py-2 text-left"
-              :class="activeId === camp.id ? 'bg-accent' : ''"
-              @click="select(camp.id)"
-            >
-              <div class="min-w-0 flex-1">
-                <p class="truncate text-sm font-medium">{{ camp.name }}</p>
-                <p class="text-[11px] text-muted-foreground">
-                  {{ camp.registration_count }} 人 · {{ camp.problem_count }} 题
-                  <span v-if="camp.ended"> · 已结束</span>
-                  <span v-else-if="camp.started"> · 进行中</span>
-                  <span v-else> · 未开始</span>
-                </p>
-              </div>
+  <div class="mx-auto w-full max-w-6xl space-y-4">
+    <AdminWorkspaceNav active="camps">
+      <RefreshButton :busy="busy || loading" @click="refresh" />
+    </AdminWorkspaceNav>
+    <p v-if="!loading && !isAdmin" class="rounded-lg border p-6 text-sm text-muted-foreground">{{ user ? '需要管理员权限才能管理集训。' : '请先登录管理员账号。' }} <a v-if="!user" href="/login" class="underline">前往登录</a></p>
+    <template v-else>
+      <div class="flex flex-wrap items-center gap-2">
+        <h2 class="mr-auto text-base font-semibold">集训管理 <span class="text-sm font-normal text-muted-foreground">{{ camps.length }} 场</span></h2>
+        <Button :disabled="busy" @click="startCreate"><Plus class="mr-2 h-4 w-4" />新建集训</Button>
+      </div>
+      <div v-if="error" role="alert" class="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">{{ error }} <button class="ml-2 min-h-11 underline" :disabled="busy" @click="refresh">重新读取</button></div>
+      <ActionNotice :message="notice" />
+      <p v-if="loading" class="flex items-center gap-2 py-10 text-sm text-muted-foreground"><Loader2 class="h-4 w-4 animate-spin" />正在读取集训…</p>
+      <div v-else class="grid grid-cols-1 gap-4 lg:grid-cols-[260px_minmax(0,1fr)]">
+        <div class="min-w-0 space-y-3" :class="activeId || creating ? 'hidden lg:block' : ''">
+          <Input v-model="query" aria-label="搜索集训" placeholder="搜索集训名称" class="min-h-11" />
+          <Card v-if="filtered.length">
+<CardContent class="p-1">
+            <button v-for="c in filtered" :key="c.id" type="button" :disabled="busy" class="row-action flex min-h-16 w-full flex-col justify-center gap-1 rounded-md px-3 py-3 text-left disabled:opacity-50" :class="activeId === c.id ? 'bg-accent' : ''" @click="select(c.id)">
+              <span class="w-full truncate text-sm font-medium">{{ c.name }}</span>
+              <span class="text-xs text-muted-foreground">{{ c.registration_count }} 人 · {{ c.problem_count }} 题 · {{ c.ended ? '已截止' : c.started ? '进行中' : '未开始' }}</span>
             </button>
           </CardContent>
-        </Card>
-
-        <p v-else class="px-1 text-xs text-muted-foreground">还没有集训</p>
-      </div>
-
-      <!-- 右：选中集训的编辑区 -->
-      <div class="space-y-3">
-        <div
-          v-if="!detail && !detailLoading"
-          class="flex flex-col items-center gap-2 py-16 text-muted-foreground"
-        >
-          <Trophy class="h-8 w-8 text-muted-foreground/40" />
-          <p class="text-sm">选一份集训，或者在左边新建</p>
+</Card>
+          <p v-else class="py-10 text-center text-sm text-muted-foreground">{{ query ? '没有匹配的集训' : '还没有集训，先创建一场。' }}</p>
         </div>
+        <div class="min-w-0 space-y-4" :class="activeId || creating ? '' : 'hidden lg:block'">
+          <Button v-if="activeId || creating" variant="ghost" :disabled="busy" @click="back"><ArrowLeft class="mr-2 h-4 w-4" />返回集训列表</Button>
+          <Card v-if="creating">
+            <CardHeader><CardTitle class="text-base">新建集训</CardTitle></CardHeader>
+            <CardContent>
+              <form class="space-y-4" @submit.prevent="create">
+                <label class="block space-y-1 text-sm"><span>集训名称</span><Input v-model="newName" required maxlength="200" class="min-h-11" /></label>
+                <label class="block space-y-1 text-sm"><span>说明</span><textarea v-model="newDesc" rows="3" maxlength="5000" class="w-full rounded-md border border-input bg-background p-3" /></label>
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <label class="block space-y-1 text-sm"><span>开始时间（本地时间）</span><Input v-model="newStart" type="datetime-local" required class="min-h-11" /></label>
+                  <label class="block space-y-1 text-sm"><span>截止时间（本地时间）</span><Input v-model="newEnd" type="datetime-local" required class="min-h-11" /></label>
+                </div>
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <CampTimingField v-model:mode="newRegMode" v-model:days="newRegDays" v-model:at="newRegAt" label="开放报名" />
+                  <CampTimingField v-model:mode="newVisMode" v-model:days="newVisDays" v-model:at="newVisAt" label="开始显示" />
+                </div>
+                <p v-if="!validTimes(newStart, newEnd)" class="text-sm text-destructive">截止时间必须晚于开始时间。</p>
+                <Button type="submit" :disabled="busy || !newName.trim() || !validTimes(newStart, newEnd)">创建集训</Button>
+              </form>
+            </CardContent>
+          </Card>
+          <p v-else-if="detailLoading" class="flex items-center gap-2 py-10 text-sm text-muted-foreground"><Loader2 class="h-4 w-4 animate-spin" />正在读取详情…</p>
+          <template v-else-if="detail">
+            <div class="flex flex-wrap items-center gap-2"><h2 class="mr-auto break-words text-base font-semibold">{{ detail.name }}</h2><a :href="`/camp?id=${detail.id}`" class="inline-flex min-h-11 items-center text-sm text-primary hover:underline">查看成员页面 →</a></div>
+            <CampResultNotice :status="detail" admin />
+            <Card>
+              <CardHeader><CardTitle class="text-sm">基本信息</CardTitle></CardHeader>
+              <CardContent>
+                <form class="space-y-4" @submit.prevent="save">
+                  <label class="block space-y-1 text-sm"><span>名称</span><Input v-model="editName" required maxlength="200" class="min-h-11" /></label>
+                  <label class="block space-y-1 text-sm"><span>说明</span><textarea v-model="editDesc" rows="3" maxlength="5000" class="w-full rounded-md border border-input bg-background p-3" /></label>
+                  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <label class="block space-y-1 text-sm"><span>开始时间（本地时间）</span><Input v-model="editStart" type="datetime-local" required :disabled="locked" class="min-h-11" /></label>
+                    <label class="block space-y-1 text-sm"><span>截止时间（本地时间）</span><Input v-model="editEnd" type="datetime-local" required :disabled="locked" class="min-h-11" /></label>
+                  </div>
+                  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <CampTimingField v-model:mode="editRegMode" v-model:days="editRegDays" v-model:at="editRegAt" label="开放报名" :disabled="timingLocked" />
+                    <CampTimingField v-model:mode="editVisMode" v-model:days="editVisDays" v-model:at="editVisAt" label="开始显示" :disabled="timingLocked" />
+                  <p v-if="timingLocked && !locked" class="text-xs text-muted-foreground">已开始，开放报名和显示时间已锁定。</p>
+                  </div>
+                  <p v-if="locked" class="text-xs text-muted-foreground">已截止，题目、报名名单和时间已锁定。</p>
+                  <Button type="submit" :disabled="busy || !dirty || !editName.trim() || (!locked && !validTimes(editStart, editEnd))"><Loader2 v-if="busy" class="mr-2 h-4 w-4 animate-spin" />保存信息</Button>
+                </form>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader><CardTitle class="text-sm">题目 <span class="text-muted-foreground">{{ detail.problems.length }}</span></CardTitle></CardHeader>
+              <CardContent class="space-y-4">
+                <div v-if="detail.problems.length" ref="problemsEl" class="divide-y divide-border/40">
+                  <div v-for="(p, index) in detail.problems" :key="p.id" class="flex items-center gap-2 py-2">
+                    <span v-if="!locked" data-drag-handle class="hidden shrink-0 cursor-grab p-2 text-muted-foreground lg:block" title="拖动排序"><GripVertical class="h-4 w-4" /></span>
+                    <div class="min-w-0 flex-1"><p class="break-words text-sm font-medium">{{ p.name || p.key }}</p><p class="break-all text-xs text-muted-foreground">{{ PLATFORM_META[p.platform]?.label }} · {{ p.key }}</p></div>
+                    <div v-if="!locked" class="flex shrink-0">
+                      <button type="button" class="flex h-11 w-9 items-center justify-center rounded-md hover:bg-muted disabled:opacity-30" :disabled="busy || index === 0" :aria-label="`上移 ${p.name || p.key}`" @click="reorder(index, index - 1)"><ArrowUp class="h-4 w-4" /></button>
+                      <button type="button" class="flex h-11 w-9 items-center justify-center rounded-md hover:bg-muted disabled:opacity-30" :disabled="busy || index === detail.problems.length - 1" :aria-label="`下移 ${p.name || p.key}`" @click="reorder(index, index + 1)"><ArrowDown class="h-4 w-4" /></button>
+                      <button type="button" class="flex h-11 w-9 items-center justify-center rounded-md text-muted-foreground hover:bg-destructive/10 hover:text-destructive" :disabled="busy" :aria-label="`移除 ${p.name || p.key}`" @click="removeProblem(p.id, p.name || p.key)"><X class="h-4 w-4" /></button>
+                    </div>
+                  </div>
+                </div>
+                <p v-else class="text-sm text-muted-foreground">还没有题目，添加后成员才能报名。</p>
+                <form v-if="!locked" class="space-y-2" @submit.prevent="addProblem">
+                  <label class="block text-sm font-medium">添加题目</label>
+                  <div class="flex flex-wrap gap-2">
+                    <select v-model="newPlatform" aria-label="题目平台" class="h-11 rounded-md border border-input bg-background px-2 text-sm" :disabled="busy"><option v-for="p in PLATFORMS" :key="p" :value="p">{{ PLATFORM_META[p].label }}</option></select>
+                    <Input v-model="newKey" aria-label="题号" placeholder="题号，如 P1001" class="min-h-11 min-w-0 flex-1" :disabled="busy" />
+                    <Button type="submit" :disabled="busy || !newKey.trim()" class="w-full sm:w-auto"><Plus class="mr-1 h-4 w-4" />添加题目</Button>
+                  </div>
+                  <p v-if="lookup" class="text-xs text-muted-foreground">最近添加：{{ lookup }}</p>
+                </form>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader><CardTitle class="text-sm">报名名单 <span class="text-muted-foreground">{{ detail.registrations.length }}</span></CardTitle></CardHeader>
+              <CardContent class="space-y-4">
+                <div class="divide-y divide-border/40">
+                  <div v-for="r in detail.registrations" :key="r.user_id" class="flex min-h-12 items-center gap-3"><span class="min-w-0 flex-1 truncate text-sm">{{ r.display_name }}</span><button v-if="!locked" type="button" class="flex h-11 w-11 items-center justify-center rounded-md text-muted-foreground hover:bg-destructive/10 hover:text-destructive" :disabled="busy" :aria-label="`移除报名成员 ${r.display_name}`" @click="removeMember(r.user_id, r.display_name)"><X class="h-4 w-4" /></button></div>
+                </div>
+                <p v-if="!detail.registrations.length" class="text-sm text-muted-foreground">还没有成员报名。</p>
+                <form v-if="!locked" class="flex gap-2" @submit.prevent="searchMembers"><Input v-model="memberQuery" aria-label="搜索成员" placeholder="姓名或学号" class="min-h-11 min-w-0 flex-1" /><Button type="submit" variant="outline" :disabled="busy || !memberQuery.trim()"><Search class="mr-1 h-4 w-4" />搜索</Button></form>
+                <div v-if="!locked" class="divide-y divide-border/40"><div v-for="u in memberResults" :key="u.id" class="flex min-h-12 items-center gap-2"><span class="min-w-0 flex-1 text-sm">{{ u.display_name }} <span class="text-xs text-muted-foreground">{{ u.student_id }}</span></span><Button variant="outline" :disabled="busy || registeredIds.has(u.id)" @click="addMember(u.id)">{{ registeredIds.has(u.id) ? '已报名' : '加入集训' }}</Button></div></div>
+                <p v-if="!locked" class="text-xs leading-relaxed text-muted-foreground">管理员可手动加入尚未绑定平台账号的成员；绑定并验证账号后才会同步成绩。</p>
+              </CardContent>
+            </Card>
+            <CampLeaderboard :entries="detail.leaderboard ?? []" :problems="detail.problems" />
+            <div class="flex flex-wrap items-center gap-2 rounded-lg border border-border/60 p-4"><span class="mr-auto text-sm font-medium">{{ detail.phase === 'finalized' ? '导出最终成绩' : '导出当前成绩（未封榜）' }}</span><Button v-for="fmt in (['xlsx', 'csv', 'json'] as const)" :key="fmt" variant="outline" :disabled="busy" @click="exportResults(fmt)"><Download class="mr-1 h-4 w-4" />{{ fmt.toUpperCase() }}</Button><select v-model="exportCollege" class="h-9 rounded-md border border-input bg-background px-2.5 text-sm" aria-label="导出筛选：学院"><option value="">全部学院</option><option v-for="c in exportColleges" :key="c" :value="c">{{ c }}</option></select><select v-model="exportYear" class="h-9 rounded-md border border-input bg-background px-2.5 text-sm" aria-label="导出筛选：年级"><option :value="null">全部年级</option><option v-for="y in exportYears" :key="y" :value="y">{{ y }} 级</option></select><Button variant="outline" :disabled="busy" title="排行榜截成 PNG 图片，浅色版" @click="exportPng"><Download class="mr-1 h-4 w-4" />PNG 榜单图</Button></div>
 
-        <div v-else-if="detailLoading" class="flex items-center gap-2 py-10 text-sm text-muted-foreground">
-          <Loader2 class="h-4 w-4 animate-spin" />
-          正在读取…
+            <!-- 离屏渲染：导出 PNG 用。export-light 强制浅色，跟用户端看到的浅色版一致。
+                 w-max + 内层 overflow-visible：排行榜表格在自然宽度下全量铺开，
+                 题多的时候不能被横向滚动裁掉。 -->
+            <div v-if="exportingPng" class="export-light fixed -left-[6000px] top-0 w-max min-w-[960px] bg-background p-14 [&_.overflow-x-auto]:!overflow-visible">
+              <div ref="pngHost">
+                <div class="mb-7">
+                  <p class="text-xl font-semibold text-foreground">
+                    {{ detail.name }}{{ exportCollege ? ` · ${exportCollege}` : '' }}{{ exportYear !== null ? ` · ${exportYear} 级` : '' }}
+                  </p>
+                  <p class="mt-1 text-sm text-muted-foreground">
+                    {{ detail.phase === 'finalized' ? '最终成绩' : '实时成绩' }} · sgu-acw.zh314.xyz
+                  </p>
+                </div>
+                <CampLeaderboard :entries="exportEntries" :problems="detail.problems" />
+              </div>
+            </div>
+            <div class="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-destructive/20 p-4"><p class="text-xs text-muted-foreground">删除会清除题目、报名记录和最终成绩。</p><Button variant="outline" class="text-destructive" :disabled="busy" @click="removeCamp"><Trash2 class="mr-2 h-4 w-4" />删除集训</Button></div>
+          </template>
+          <div v-else-if="!activeId" class="flex flex-col items-center gap-3 py-20 text-muted-foreground"><Trophy class="h-8 w-8 opacity-40" /><p class="text-sm">选择一场集训，或新建集训</p></div>
         </div>
-
-        <template v-else-if="detail">
-          <!-- 基本信息 -->
-          <Card>
-            <CardHeader class="pb-2">
-              <div class="flex items-center justify-between">
-                <CardTitle class="text-sm font-medium">基本信息</CardTitle>
-                <div class="flex items-center gap-1">
-                  <!-- 导出。直接链过去让浏览器下载，cookie 自带。 -->
-                  <a
-                    v-for="fmt in ['xlsx', 'csv', 'json']"
-                    :key="fmt"
-                    :href="`/api/admin/camps/${detail.id}/export?format=${fmt}`"
-                    class="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                  >
-                    <Download class="h-3 w-3" />
-                    {{ fmt.toUpperCase() }}
-                  </a>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    class="h-7 px-2 text-xs text-destructive hover:text-destructive"
-                    @click="removeCamp"
-                  >
-                    <Trash2 class="mr-1 h-3 w-3" />
-                    删除
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent class="space-y-2">
-              <Input v-model="editName" placeholder="名称" class="h-8 text-sm" />
-              <Input v-model="editDesc" placeholder="说明" class="h-8 text-sm" />
-              <div class="grid grid-cols-2 gap-2">
-                <div>
-                  <label class="mb-1 block text-xs text-muted-foreground">开始时间</label>
-                  <Input v-model="editStart" type="datetime-local" class="h-8 text-sm" />
-                </div>
-                <div>
-                  <label class="mb-1 block text-xs text-muted-foreground">截止时间</label>
-                  <Input v-model="editEnd" type="datetime-local" class="h-8 text-sm" />
-                </div>
-              </div>
-              <Button size="sm" :disabled="saving" @click="save">
-                <Loader2 v-if="saving" class="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                保存
-              </Button>
-            </CardContent>
-          </Card>
-
-          <!-- 题目 -->
-          <Card>
-            <CardHeader class="pb-2">
-              <CardTitle class="text-sm font-medium">
-                题目
-                <span class="ml-1 font-normal text-muted-foreground">{{ detail.problems.length }}</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent class="space-y-2">
-              <div
-                v-if="detail.problems.length"
-                ref="problemsEl"
-                data-sortable="problems"
-                class="divide-y divide-border/40 rounded-md border border-border/40"
-              >
-                <div
-                  v-for="p in detail.problems"
-                  :key="p.id"
-                  class="flex items-center gap-2 px-3 py-2"
-                >
-                  <span
-                    data-drag-handle
-                    class="shrink-0 cursor-grab touch-none text-muted-foreground/40 transition-colors hover:text-muted-foreground active:cursor-grabbing"
-                    title="拖动排序"
-                  >
-                    <GripVertical class="h-4 w-4" />
-                  </span>
-                  <span class="w-20 shrink-0 font-mono text-[11px] text-muted-foreground">
-                    {{ PLATFORM_META[p.platform]?.label ?? p.platform }}
-                  </span>
-                  <span class="min-w-0 flex-1 truncate text-sm" :title="p.name">
-                    {{ p.name || p.key }}
-                  </span>
-                  <span class="shrink-0 font-mono text-[11px] text-muted-foreground/70">
-                    {{ p.key }}
-                  </span>
-                  <button
-                    type="button"
-                    class="shrink-0 text-muted-foreground transition-colors hover:text-destructive"
-                    @click="removeProblem(p.id)"
-                  >
-                    <X class="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              </div>
-              <p v-else class="text-xs text-muted-foreground">还没出题</p>
-
-              <div class="flex items-center gap-2">
-                <select
-                  v-model="newPlatform"
-                  class="h-8 rounded-md border border-input bg-transparent px-2 text-xs"
-                  @change="checkProblem"
-                >
-                  <option v-for="p in PLATFORMS" :key="p" :value="p">
-                    {{ PLATFORM_META[p]?.label ?? p }}
-                  </option>
-                </select>
-                <Input
-                  v-model="newKey"
-                  placeholder="题号，如 1838A / P1001"
-                  class="h-8 flex-1 text-sm"
-                  @blur="checkProblem"
-                  @keyup.enter="checkProblem"
-                />
-                <Button
-                  size="sm"
-                  :disabled="addingProblem || !newKey.trim() || lookup?.status === 'bad'"
-                  @click="addProblem"
-                >
-                  <Loader2 v-if="addingProblem" class="h-3.5 w-3.5 animate-spin" />
-                  <Plus v-else class="h-3.5 w-3.5" />
-                </Button>
-              </div>
-              <p v-if="lookup?.status === 'loading'" class="text-xs text-muted-foreground">
-                正在查题目…
-              </p>
-              <p v-else-if="lookup?.status === 'ok'" class="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-500">
-                <Check class="h-3 w-3" />
-                {{ lookup.name }}<span v-if="lookup.rating" class="text-muted-foreground">（{{ lookup.rating }}）</span>
-              </p>
-              <p v-else-if="lookup?.status === 'bad'" class="text-xs text-destructive">
-                {{ lookup.reason }}
-              </p>
-              <p v-if="problemError" class="text-xs text-destructive">{{ problemError }}</p>
-            </CardContent>
-          </Card>
-
-          <!-- 报名名单 -->
-          <Card>
-            <CardHeader class="pb-2">
-              <CardTitle class="text-sm font-medium">
-                报名名单
-                <span class="ml-1 font-normal text-muted-foreground">{{ detail.registrations.length }}</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent class="space-y-2">
-              <div v-if="detail.registrations.length" class="divide-y divide-border/40 rounded-md border border-border/40">
-                <div
-                  v-for="r in detail.registrations"
-                  :key="r.user_id"
-                  class="flex items-center gap-2 px-3 py-2"
-                >
-                  <span class="min-w-0 flex-1 truncate text-sm">{{ r.display_name }}</span>
-                  <button
-                    type="button"
-                    class="shrink-0 text-muted-foreground transition-colors hover:text-destructive"
-                    @click="removeMember(r.user_id)"
-                  >
-                    <X class="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              </div>
-              <p v-else class="text-xs text-muted-foreground">还没人报名</p>
-
-              <div class="flex items-center gap-2">
-                <Input
-                  v-model="memberQuery"
-                  placeholder="按姓名或学号找人"
-                  class="h-8 flex-1 text-sm"
-                  @keyup.enter="searchMembers"
-                />
-                <Button size="sm" variant="secondary" :disabled="searching" @click="searchMembers">
-                  <Loader2 v-if="searching" class="h-3.5 w-3.5 animate-spin" />
-                  <Search v-else class="h-3.5 w-3.5" />
-                </Button>
-              </div>
-              <div v-if="memberResults.length" class="divide-y divide-border/40 rounded-md border border-border/40">
-                <div
-                  v-for="u in memberResults"
-                  :key="u.id"
-                  class="flex items-center gap-2 px-3 py-2"
-                >
-                  <span class="min-w-0 flex-1 truncate text-sm">
-                    {{ u.display_name }}
-                    <span class="font-mono text-xs text-muted-foreground">{{ u.student_id }}</span>
-                  </span>
-                  <button
-                    v-if="!registeredIds.has(u.id)"
-                    type="button"
-                    class="flex shrink-0 items-center gap-1 text-xs text-primary transition-colors hover:underline"
-                    @click="addMember(u.id)"
-                  >
-                    <UserPlus class="h-3.5 w-3.5" />
-                    加人
-                  </button>
-                  <span v-else class="shrink-0 text-xs text-muted-foreground">已报名</span>
-                </div>
-              </div>
-              <p class="text-[11px] text-muted-foreground/70">
-                手动加人不受账号限制——他报不上名时的兜底办法
-              </p>
-            </CardContent>
-          </Card>
-
-          <!-- 榜单。管理员这里也要看——不然得翻到前台页面。 -->
-          <Card v-if="detail.leaderboard?.length">
-            <CardHeader class="pb-2">
-              <CardTitle class="text-sm font-medium">
-                榜单
-                <span class="ml-1 font-normal text-muted-foreground">{{ detail.leaderboard.length }} 人</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent class="p-0">
-              <div class="overflow-x-auto border-t border-border/40">
-                <table class="w-full text-sm">
-                  <thead>
-                    <tr class="border-b border-border/40 text-left text-xs text-muted-foreground">
-                      <th class="w-10 px-3 py-2 text-center font-medium">#</th>
-                      <th class="px-3 py-2 font-medium">姓名</th>
-                      <th class="px-3 py-2 text-right font-medium">过题</th>
-                      <th
-                        v-for="p in detail.problems"
-                        :key="`${p.platform}:${p.key}`"
-                        class="px-2 py-2 text-center font-mono text-[10px] font-medium"
-                        :title="`${p.platform}:${p.key}`"
-                      >
-                        {{ p.key }}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y divide-border/40">
-                    <tr v-for="entry in detail.leaderboard ?? []" :key="entry.user_id">
-                      <td
-                        class="px-3 py-2.5 text-center font-mono text-xs"
-                        :class="entry.rank <= 3 ? 'font-semibold text-foreground' : 'text-muted-foreground'"
-                      >
-                        {{ entry.rank }}
-                      </td>
-                      <td class="px-3 py-2.5">
-                        <span class="font-medium">{{ entry.display_name }}</span>
-                        <span v-if="entry.class_label" class="ml-1.5 text-[11px] text-muted-foreground/70">
-                          {{ entry.class_label }}
-                        </span>
-                      </td>
-                      <td class="px-3 py-2.5 text-right font-mono text-sm">
-                        {{ entry.solved_count }}
-                      </td>
-                      <td
-                        v-for="p in detail.problems"
-                        :key="`${p.platform}:${p.key}`"
-                        class="px-2 py-2.5 text-center"
-                      >
-                        <span
-                          class="inline-flex h-4 w-4 items-center justify-center rounded-full text-[10px]"
-                          :class="
-                            entry.per_problem[`${p.platform}:${p.key}`]
-                              ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
-                              : 'text-muted-foreground/30'
-                          "
-                        >
-                          {{ entry.per_problem[`${p.platform}:${p.key}`] ? '✓' : '—' }}
-                        </span>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
-        </template>
       </div>
-    </div>
+    </template>
   </div>
 </template>

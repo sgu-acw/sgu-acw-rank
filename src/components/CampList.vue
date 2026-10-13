@@ -49,7 +49,7 @@ function formatRange(c: CampSummary): string {
 }
 
 function go(path: string) {
-  window.location.href = path
+  import('astro:transitions/client').then(({ navigate }) => navigate(path))
 }
 
 onMounted(async () => {

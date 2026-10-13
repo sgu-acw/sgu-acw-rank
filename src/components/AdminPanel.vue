@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { confirmAction } from '../lib/confirm'
 /**
  * 管理页：邀请码、成员管理、管理员备注。
  *
@@ -8,6 +9,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { AlertCircle, Check, ChevronDown, Copy, KeyRound, Link2, Loader2, MoreHorizontal, Pencil, Plus, Search, SlidersHorizontal, Trash2, Users, X } from 'lucide-vue-next'
 import AdminWorkspaceNav from './AdminWorkspaceNav.vue'
+import ActionNotice from './ui/ActionNotice.vue'
 import { Alert } from './ui/alert'
 import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
@@ -16,6 +18,7 @@ import {
   ApiError,
   PLATFORM_META,
   adminApi,
+  type AcademicOptions,
   type AdminUser,
   type AdminUserPage,
   type Invite,
@@ -36,7 +39,13 @@ const stats = ref<{
   active_count: number
   admin_count: number
   usable_invite_count: number
+  push_subscriber_count: number
+  push_device_count: number
 } | null>(null)
+const academics = ref<AcademicOptions | null>(null)
+const academicMajors = computed(() => [
+  ...new Set(Object.values(academics.value?.majors ?? {}).flat()),
+])
 
 // 成员筛选条件。改动后重新拉取，搜索框做防抖。
 const filters = ref({
@@ -81,6 +90,7 @@ const editingName = ref<Record<number, string>>({})
 //: 学院名/专业名的人工覆盖。空串表示恢复成按学号查表。
 const editingCollege = ref<Record<number, string>>({})
 const editingMajor = ref<Record<number, string>>({})
+const editingClassNo = ref<Record<number, string>>({})
 const savingNote = ref<number | null>(null)
 const copiedCode = ref<string | null>(null)
 
@@ -113,14 +123,16 @@ async function load() {
   loading.value = true
   error.value = ''
   try {
-    const [inviteList, userPage, summary] = await Promise.all([
+    const [inviteList, userPage, summary, academicList] = await Promise.all([
       adminApi.invites(),
       adminApi.users(filters.value),
       adminApi.stats(),
+      adminApi.academics(),
     ])
     invites.value = inviteList
     page.value = userPage
     stats.value = summary
+    academics.value = academicList
   } catch (err) {
     error.value = err instanceof ApiError ? err.message : '加载失败'
   } finally {
@@ -208,7 +220,7 @@ async function createUser() {
 async function changeRole(target: AdminUser, role: string) {
   if (role === target.role) return
   const label = roleLabel(role)
-  if (!window.confirm(`把 ${target.display_name} 的身份改为「${label}」？`)) return
+  if (!await confirmAction(`把 ${target.display_name} 的身份改为「${label}」？`)) return
   try {
     const updated = await adminApi.updateUser(target.id, { role })
     target.role = updated.role
@@ -220,7 +232,7 @@ async function changeRole(target: AdminUser, role: string) {
 }
 
 async function deleteUser(target: AdminUser) {
-  if (!window.confirm(`确定删除 ${target.display_name}（${target.student_id}）？\n\n会同时删掉其平台绑定与练习记录，不可恢复。`)) return
+  if (!await confirmAction(`确定删除 ${target.display_name}（${target.student_id}）？\n\n会同时删掉其平台绑定与练习记录，不可恢复。`)) return
   try {
     await adminApi.deleteUser(target.id)
     await load()
@@ -249,7 +261,7 @@ async function createInvite() {
 }
 
 async function revoke(invite: Invite) {
-  if (!window.confirm(`确定撤销 ${invite.code}？已经用掉的不会退回。`)) return
+  if (!await confirmAction(`确定撤销 ${invite.code}？已经用掉的不会退回。`)) return
   try {
     await adminApi.revokeInvite(invite.id)
     invite.revoked_at = new Date().toISOString()
@@ -290,6 +302,7 @@ function startEditMember(target: AdminUser) {
   editingCanPost.value[target.id] = target.can_post ?? false
   editingCollege.value[target.id] = target.college_name ?? ''
   editingMajor.value[target.id] = target.major_name ?? ''
+  editingClassNo.value[target.id] = target.class_no ? String(target.class_no) : ''
 }
 
 function cancelEditMember(target: AdminUser) {
@@ -297,6 +310,7 @@ function cancelEditMember(target: AdminUser) {
   delete editingName.value[target.id]
   delete editingCollege.value[target.id]
   delete editingMajor.value[target.id]
+  delete editingClassNo.value[target.id]
   editingMemberId.value = null
 }
 
@@ -306,6 +320,8 @@ async function saveNote(target: AdminUser) {
     display_name?: string
     college_override?: string
     major_override?: string
+    can_post?: boolean
+    class_no?: number
   } = {}
   if (editingNote.value[target.id] !== undefined) payload.admin_note = editingNote.value[target.id]
   if (editingCanPost.value[target.id] !== undefined) payload.can_post = editingCanPost.value[target.id]
@@ -315,6 +331,10 @@ async function saveNote(target: AdminUser) {
   }
   if (editingMajor.value[target.id] !== undefined) {
     payload.major_override = editingMajor.value[target.id]
+  }
+  if (editingClassNo.value[target.id] !== undefined) {
+    const n = parseInt(editingClassNo.value[target.id], 10)
+    payload.class_no = Number.isFinite(n) ? n : 0
   }
   if (!Object.keys(payload).length) return
 
@@ -326,10 +346,12 @@ async function saveNote(target: AdminUser) {
     target.can_post = updated.can_post
     target.college_name = updated.college_name
     target.major_name = updated.major_name
+    target.class_no = updated.class_no
     delete editingNote.value[target.id]
     delete editingName.value[target.id]
     delete editingCollege.value[target.id]
     delete editingMajor.value[target.id]
+    delete editingClassNo.value[target.id]
     editingMemberId.value = null
     flash('已保存')
   } catch (err) {
@@ -342,7 +364,7 @@ async function saveNote(target: AdminUser) {
 async function toggleStatus(target: AdminUser) {
   const next = target.status === 'active' ? 'disabled' : 'active'
   const verb = next === 'disabled' ? '停用' : '启用'
-  if (!window.confirm(`确定${verb} ${target.display_name}？`)) return
+  if (!await confirmAction(`确定${verb} ${target.display_name}？`)) return
   try {
     const updated = await adminApi.updateUser(target.id, { status: next })
     target.status = updated.status
@@ -353,12 +375,13 @@ async function toggleStatus(target: AdminUser) {
 }
 
 async function resetPassword(target: AdminUser) {
-  if (!window.confirm(`重置 ${target.display_name} 的密码？对方会被登出。`)) return
+  if (!await confirmAction(`重置 ${target.display_name} 的密码？对方会被登出。`)) return
   try {
     const result = await adminApi.resetPassword(target.id)
-    window.alert(
+    await confirmAction(
       `${result.display_name}（${result.student_id}）的新密码：\n\n${result.temporary_password}\n\n` +
         '这串只显示这一次，请转告本人。',
+      '密码已重置', true,
     )
   } catch (err) {
     error.value = err instanceof ApiError ? err.message : '重置失败'
@@ -413,10 +436,7 @@ onMounted(async () => {
         <AlertCircle class="h-4 w-4 shrink-0 translate-y-0.5" />
         <span class="text-sm">{{ error }}</span>
       </Alert>
-      <Alert v-if="notice" class="flex items-start gap-2">
-        <Check class="h-4 w-4 shrink-0 translate-y-0.5" />
-        <span class="text-sm">{{ notice }}</span>
-      </Alert>
+      <ActionNotice :message="notice" />
 
       <!--
         账号 / 邀请码。
@@ -468,6 +488,11 @@ onMounted(async () => {
           <span>
             管理员
             <span class="ml-1 font-mono tabular-nums text-foreground">{{ stats.admin_count }}</span>
+          </span>
+          <span class="text-border">·</span>
+          <span title="开了推送通知的成员数（一人多设备算一次）">
+            开通知
+            <span class="ml-1 font-mono tabular-nums text-foreground">{{ stats.push_subscriber_count }}</span>
           </span>
         </div>
       </div>
@@ -654,7 +679,19 @@ onMounted(async () => {
             </Button>
           </div>
 
-          <div v-if="showAdvancedFilters" id="member-advanced-filters" class="admin-section-content grid gap-2 rounded-lg bg-muted/30 p-3 sm:grid-cols-3">
+          <div v-if="showAdvancedFilters" id="member-advanced-filters" class="admin-section-content grid gap-2 rounded-lg bg-muted/30 p-3 sm:grid-cols-4">
+            <label class="space-y-1 text-[11px] font-medium text-muted-foreground">
+              学院
+              <select
+                v-model="filters.college_code"
+                class="h-9 w-full rounded-md border border-input bg-background px-2 text-xs text-foreground"
+              >
+                <option value="">全部学院</option>
+                <option v-for="code in page?.college_codes ?? []" :key="code" :value="code">
+                  {{ code }}
+                </option>
+              </select>
+            </label>
             <label class="space-y-1 text-[11px] font-medium text-muted-foreground">
               年级
               <select
@@ -870,6 +907,7 @@ onMounted(async () => {
                     <Input
                       :model-value="editingCollege[member.id] ?? member.college_name ?? ''"
                       placeholder="留空使用学号解析值"
+                      list="academic-colleges"
                       class="h-9 text-sm text-foreground"
                       @update:model-value="(v: string) => (editingCollege[member.id] = v)"
                     />
@@ -879,8 +917,18 @@ onMounted(async () => {
                     <Input
                       :model-value="editingMajor[member.id] ?? member.major_name ?? ''"
                       placeholder="留空使用学号解析值"
+                      list="academic-majors"
                       class="h-9 text-sm text-foreground"
                       @update:model-value="(v: string) => (editingMajor[member.id] = v)"
+                    />
+                  </label>
+                  <label class="space-y-1 text-xs font-medium text-muted-foreground">
+                    班级
+                    <Input
+                      :model-value="editingClassNo[member.id] ?? (member.class_no ? String(member.class_no) : '')"
+                      placeholder="如 3，留空不分班"
+                      class="h-9 text-sm text-foreground"
+                      @update:model-value="(v: string) => (editingClassNo[member.id] = v)"
                     />
                   </label>
                   <label v-if="canChangeRole(member)" class="space-y-1 text-xs font-medium text-muted-foreground">
@@ -945,6 +993,16 @@ onMounted(async () => {
       </Card>
         </section>
     </template>
+    <datalist id="academic-colleges">
+      <option v-for="college in academics?.colleges ?? []" :key="college" :value="college" />
+    </datalist>
+    <datalist id="academic-majors">
+      <option
+        v-for="major in academicMajors"
+        :key="major"
+        :value="major"
+      />
+    </datalist>
   </div>
 </template>
 

@@ -2,6 +2,57 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 集训榜单：手机整表滑动，桌面固定前三列。 */
+.camp-leaderboard {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.camp-leaderboard th,
+.camp-leaderboard td {
+  white-space: nowrap;
+  border-bottom: 1px solid hsl(var(--border) / 0.4);
+}
+
+.camp-leaderboard th:nth-child(n + 4),
+.camp-leaderboard td:nth-child(n + 4) {
+  min-width: 4.5rem;
+}
+
+@media (min-width: 768px) {
+  .camp-leaderboard th:nth-child(-n + 3),
+  .camp-leaderboard td:nth-child(-n + 3) {
+    position: sticky;
+    z-index: 1;
+    background: hsl(var(--card));
+  }
+
+  .camp-leaderboard :is(th, td):nth-child(1) {
+    left: 0;
+    width: 2.5rem;
+    min-width: 2.5rem;
+    max-width: 2.5rem;
+  }
+
+  .camp-leaderboard :is(th, td):nth-child(2) {
+    left: 2.5rem;
+    width: 14rem;
+    min-width: 14rem;
+    max-width: 14rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .camp-leaderboard :is(th, td):nth-child(3) {
+    left: 16.5rem;
+    width: 4rem;
+    min-width: 4rem;
+    max-width: 4rem;
+    border-right: 1px solid hsl(var(--border) / 0.4);
+  }
+}
+
+
 @layer base {
   :root {
     /*
@@ -67,6 +118,9 @@
    */
   @media (prefers-color-scheme: dark) {
     :root:not(.light) {
+    /* 告诉浏览器按深色渲染原生控件——datetime 选择器的日历图标、
+       checkbox、滚动条。不设的话深色主题里它们是黑图标压黑底。 */
+    color-scheme: dark;
     --background: 240 6% 7%;
     --foreground: 240 6% 93%;
     --card: 240 5% 10%;
@@ -92,6 +146,7 @@
 
   /* 用户明确选了深色。系统偏好是浅色时靠这条。 */
   :root.dark {
+    color-scheme: dark;
     --background: 240 6% 7%;
     --foreground: 240 6% 93%;
     --card: 240 5% 10%;
@@ -210,6 +265,33 @@
   }
 }
 
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-enter-active {
+  /*
+   * 不能带 both/forwards：结束态 transform: translateY(0) 会永久留在
+   * <main> 上，而带 transform 的元素会变成 fixed 子元素的包含块——
+   * 页面里所有 fixed 浮层都被锚到 main 的顶部（成员弹窗在 Edge 上
+   * 就栽在这）。尾帧本来就是无变换，去掉填充模式没有视觉差别。
+   */
+  animation: page-enter 180ms var(--ease-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-enter-active {
+    animation: none;
+  }
+}
+
 @layer components {
   /* Link card, produced by src/plugins/remark-link-card.mjs */
   .link-card {
@@ -281,5 +363,37 @@
     .surface-action:active {
       transform: none;
     }
+  }
+}
+
+@layer base {
+  /*
+   * 导出用浅色作用域。
+   *
+   * 导出 PNG 时把组件渲到这个容器里，即使管理员当前是深色主题，
+   * 出来图也是浅色版——跟成员在用户端看到的一致，而且贴到群里/
+   * 白底文档里都协调。只在离屏渲染的容器上用。
+   */
+  .export-light {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --sidebar: 0 0% 100%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
   }
 }

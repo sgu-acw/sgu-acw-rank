@@ -1,0 +1,10 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import WorkshopStatusAdmin from '../../components/WorkshopStatusAdmin.vue';
+---
+
+<BaseLayout title="算法竞赛工作坊 - 状态管理">
+  <div class="mx-auto w-full max-w-6xl">
+    <WorkshopStatusAdmin client:only="vue" />
+  </div>
+</BaseLayout>

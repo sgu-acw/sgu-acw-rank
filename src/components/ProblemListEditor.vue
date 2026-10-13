@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { confirmAction } from '../lib/confirm'
 /**
  * 题单编辑页。
  *
@@ -13,7 +14,6 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import Sortable from 'sortablejs'
 import {
   AlertCircle,
-  Check,
   GripVertical,
   Loader2,
   Plus,
@@ -21,11 +21,12 @@ import {
 import ProblemAdder from './ProblemAdder.vue'
 import ProblemRow from './ProblemRow.vue'
 import AdminWorkspaceNav from './AdminWorkspaceNav.vue'
+import ActionNotice from './ui/ActionNotice.vue'
 import { Alert } from './ui/alert'
 import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Input } from './ui/input'
-import { ApiError, problemListApi, type ProblemEntry, type ProblemListDetail } from '../lib/api'
+import { ApiError, problemListApi, type ProblemEntry, type ProblemListDetail, type ProblemListSummary } from '../lib/api'
 
 const listId = ref(0)
 const data = ref<ProblemListDetail | null>(null)
@@ -33,6 +34,8 @@ const loading = ref(true)
 const error = ref('')
 const notice = ref('')
 const notFound = ref(false)
+const collections = ref<ProblemListSummary[]>([])
+const editCollectionId = ref<number | null>(null)
 
 //: 正在改备注的题目 id。
 const editingNoteId = ref<number | null>(null)
@@ -166,7 +169,7 @@ async function reorderChildren(from: number, to: number) {
 }
 
 async function removeProblem(problem: ProblemEntry) {
-  if (!window.confirm(`从题单里移除「${problem.name || problem.key}」？`)) return
+  if (!await confirmAction(`从题单里移除「${problem.name || problem.key}」？`)) return
   try {
     await problemListApi.removeProblem(listId.value, problem.id)
     await load()
@@ -202,6 +205,7 @@ function startEditMeta() {
   editingMeta.value = true
   metaTitle.value = data.value.title
   metaDescription.value = data.value.description
+  editCollectionId.value = data.value.collection_id
 }
 
 async function saveMeta() {
@@ -209,6 +213,9 @@ async function saveMeta() {
     await problemListApi.update(listId.value, {
       title: metaTitle.value.trim(),
       description: metaDescription.value.trim(),
+      ...(data.value?.kind === 'list'
+        ? { collection_id: editCollectionId.value, set_collection: true }
+        : {}),
     })
     editingMeta.value = false
     await load()
@@ -219,7 +226,7 @@ async function saveMeta() {
 }
 
 function go(path: string) {
-  window.location.href = path
+  import('astro:transitions/client').then(({ navigate }) => navigate(path))
 }
 
 /*
@@ -242,7 +249,12 @@ onMounted(async () => {
     return
   }
   listId.value = parsed
-  await load()
+  await Promise.all([
+    load(),
+    problemListApi.list({ kind: 'collection' }).then((items) => {
+      collections.value = items
+    }),
+  ])
 })
 
 onBeforeUnmount(() => {
@@ -259,10 +271,7 @@ onBeforeUnmount(() => {
       <AlertCircle class="h-4 w-4 shrink-0 translate-y-0.5" />
       <span class="text-sm">{{ error }}</span>
     </Alert>
-    <Alert v-if="notice" class="flex items-start gap-2">
-      <Check class="h-4 w-4 shrink-0 translate-y-0.5" />
-      <span class="text-sm">{{ notice }}</span>
-    </Alert>
+    <ActionNotice :message="notice" />
 
     <div v-if="loading" class="flex items-center gap-2 py-10 text-sm text-muted-foreground">
       <Loader2 class="h-4 w-4 animate-spin" />
@@ -282,6 +291,16 @@ onBeforeUnmount(() => {
         <div v-if="editingMeta" class="space-y-2">
           <Input v-model="metaTitle" placeholder="标题" class="h-10" />
           <Input v-model="metaDescription" placeholder="说明（可选）" class="h-10" />
+          <select
+            v-if="!isCollection"
+            v-model="editCollectionId"
+            class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+          >
+            <option :value="null">不属于合集</option>
+            <option v-for="collection in collections" :key="collection.id" :value="collection.id">
+              {{ collection.title }}
+            </option>
+          </select>
           <div class="flex gap-2">
             <Button size="sm" @click="saveMeta">保存</Button>
             <Button variant="ghost" size="sm" @click="editingMeta = false">取消</Button>

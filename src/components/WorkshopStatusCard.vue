@@ -10,9 +10,9 @@
  */
 import { computed } from 'vue'
 import { ArrowUpRight } from 'lucide-vue-next'
-import { formatAge, stateDescription, useWorkshopStatus } from '../lib/workshopStatus'
+import { formatAge, overrideUntilText, stateDescription, useWorkshopStatus } from '../lib/workshopStatus'
 
-const { data, state } = useWorkshopStatus()
+const { data, state, override } = useWorkshopStatus()
 
 /** 三种状态的呈现。集中在一处，免得散在模板里到处判断。 */
 const LOOK = {
@@ -37,6 +37,13 @@ const LOOK = {
     ring: 'ring-amber-500/20',
     surface: 'bg-amber-500/[0.06]',
   },
+  special: {
+    label: '',
+    dot: 'bg-violet-500',
+    text: 'text-violet-600 dark:text-violet-400',
+    ring: 'ring-violet-500/20',
+    surface: 'bg-violet-500/[0.06]',
+  },
   loading: {
     label: '检测中',
     dot: 'bg-muted-foreground/30',
@@ -47,8 +54,18 @@ const LOOK = {
 } as const
 
 const look = computed(() => LOOK[state.value])
-const description = computed(() => stateDescription(state.value))
-const age = computed(() => formatAge(data.value?.age))
+const label = computed(() =>
+  state.value === 'special' ? (override.value?.label ?? '特殊状态') : look.value.label,
+)
+const description = computed(() => {
+  if (state.value === 'special') {
+    const note = override.value?.note ?? ''
+    const until = overrideUntilText(override.value?.until)
+    return [note, until].filter(Boolean).join(' · ')
+  }
+  return stateDescription(state.value)
+})
+const age = computed(() => (state.value === 'special' ? '' : formatAge(data.value?.age)))
 </script>
 
 <template>
@@ -70,7 +87,7 @@ const age = computed(() => formatAge(data.value?.age))
       <div class="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
         <!-- 状态词不折行。「没开门」拆成「没开/门」很难读。 -->
         <span class="whitespace-nowrap text-base font-semibold tracking-tight" :class="look.text">
-          {{ look.label }}
+          {{ label }}
         </span>
         <span class="text-xs text-muted-foreground">{{ description }}</span>
       </div>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { confirmAction } from '../lib/confirm'
 /**
  * 题解管理。
  *
@@ -22,14 +23,16 @@ import {
   Lightbulb,
   Loader2,
   Pencil,
-  RefreshCw,
+
   Trash2,
 } from 'lucide-vue-next'
+import ActionNotice from './ui/ActionNotice.vue'
 import { Alert } from './ui/alert'
 import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Input } from './ui/input'
 import AdminWorkspaceNav from './AdminWorkspaceNav.vue'
+import RefreshButton from './ui/RefreshButton.vue'
 import { renderInline, renderMarkdown } from '../lib/markdown'
 import {
   ApiError,
@@ -196,7 +199,7 @@ async function togglePublish(item: AdminEditorial) {
 }
 
 async function remove(item: AdminEditorial) {
-  if (!window.confirm(`确定删除 ${item.key} 的题解？删掉后下次生成会重写。`)) return
+  if (!await confirmAction(`确定删除 ${item.key} 的题解？删掉后下次生成会重写。`)) return
   error.value = ''
   try {
     await adminApi.deleteEditorial(item.id)
@@ -223,20 +226,14 @@ onMounted(load)
 <template>
   <div class="space-y-6">
     <AdminWorkspaceNav active="editorials">
-      <Button variant="outline" size="sm" :disabled="loading" @click="load">
-        <RefreshCw class="mr-1.5 h-3.5 w-3.5" :class="loading && 'animate-spin'" />
-        刷新
-      </Button>
+      <RefreshButton :busy="loading" @click="load" />
     </AdminWorkspaceNav>
 
     <Alert v-if="error" variant="destructive" class="flex items-start gap-2">
       <AlertCircle class="h-4 w-4 shrink-0 translate-y-0.5" />
       <span class="text-sm">{{ error }}</span>
     </Alert>
-    <Alert v-if="notice" class="flex items-start gap-2">
-      <Check class="h-4 w-4 shrink-0 translate-y-0.5" />
-      <span class="text-sm">{{ notice }}</span>
-    </Alert>
+    <ActionNotice :message="notice" />
 
     <!--
       今天的题。还没生成，所以没有题解记录可看——但管理员需要知道今天

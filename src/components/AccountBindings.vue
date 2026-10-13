@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { confirmAction } from '../lib/confirm'
 /**
  * 平台账号绑定。
  *
@@ -17,6 +18,7 @@ import {
   RefreshCw,
   Trash2,
 } from 'lucide-vue-next'
+import ActionNotice from './ui/ActionNotice.vue'
 import { Alert } from './ui/alert'
 import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
@@ -153,7 +155,7 @@ async function renew(account: PlatformAccount) {
 }
 
 async function remove(account: PlatformAccount) {
-  if (!window.confirm(`确定解绑 ${PLATFORM_META[account.platform].label} 的 ${account.identifier}？`)) return
+  if (!await confirmAction(`确定解绑 ${PLATFORM_META[account.platform].label} 的 ${account.identifier}？`)) return
   try {
     await accountsApi.remove(account.id)
     accounts.value = accounts.value.filter((a) => a.id !== account.id)
@@ -274,10 +276,7 @@ onUnmounted(() => {
         <AlertCircle class="h-4 w-4 shrink-0 translate-y-0.5" />
         <span class="text-sm">{{ error }}</span>
       </Alert>
-      <Alert v-if="notice" class="flex items-start gap-2">
-        <Check class="h-4 w-4 shrink-0 translate-y-0.5" />
-        <span class="text-sm">{{ notice }}</span>
-      </Alert>
+      <ActionNotice :message="notice" />
 
       <div v-if="loading" class="flex items-center gap-2 py-4 text-sm text-muted-foreground">
         <Loader2 class="h-4 w-4 animate-spin" />
@@ -308,6 +307,12 @@ onUnmounted(() => {
               <span v-else class="rounded border border-border/40 px-1.5 py-0.5 text-[10px] text-muted-foreground">
                 待验证
               </span>
+              <span
+                v-if="account.sync_flag"
+                class="rounded border border-amber-600/40 bg-amber-500/10 px-1.5 py-0.5 text-[10px] text-amber-700 dark:text-amber-400"
+              >
+                {{ account.sync_flag === 'privacy' ? '隐私设置' : '未实名' }}
+              </span>
 
               <div class="ml-auto flex shrink-0 gap-1">
                 <Button
@@ -327,6 +332,13 @@ onUnmounted(() => {
                 </Button>
               </div>
             </div>
+
+            <p v-if="account.sync_flag === 'privacy'" class="mt-2 text-xs text-amber-700 dark:text-amber-400">
+              平台开了隐私保护，成绩抓不到。去设置里关掉再同步。
+            </p>
+            <p v-else-if="account.sync_flag === 'unverified'" class="mt-2 text-xs text-amber-700 dark:text-amber-400">
+              账号未实名，平台暂不提供统计数据。
+            </p>
 
             <!-- 待验证时给出具体操作步骤，包括去哪填、填什么。 -->
             <div v-if="!account.verified_at && account.verify_token" class="mt-2.5 space-y-1.5">

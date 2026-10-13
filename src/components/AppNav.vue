@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import {
+  Bell,
   Home,
   User,
   Activity,
@@ -8,6 +9,7 @@ import {
   LogIn,
   BarChart3,
   CalendarCheck,
+  ClipboardList,
   ListChecks,
   Settings,
   BookOpen,
@@ -54,6 +56,7 @@ const navGroups = [
     label: '工作坊',
     items: [
       { title: '工作坊状态', route: '/status', icon: Activity },
+      { title: '线下赛报名', route: '/signups', icon: ClipboardList },
       { title: '博客', route: '/blog', icon: BookOpen },
       { title: '导航与资源', route: '/nav', icon: Compass },
       { title: 'Codeforces 资料', route: '/codeforces/profile', icon: User },
@@ -61,15 +64,25 @@ const navGroups = [
   },
 ]
 
-onMounted(() => {
+function syncPath() {
   currentPath.value = window.location.pathname
+}
+
+onMounted(() => {
+  syncPath()
   mounted.value = true
   // 侧边栏需要知道是否已登录，才能决定底部显示什么。
-  ensureLoaded()
+  void ensureLoaded()
+  // ClientRouter 只交换页面内容，组件不会重新挂载；路径必须跟着导航事件更新。
+  document.addEventListener('astro:page-load', syncPath)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('astro:page-load', syncPath)
 })
 
 function isAdminRoute(): boolean {
-  return currentPath.value.startsWith('/admin') || currentPath.value.startsWith('/problems/admin') || currentPath.value.startsWith('/problems/edit') || currentPath.value.startsWith('/camps/admin') || currentPath.value.startsWith('/editorials/admin')
+  return currentPath.value.startsWith('/admin') || currentPath.value.startsWith('/problems/admin') || currentPath.value.startsWith('/problems/edit') || currentPath.value.startsWith('/camps/admin') || currentPath.value.startsWith('/posts/admin') || currentPath.value.startsWith('/editorials/admin')
 }
 
 function isActive(route: string): boolean {
@@ -123,6 +136,7 @@ function isActive(route: string): boolean {
           <Settings class="h-4 w-4 shrink-0" />
           管理工作台
         </a>
+        <a v-if="user && isAdmin" href="/notifications" :aria-current="isActive('/notifications') ? 'page' : undefined" class="flex min-h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium text-muted-foreground hover:bg-accent/70 hover:text-foreground"><Bell class="h-4 w-4 shrink-0" />管理员站内信</a>
         <a
           v-if="user"
           href="/me"

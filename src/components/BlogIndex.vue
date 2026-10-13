@@ -18,7 +18,7 @@ const error = ref('')
 
 function go(slug: string) {
   // 详情页是 /post/{slug}。/blog/{slug} 这条老路径由 _redirects 301 过来。
-  window.location.href = `/post/${encodeURIComponent(slug)}`
+  import('astro:transitions/client').then(({ navigate }) => navigate(`/post/${encodeURIComponent(slug)}`))
 }
 
 function fmtDate(iso: string): string {

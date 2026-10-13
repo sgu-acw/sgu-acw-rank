@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { confirmAction } from '../lib/confirm'
 /**
  * 题单管理。管理员在这里增删改查题单和题目。
  *
@@ -15,15 +16,17 @@ import {
   ArrowUp,
   Check,
   ChevronDown,
+  Eraser,
   Loader2,
   Pencil,
   Plus,
-  RefreshCw,
   Trash2,
   X,
 } from 'lucide-vue-next'
 import AdminWorkspaceNav from './AdminWorkspaceNav.vue'
+import RefreshButton from './ui/RefreshButton.vue'
 import ProblemRow from './ProblemRow.vue'
+import ActionNotice from './ui/ActionNotice.vue'
 import { Alert } from './ui/alert'
 import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
@@ -50,6 +53,7 @@ const PLATFORMS = Object.keys(PLATFORM_META) as Platform[]
 const editingId = ref<number | null>(null)
 const editTitle = ref('')
 const editDescription = ref('')
+const editCollectionId = ref<number | null>(null)
 
 //: 新建表单。
 const showCreate = ref(false)
@@ -74,6 +78,7 @@ const lookupState = ref<
 >(null)
 
 const refreshing = ref(false)
+const purging = ref(false)
 
 /**
  * 展开的题单 id → 它的题目列表。
@@ -161,13 +166,18 @@ function startEdit(item: ProblemListSummary) {
   editingId.value = item.id
   editTitle.value = item.title
   editDescription.value = item.description
+  editCollectionId.value = item.collection_id
 }
 
 async function saveEdit(id: number) {
+  const item = lists.value.find((row) => row.id === id)
   try {
     await problemListApi.update(id, {
       title: editTitle.value.trim(),
       description: editDescription.value.trim(),
+      ...(item?.kind === 'list'
+        ? { collection_id: editCollectionId.value, set_collection: true }
+        : {}),
     })
     editingId.value = null
     flash('已保存')
@@ -183,7 +193,7 @@ async function remove(item: ProblemListSummary) {
     item.kind === 'collection' && item.item_count > 0
       ? `\n里面的 ${item.item_count} 个题单不会被删除，只是不再属于这个合集。`
       : ''
-  if (!window.confirm(`删除${what}「${item.title}」？${extra}`)) return
+  if (!await confirmAction(`删除${what}「${item.title}」？${extra}`)) return
 
   try {
     await problemListApi.remove(item.id)
@@ -307,7 +317,7 @@ async function refreshProblems(listId: number) {
 }
 
 async function removeProblem(listId: number, problem: ProblemEntry) {
-  if (!window.confirm(`从题单里移除「${problem.name || problem.key}」？`)) return
+  if (!await confirmAction(`从题单里移除「${problem.name || problem.key}」？`)) return
   try {
     await problemListApi.removeProblem(listId, problem.id)
     await refreshProblems(listId)
@@ -376,30 +386,44 @@ async function refreshCodeforces() {
   }
 }
 
+async function purgeCache() {
+  if (!await confirmAction('清理题目缓存？不会删除题单，只会让题目名称、难度和链接下次重新抓取。')) return
+  purging.value = true
+  error.value = ''
+  try {
+    const result = await problemListApi.purgeProblemCache()
+    flash(`已清理 ${result.deleted} 条题目缓存`)
+  } catch (err) {
+    error.value = err instanceof ApiError ? err.message : '清理失败'
+  } finally {
+    purging.value = false
+  }
+}
+
 onMounted(load)
 </script>
 
 <template>
   <div class="space-y-6">
     <AdminWorkspaceNav active="problems">
-      <Button variant="outline" size="sm" :disabled="refreshing" @click="refreshCodeforces">
-        <RefreshCw class="mr-1.5 h-3.5 w-3.5" :class="refreshing && 'animate-spin'" />
-        刷新 CF 题库
+      <Button
+        variant="outline"
+        size="sm"
+        :disabled="purging"
+        title="清理题目缓存，不会删除题单"
+        @click="purgeCache"
+      >
+        <Eraser class="mr-1.5 h-3.5 w-3.5" :class="purging && 'animate-pulse'" />
+        <span class="hidden sm:inline">清理缓存</span>
       </Button>
-      <Button size="sm" @click="showCreate = !showCreate">
-        <Plus class="mr-1.5 h-3.5 w-3.5" />
-        {{ showCreate ? '收起' : '新建题单' }}
-      </Button>
+      <RefreshButton :busy="refreshing" label="刷新 CF 题库" @click="refreshCodeforces" />
     </AdminWorkspaceNav>
 
     <Alert v-if="error" variant="destructive" class="flex items-start gap-2">
       <AlertCircle class="h-4 w-4 shrink-0 translate-y-0.5" />
       <span class="text-sm">{{ error }}</span>
     </Alert>
-    <Alert v-if="notice" class="flex items-start gap-2">
-      <Check class="h-4 w-4 shrink-0 translate-y-0.5" />
-      <span class="text-sm">{{ notice }}</span>
-    </Alert>
+    <ActionNotice :message="notice" />
 
     <!-- 新建 -->
     <Card v-if="showCreate">
@@ -607,8 +631,12 @@ onMounted(load)
 
     <!-- 题单 -->
     <Card>
-      <CardHeader class="pb-3">
+      <CardHeader class="flex flex-row items-center justify-between gap-2 pb-3">
         <CardTitle class="text-sm font-medium">题单</CardTitle>
+        <Button size="sm" @click="showCreate = !showCreate">
+          <Plus class="mr-1.5 h-3.5 w-3.5" />
+          {{ showCreate ? '收起' : '新建题单' }}
+        </Button>
       </CardHeader>
       <CardContent class="p-0">
         <p v-if="!standalone.length" class="p-4 text-sm text-muted-foreground">

@@ -1,0 +1,7 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import NotificationInbox from '../components/NotificationInbox.vue'
+---
+<BaseLayout title="算法竞赛工作坊 - 站内信">
+  <NotificationInbox client:only="vue" />
+</BaseLayout>

@@ -344,7 +344,7 @@ function clearFilters() {
 }
 
 function go(path: string) {
-  window.location.href = path
+  import('astro:transitions/client').then(({ navigate }) => navigate(path))
 }
 
 // 切换维度或平台筛选就重拉。rating 榜只看平台，与天数无关。

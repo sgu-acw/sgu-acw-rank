@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { confirmAction } from '../lib/confirm'
 /**
  * 文章管理。
  *
@@ -10,6 +11,8 @@
  */
 import { computed, onMounted, ref } from 'vue'
 import {
+  ArrowLeft,
+  Bell,
   Check,
   Eye,
   EyeOff,
@@ -18,6 +21,7 @@ import {
   Plus,
   Trash2,
 } from 'lucide-vue-next'
+import ActionNotice from './ui/ActionNotice.vue'
 import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Input } from './ui/input'
@@ -29,9 +33,14 @@ import {
   type AdminPostDetail,
   type AdminPostSummary,
 } from '../lib/api'
+import PushDialog from './PushDialog.vue'
 import { useAuth } from '../lib/auth'
 
 const { isAdmin, ensureLoaded } = useAuth()
+
+// ------------------------------------------------------------------ 推送
+
+const pushOpen = ref(false)
 
 const posts = ref<AdminPostSummary[]>([])
 const loading = ref(true)
@@ -57,6 +66,23 @@ const togglingPopup = ref(false)
 const createAsPopup = ref(false)
 
 const isEditingExisting = computed(() => activeId.value !== null)
+
+/**
+ * 列表排序：默认和首页一致（排序值大的在前，同值按发布时间倒序），
+ * 可切到纯时间序找最新改的。
+ */
+const sortMode = ref<'front' | 'time'>('front')
+const sortedPosts = computed(() => {
+  const rows = [...posts.value]
+  if (sortMode.value === 'time') {
+    rows.sort((a, b) => b.created_at.localeCompare(a.created_at))
+  } else {
+    rows.sort(
+      (a, b) => b.sort_order - a.sort_order || b.created_at.localeCompare(a.created_at),
+    )
+  }
+  return rows
+})
 
 async function load() {
   loading.value = true
@@ -112,6 +138,12 @@ function startNew() {
   editing.value = true
 }
 
+function backToList() {
+  activeId.value = null
+  detail.value = null
+  editing.value = false
+}
+
 function toLocalInput(iso: string): string {
   const d = new Date(iso)
   const pad = (n: number) => String(n).padStart(2, '0')
@@ -162,7 +194,7 @@ async function save() {
 
 async function remove() {
   if (!detail.value) return
-  if (!window.confirm(`确定删除《${detail.value.title}》？`)) return
+  if (!await confirmAction(`确定删除《${detail.value.title}》？`)) return
   try {
     await postAdminApi.remove(detail.value.id)
     detail.value = null
@@ -213,31 +245,42 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="mx-auto w-full max-w-5xl space-y-4">
-    <AdminWorkspaceNav active="posts">
-      <Button size="sm" class="h-7 gap-1 px-2 text-xs" @click="startNew">
-        <Plus class="h-3.5 w-3.5" />
-        写新的
-      </Button>
-    </AdminWorkspaceNav>
+  <div class="mx-auto w-full max-w-6xl space-y-4">
+    <AdminWorkspaceNav active="posts" />
 
     <p v-if="error" class="text-sm text-destructive">{{ error }}</p>
-    <p v-if="notice" class="text-sm text-muted-foreground">{{ notice }}</p>
+    <ActionNotice :message="notice" />
 
     <div v-if="loading" class="flex items-center gap-2 py-10 text-sm text-muted-foreground">
       <Loader2 class="h-4 w-4 animate-spin" />
       正在读取…
     </div>
 
-    <div v-else class="grid gap-4 lg:grid-cols-[260px_1fr]">
-      <!-- 左：列表 -->
-      <Card>
+    <div v-else class="grid gap-4 lg:grid-cols-[260px_minmax(0,1fr)]">
+      <!-- 手机端进入文章后只保留编辑区，避免列表和编辑器一起挤在窄屏里。 -->
+      <Card :class="editing || activeId ? 'hidden lg:block' : ''">
+        <div class="flex items-center justify-between gap-2 border-b border-border/40 px-3 py-2">
+          <div class="flex min-w-0 items-center gap-2">
+            <span class="shrink-0 text-xs font-medium text-muted-foreground">全部文章</span>
+            <button
+              class="shrink-0 rounded px-1.5 py-0.5 text-[11px] text-muted-foreground/80 transition-colors hover:bg-accent hover:text-foreground"
+              :title="sortMode === 'front' ? '当前：前台顺序（排序值优先），点击切到按时间' : '当前：按时间，点击切回前台顺序'"
+              @click="sortMode = sortMode === 'front' ? 'time' : 'front'"
+            >
+              {{ sortMode === 'front' ? '前台顺序' : '按时间' }}
+            </button>
+          </div>
+          <Button size="sm" class="h-7 gap-1 px-2 text-xs" @click="startNew">
+            <Plus class="h-3.5 w-3.5" />
+            写新的
+          </Button>
+        </div>
         <CardContent class="p-1">
           <p v-if="!posts.length" class="px-3 py-6 text-center text-xs text-muted-foreground">
             还没有文章
           </p>
           <button
-            v-for="post in posts"
+            v-for="post in sortedPosts"
             :key="post.id"
             type="button"
             class="row-action flex w-full items-center gap-2 rounded-md px-3 py-2 text-left"
@@ -262,9 +305,13 @@ onMounted(async () => {
       </Card>
 
       <!-- 右：编辑区 -->
-      <div class="space-y-3">
+      <div class="space-y-3" :class="editing || activeId ? '' : 'hidden lg:block'">
+        <div v-if="detailLoading" class="flex items-center gap-2 py-16 text-sm text-muted-foreground">
+          <Loader2 class="h-4 w-4 animate-spin" />
+          正在读取文章…
+        </div>
         <p
-          v-if="!editing && !detail"
+          v-else-if="!editing && !detail"
           class="py-16 text-center text-sm text-muted-foreground"
         >
           左边选一篇，或者点「写新的」
@@ -272,11 +319,20 @@ onMounted(async () => {
 
         <Card v-if="editing || detail">
           <CardHeader class="pb-2">
-            <div class="flex items-center justify-between">
-              <CardTitle class="text-sm font-medium">
+            <div class="flex items-center justify-between gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                class="-ml-2 shrink-0 px-2 lg:hidden"
+                @click="backToList"
+              >
+                <ArrowLeft class="mr-1.5 h-4 w-4" />
+                返回
+              </Button>
+              <CardTitle class="min-w-0 flex-1 text-sm font-medium">
                 {{ isEditingExisting ? '编辑文章' : '新文章' }}
               </CardTitle>
-              <div v-if="detail" class="flex items-center gap-1">
+              <div v-if="detail" class="flex shrink-0 items-center gap-1">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -389,6 +445,33 @@ onMounted(async () => {
             </div>
           </CardContent>
         </Card>
+
+        <!-- 推送入口：点开弹窗选群体发通知 -->
+        <Card v-if="detail && isAdmin">
+          <CardHeader class="pb-2">
+            <CardTitle class="flex items-center gap-1.5 text-sm font-medium">
+              <Bell class="h-4 w-4 text-muted-foreground" />
+              推送通知
+            </CardTitle>
+          </CardHeader>
+          <CardContent class="space-y-3">
+            <p class="text-xs text-muted-foreground">
+              发到开了通知的设备上，页面关着也能收到。
+            </p>
+            <div class="flex items-center gap-2">
+              <Button size="sm" variant="outline" :disabled="!detail.published" @click="pushOpen = true">
+                <Bell class="mr-1.5 h-3.5 w-3.5" />
+                推送
+              </Button>
+              <span v-if="!detail.published" class="text-[11px] text-muted-foreground/70">先上架再推送。</span>
+            </div>
+          </CardContent>
+        </Card>
+        <PushDialog
+          v-model:open="pushOpen"
+          :initial-title="detail?.title ?? ''"
+          :initial-url="detail ? `/post/${detail.slug}` : '/'"
+        />
       </div>
     </div>
   </div>

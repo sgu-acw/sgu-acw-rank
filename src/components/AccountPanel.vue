@@ -9,6 +9,8 @@ import { computed, onMounted } from 'vue'
 import { LogOut, Loader2 } from 'lucide-vue-next'
 import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
+import PushSettings from './PushSettings.vue'
+import SecuritySettings from './SecuritySettings.vue'
 import { Separator } from './ui/separator'
 import AccountBindings from './AccountBindings.vue'
 import PasswordForm from './PasswordForm.vue'
@@ -52,7 +54,7 @@ async function handleLogout() {
 
 // 静态站在构建时就渲染这些模板，那时没有 window，所以跳转必须走函数。
 function go(path: string) {
-  window.location.href = path
+  import('astro:transitions/client').then(({ navigate }) => navigate(path))
 }
 </script>
 
@@ -128,6 +130,11 @@ function go(path: string) {
   <!-- 账号绑定只在已登录时显示，它需要会话。 -->
   <div v-if="ready && user" class="mt-4">
     <AccountBindings />
+  </div>
+
+  <div v-if="ready && user" class="mt-4">
+    <SecuritySettings />
+    <PushSettings />
   </div>
 
   <div v-if="ready && user" class="mt-4">

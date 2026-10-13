@@ -4,6 +4,9 @@ import AppNav from '../components/AppNav.vue'
 import MobileTabBar from '../components/MobileTabBar.vue'
 import PopupAnnouncement from '../components/PopupAnnouncement.vue'
 import ThemeToggle from '../components/ThemeToggle.vue'
+import NotificationBell from '../components/NotificationBell.vue'
+import PushOptIn from '../components/PushOptIn.vue'
+import ConfirmDialog from '../components/ui/ConfirmDialog.vue'
 import { ClientRouter } from 'astro:transitions'
 
 interface Props {
@@ -109,6 +112,9 @@ const { title = '算法竞赛工作坊' } = Astro.props
   <script>
     import '../scripts/theme-routing'
   </script>
+  <script>
+    import '../scripts/page-progress'
+  </script>
 
 </head>
 <body>
@@ -118,6 +124,12 @@ const { title = '算法竞赛工作坊' } = Astro.props
     移动端不再有汉堡按钮：导航改成了底部标签栏，抽屉就多余了。手机上
     顶栏只放站名和主题开关。
   -->
+  <div
+    id="nav-progress"
+    aria-hidden="true"
+    style="position: fixed; top: 0; left: 0; z-index: 9999; height: 2px; width: 0%; opacity: 0; background: hsl(var(--primary)); transition: width 180ms cubic-bezier(0.23, 1, 0.32, 1), opacity 240ms ease; pointer-events: none;"
+  ></div>
+
   <header
     class="sticky top-0 z-50 w-full border-b border-border/50 bg-sidebar/80 backdrop-blur-md supports-[backdrop-filter]:bg-sidebar/60"
     style="padding-top: env(safe-area-inset-top)"
@@ -128,6 +140,7 @@ const { title = '算法竞赛工作坊' } = Astro.props
         <span class="md:hidden">算法竞赛工作坊</span>
       </a>
       <div class="flex-1" />
+      <NotificationBell client:load />
       <ThemeToggle client:load />
     </div>
   </header>
@@ -140,6 +153,7 @@ const { title = '算法竞赛工作坊' } = Astro.props
       盖住。移动端没有侧边栏，所以 md 以下不加左边距。
     -->
     <main
+      data-page-main
       class="min-h-[calc(100vh-3.5rem)] min-w-0 flex-1 px-3 py-4 pb-[calc(5rem+env(safe-area-inset-bottom))] sm:px-4 md:ml-64 md:py-6 md:pb-6"
     >
       <slot />
@@ -157,6 +171,8 @@ const { title = '算法竞赛工作坊' } = Astro.props
     内容。client:only 干脆让 Vue 接管。
   -->
   <PopupAnnouncement client:only="vue" />
+  <ConfirmDialog client:only="vue" />
+  <PushOptIn client:only="vue" />
 
 </body>
 </html>

@@ -44,11 +44,28 @@ export function useAuth() {
     return fetchMe()
   }
 
-  async function login(studentId: string, password: string): Promise<User> {
-    const loggedIn = await authApi.login(studentId, password)
-    user.value = loggedIn
+  async function login(studentId: string, password: string): Promise<User | { totpRequired: true; ticket: string }> {
+    const r = await authApi.login(studentId, password)
+    if (r.totp_required) {
+      return { totpRequired: true, ticket: r.ticket }
+    }
+    user.value = r.user
     ready.value = true
-    return loggedIn
+    return r.user
+  }
+
+  async function finishTotpLogin(ticket: string, code: string): Promise<User> {
+    const r = await authApi.loginTotp(ticket, code)
+    user.value = r.user
+    ready.value = true
+    return r.user
+  }
+
+  async function loginWithPasskey(challenge: string, credential: Record<string, unknown>): Promise<User> {
+    const r = await authApi.passkeyLoginComplete(challenge, credential)
+    user.value = r.user
+    ready.value = true
+    return r.user
   }
 
   async function register(payload: {
@@ -81,6 +98,8 @@ export function useAuth() {
     fetchMe,
     ensureLoaded,
     login,
+    finishTotpLogin,
+    loginWithPasskey,
     register,
     logout,
   }

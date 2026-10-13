@@ -6,6 +6,7 @@
  * heartbeat; the browser never talks to the Pi.
  */
 import { onMounted, onUnmounted, ref } from 'vue'
+import { workshopApi, type WorkshopOverride } from './api'
 
 export const WORKSHOP_STATUS_API: string =
   import.meta.env.PUBLIC_WORKSHOP_STATUS_API ?? 'https://sgu-acw.hsn8086.com'
@@ -26,16 +27,29 @@ export interface WorkshopStatus {
   devices?: WorkshopDevice[]
 }
 
-export type WorkshopState = 'loading' | 'open' | 'closed' | 'error'
+export type WorkshopState = 'loading' | 'open' | 'closed' | 'error' | 'special'
 
 const POLL_MS = 20_000
 
 export function useWorkshopStatus() {
   const data = ref<WorkshopStatus | null>(null)
+  const override = ref<WorkshopOverride | null>(null)
   const state = ref<WorkshopState>('loading')
   let timer: number | undefined
 
   async function refresh() {
+    // 手动覆盖优先：有生效中的特殊状态就显示它，心跳只是背景。
+    // 覆盖接口挂了不当成状态服务挂了——那不是一回事。
+    try {
+      override.value = await workshopApi.override()
+    } catch {
+      override.value = null
+    }
+    if (override.value) {
+      state.value = 'special'
+      data.value = null
+      return
+    }
     try {
       const res = await fetch(`${WORKSHOP_STATUS_API}/status`, { cache: 'no-store' })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
@@ -62,7 +76,7 @@ export function useWorkshopStatus() {
     document.removeEventListener('visibilitychange', onVisibility)
   })
 
-  return { data, state, refresh }
+  return { data, state, override, refresh }
 }
 
 export function stateLabel(state: WorkshopState): string {
@@ -90,6 +104,12 @@ export function stateDescription(state: WorkshopState): string {
     default:
       return ''
   }
+}
+
+export function overrideUntilText(until: string | null | undefined): string {
+  if (!until) return ''
+  const d = new Date(until)
+  return `到 ${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
 }
 
 export function stateDotClass(state: WorkshopState): string {

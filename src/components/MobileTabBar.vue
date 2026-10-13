@@ -9,6 +9,7 @@ import {
   BarChart3,
   BookOpen,
   CalendarCheck,
+  ClipboardList,
   Compass,
   Home,
   ListChecks,
@@ -33,10 +34,15 @@ const tabs = [
 const extraLinks = [
   { title: '集训', route: '/camps', icon: Trophy },
   { title: '工作坊状态', route: '/status', icon: Activity },
+  { title: '线下赛报名', route: '/signups', icon: ClipboardList },
   { title: '博客', route: '/blog', icon: BookOpen },
   { title: '导航与资源', route: '/nav', icon: Compass },
   { title: 'Codeforces 资料', route: '/codeforces/profile', icon: User },
 ]
+
+function syncPath() {
+  currentPath.value = window.location.pathname
+}
 
 function isActive(route: string): boolean {
   if (route === '/') return currentPath.value === '/'
@@ -61,12 +67,16 @@ function closeOnEscape(event: KeyboardEvent) {
 }
 
 onMounted(() => {
-  currentPath.value = window.location.pathname
+  syncPath()
   void ensureLoaded()
   window.addEventListener('keydown', closeOnEscape)
+  document.addEventListener('astro:page-load', syncPath)
 })
 
-onUnmounted(() => window.removeEventListener('keydown', closeOnEscape))
+onUnmounted(() => {
+  window.removeEventListener('keydown', closeOnEscape)
+  document.removeEventListener('astro:page-load', syncPath)
+})
 </script>
 
 <template>

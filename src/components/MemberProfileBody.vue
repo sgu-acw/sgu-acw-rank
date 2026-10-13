@@ -15,13 +15,14 @@ import { Alert } from './ui/alert'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Separator } from './ui/separator'
 import {
+  accountsApi,
   ApiError,
   PLATFORM_META,
-  accountsApi,
-  api,
   practiceApi,
   type PlatformAccount,
   type PracticeEntry,
+  type PublicUser,
+  usersApi,
 } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { formatEnrollYear } from '../lib/format'
@@ -35,19 +36,6 @@ const props = withDefaults(
   { entry: null },
 )
 
-interface MemberInfo {
-  id: number
-  display_name: string
-  student_id: string
-  enroll_year: number
-  college_code: string
-  major_code: string
-  college_name: string | null
-  major_name: string | null
-  class_label: string | null
-  role: string
-}
-
 const { user, ensureLoaded } = useAuth()
 
 /**
@@ -60,7 +48,7 @@ const isAdmin = computed(() => !!user.value && user.value.role !== 'member')
 
 const loading = ref(true)
 const error = ref('')
-const member = ref<MemberInfo | null>(null)
+const member = ref<PublicUser | null>(null)
 const accounts = ref<PlatformAccount[]>([])
 /** 自己拉到的榜单行。传了 entry 的话这里一直是空。 */
 const fetchedEntry = ref<PracticeEntry | null>(null)
@@ -100,8 +88,8 @@ async function load(id: number) {
   error.value = ''
   try {
     // 账号必须单独取；榜单行可能已经由调用方给了。
-    const requests: [Promise<MemberInfo>, Promise<PlatformAccount[]>] = [
-      api.get<MemberInfo>(`/users/${id}`),
+    const requests: [Promise<PublicUser>, Promise<PlatformAccount[]>] = [
+      usersApi.detail(id),
       accountsApi.of(id),
     ]
     const [info, accountList] = await Promise.all(requests)
