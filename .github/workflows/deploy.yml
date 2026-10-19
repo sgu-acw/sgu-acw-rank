@@ -100,13 +100,22 @@ jobs:
             '154.9.228.109 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBHqfRQzBYzSuGi1VB9trjC+clDp5J5QRTd+4bf0Vkxd0rqj9x2ipgRodyp+Ty4Fp2kF6VkglrS3Uj7ht7f2Loa0=' \
             >> ~/.ssh/known_hosts
           # 后端 CI 用的是 user/host 两个独立 secret，这里保持一致。
-          cat >> ~/.ssh/config <<EOF
-          Host deploy-target
-            HostName $SSH_HOST
-            User $SSH_USER
-            IdentityFile ~/.ssh/deploy_key
-            StrictHostKeyChecking accept-new
-          EOF
+          # 缩进的 heredoc 会把前导空格写进 config，Host 块就失效了。
+          # 用 printf 生成，避免这类缩进陷阱。
+          {
+            printf 'Host deploy-target\n'
+            printf '  HostName %s\n' "$SSH_HOST"
+            printf '  User %s\n' "$SSH_USER"
+            printf '  IdentityFile ~/.ssh/deploy_key\n'
+            printf '  IdentitiesOnly yes\n'
+            printf '  StrictHostKeyChecking yes\n'
+          } >> ~/.ssh/config
+          chmod 600 ~/.ssh/config
+          # 立刻自检：配置和密钥都得能真的登进去，别等到 tar 管道中途才报错。
+          ssh -o BatchMode=yes -o ConnectTimeout=15 deploy-target 'echo SSH_OK' || {
+            echo 'SSH 连接失败' >&2
+            exit 1
+          }
 
       - name: Publish release
         run: |
