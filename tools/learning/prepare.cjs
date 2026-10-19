@@ -46,6 +46,8 @@ async function asset(name, bytes, type) {
     command(['brotli', '-q', '11', '-f', raw, '-o', tmp])
     fs.renameSync(tmp, packed)
   }
+  // path 不带 .br：浏览器按 Content-Encoding 原生解压（Chrome 的
+  // DecompressionStream 并不支持 brotli）。CDN 的二次压缩由 no-transform 阻止。
   return { path: `/packages/objects/${hash}/${name}`, bytes: bytes.length,
     transferBytes: fs.statSync(packed).size, sha256: hash, type }
 }

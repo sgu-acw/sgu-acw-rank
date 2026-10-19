@@ -75,6 +75,8 @@ async function install(id: RuntimeId, signal: AbortSignal, progress: (p: Progres
         if (await cache.match(asset.path)) { done += asset.bytes; continue }  // 已被其他环境装好
         const response = await fetch(asset.path, { credentials: 'omit', signal, cache: 'no-cache' })
         if (!response.ok || !response.body) throw new Error(`资源下载失败：${asset.path}`)
+        // 服务器存的是 Brotli 包并声明 Content-Encoding: br，浏览器原生解压。
+        // 不用 DecompressionStream：Chrome 不支持 brotli 这个格式名。
         const reader = response.body.getReader(), chunks: Uint8Array[] = []
         let count = 0
         while (true) {

@@ -28,19 +28,36 @@ fi
 
 log "上传 engine 与 packages（release $RELEASE_ID）"
 ssh "$HOST" "mkdir -p '$REMOTE_ROOT/releases/$RELEASE_ID' '$REMOTE_ROOT/log' '$REMOTE_ROOT/secret/tls.d'"
-# 只传 .br 与清单：客户端拿到的就是 Brotli 流，未压缩原件（约 1.1 GB）
-# 在服务器上没有用途，白白吃掉本来就紧张的磁盘。
+# 传未压缩原件（约 750 MB）而不是 .br：压缩交给 Cloudflare。
+# 预压缩在 CDN 后面会被二次压缩且头错配，实测客户端解压失败。
 # 文件清单由 find 生成——macOS 自带的 bsdtar 不认 --wildcards/--no-anchored。
 file_list="$(mktemp)"
 (
   cd "$work"
   find engine -type f ! -name '*.map'
   find packages -maxdepth 1 -type f \( -name 'manifest.json' -o -name 'THIRD_PARTY_NOTICES.md' \)
-  find packages/objects -type f -name '*.br'
+  find packages/objects -type f ! -name '*.br' ! -name '.*'
 ) > "$file_list"
-# 单流 tar：长连接大流量下比 rsync 稳，实测 rsync 会被中途掐断。
-tar -C "$work" -czf - -T "$file_list" \
-  | ssh "$HOST" "tar -xzf - -C '$REMOTE_ROOT/releases/$RELEASE_ID'"
+# 大流量下 SSH 会被中途掐断，加保活；再按批切分，单次连接失败不影响整体。
+SSH_OPTS="-o ServerAliveInterval=15 -o ServerAliveCountMax=8 -o TCPKeepAlive=yes"
+total=$(wc -l < "$file_list")
+batch=40
+start=1
+while [ "$start" -le "$total" ]; do
+  end=$(( start + batch - 1 ))
+  slice="$(mktemp)"
+  sed -n "${start},${end}p" "$file_list" > "$slice"
+  echo "  上传 $start-$end / $total"
+  tar -C "$work" -czf - -T "$slice" \
+    | ssh $SSH_OPTS "$HOST" "tar -xzf - -C '$REMOTE_ROOT/releases/$RELEASE_ID'" || {
+      echo "批次 $start-$end 失败，重试一次" >&2
+      sleep 3
+      tar -C "$work" -czf - -T "$slice" \
+        | ssh $SSH_OPTS "$HOST" "tar -xzf - -C '$REMOTE_ROOT/releases/$RELEASE_ID'"
+    }
+  rm -f "$slice"
+  start=$(( end + 1 ))
+done
 rm -f "$file_list"
 
 log "原子切换 public -> releases/$RELEASE_ID"

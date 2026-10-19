@@ -22,14 +22,24 @@ export class LearningEngine {
     this.frame.sandbox.add('allow-scripts', 'allow-same-origin')
     this.frame.src = `${this.origin}/engine/?parent=${encodeURIComponent(location.origin)}`
     window.addEventListener('message', this.receive)
+    // 不能只等 iframe 的 load：它可能在 host.js 注册 message 监听之前就触发，
+    // 那时发 connect 没人应答。改成 load 之后持续重试，直到握手成功或超时。
     this.ready = new Promise((resolve, reject) => {
-      const timeout = window.setTimeout(() => { cleanup(); reject(new Error('无法连接本地运行器，请先启动 learning:dev')) }, 12000)
-      const connected = () => {
-        if (this.disposed) return
-        void this.callRaw('connect', {}).then(() => { cleanup(); resolve() }, e => { cleanup(); reject(e) })
+      let done = false
+      const finish = (error?: Error) => {
+        if (done) return
+        done = true
+        clearTimeout(timer); clearInterval(poll)
+        if (error) reject(error)
+        else resolve()
       }
-      const cleanup = () => { clearTimeout(timeout); this.frame.removeEventListener('load', connected) }
-      this.frame.addEventListener('load', connected, { once: true })
+      const attempt = () => {
+        if (this.disposed || done) return
+        void this.callRaw('connect', {}).then(() => finish(), () => undefined)
+      }
+      const timer = window.setTimeout(() => finish(new Error('无法连接评测运行器，请稍后重试')), 15000)
+      const poll = window.setInterval(attempt, 250)
+      this.frame.addEventListener('load', attempt)
     })
     document.body.appendChild(this.frame)
     // Keep constructor rejection handled until the first UI request awaits it.
@@ -73,6 +83,7 @@ export class LearningEngine {
   run(request: JudgeRequest, signal: AbortSignal, progress: (p: Progress) => void) { return this.call<JudgeResult>('run', request, signal, progress) }
   dispose() {
     this.disposed = true
+    // 就绪轮询在 ready 的 finish 里停；这里只需标记 disposed，attempt 会自行跳过。
     for (const [id, pending] of this.pending) {
       this.frame.contentWindow?.postMessage({ token: this.token, id, method: 'cancel' }, this.origin)
       pending.cleanup(); pending.reject(new DOMException('页面已关闭', 'AbortError'))
