@@ -92,8 +92,13 @@ jobs:
           python3 /tmp/fixkey.py
           chmod 600 ~/.ssh/deploy_key
           ssh-keygen -y -f ~/.ssh/deploy_key > /dev/null || { echo 'SSH 私钥无效' >&2; exit 1; }
-          ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null
-          grep -q "$SSH_HOST" ~/.ssh/known_hosts || { echo 'ssh-keyscan 未取到主机公钥' >&2; exit 1; }
+          # 不依赖 runner 的 ssh-keyscan：GitHub 出口到 22 端口时常被拦，
+          # 实测该步骤会拿不到公钥。host key 直接写死（ED25519 + ECDSA），
+          # 指纹与服务器一致，比 TOFU 更严格。
+          printf '%s\n' \
+            '154.9.228.109 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOueouNQCFoKLYn0EkXUyp4uRdSzC4Lq2x23nfS9wD6w' \
+            '154.9.228.109 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBHqfRQzBYzSuGi1VB9trjC+clDp5J5QRTd+4bf0Vkxd0rqj9x2ipgRodyp+Ty4Fp2kF6VkglrS3Uj7ht7f2Loa0=' \
+            >> ~/.ssh/known_hosts
           # 后端 CI 用的是 user/host 两个独立 secret，这里保持一致。
           cat >> ~/.ssh/config <<EOF
           Host deploy-target
