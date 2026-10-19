@@ -9,7 +9,7 @@ import { confirmAction } from '../lib/confirm'
  * 弹窗开关做成一个明确的分区：「设为公告」意味着全站弹窗，和「文章
  * 本身写得好不好」是两件事，不混在一个表单里。
  */
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import {
   ArrowLeft,
   Bell,
@@ -22,6 +22,8 @@ import {
   Trash2,
 } from 'lucide-vue-next'
 import ActionNotice from './ui/ActionNotice.vue'
+import RefreshButton from './ui/RefreshButton.vue'
+import IconButton from './ui/IconButton.vue'
 import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Input } from './ui/input'
@@ -66,6 +68,17 @@ const togglingPopup = ref(false)
 const createAsPopup = ref(false)
 
 const isEditingExisting = computed(() => activeId.value !== null)
+const busy = computed(() => saving.value || togglingPopup.value)
+const dirty = computed(() => detail.value
+  ? editTitle.value !== detail.value.title || editBody.value !== detail.value.body || editSort.value !== detail.value.sort_order
+  : editing.value && !!(editTitle.value || editBody.value || editSlug.value || createAsPopup.value))
+let requestId = 0
+let disposed = false
+async function mayLeave() {
+  return !dirty.value || await confirmAction('文章还有未保存的修改，离开后会丢失。', '放弃修改？')
+}
+function beforeUnload(event: Event) { if (dirty.value) event.preventDefault() }
+async function refresh() { if (!busy.value && !loading.value) await load() }
 
 /**
  * 列表排序：默认和首页一致（排序值大的在前，同值按发布时间倒序），
@@ -89,7 +102,7 @@ async function load() {
   error.value = ''
   try {
     posts.value = await postAdminApi.list()
-    if (activeId.value) await loadDetail(activeId.value)
+    if (activeId.value) await loadDetail(activeId.value, !dirty.value)
   } catch (err) {
     error.value = err instanceof ApiError ? err.message : '加载失败'
   } finally {
@@ -97,10 +110,14 @@ async function load() {
   }
 }
 
-async function loadDetail(id: number) {
-  detailLoading.value = true
+async function loadDetail(id: number, resetForm = true) {
+  const token = ++requestId
+  detailLoading.value = !detail.value
   try {
-    detail.value = await postAdminApi.detail(id)
+    const data = await postAdminApi.detail(id)
+    if (disposed || token !== requestId || activeId.value !== id) return
+    detail.value = data
+    if (!resetForm) return
     editTitle.value = detail.value.title
     editSlug.value = detail.value.slug
     editSort.value = detail.value.sort_order
@@ -110,13 +127,14 @@ async function loadDetail(id: number) {
       : ''
     editing.value = false
   } catch (err) {
-    error.value = err instanceof ApiError ? err.message : '加载失败'
+    if (token === requestId) error.value = err instanceof ApiError ? err.message : '加载失败'
   } finally {
-    detailLoading.value = false
+    if (token === requestId) detailLoading.value = false
   }
 }
 
-function select(id: number) {
+async function select(id: number) {
+  if (busy.value || !await mayLeave()) return
   activeId.value = id
   // 先把上一篇的内容清掉再让编辑器重 mount——detail/editBody 不先清
   // 的话，新编辑器 defaultValue 会吃到旧篇的正文（串扰）。
@@ -126,7 +144,9 @@ function select(id: number) {
   void loadDetail(id)
 }
 
-function startNew() {
+async function startNew() {
+  if (busy.value || !await mayLeave()) return
+  ++requestId; detailLoading.value = false; error.value = ''; notice.value = ''
   activeId.value = null
   detail.value = null
   editTitle.value = ''
@@ -138,7 +158,9 @@ function startNew() {
   editing.value = true
 }
 
-function backToList() {
+async function backToList() {
+  if (busy.value || !await mayLeave()) return
+  ++requestId; detailLoading.value = false
   activeId.value = null
   detail.value = null
   editing.value = false
@@ -151,12 +173,12 @@ function toLocalInput(iso: string): string {
 }
 
 async function save() {
-  if (!editTitle.value.trim()) return
+  if (busy.value || !editTitle.value.trim()) return
   saving.value = true
   error.value = ''
   try {
     if (isEditingExisting.value && detail.value) {
-      await postAdminApi.update(detail.value.id, {
+      detail.value = await postAdminApi.update(detail.value.id, {
         title: editTitle.value.trim(),
         body: editBody.value,
         sort_order: editSort.value,
@@ -169,6 +191,10 @@ async function save() {
         sort_order: editSort.value,
         slug: editSlug.value.trim() || undefined,
       })
+      // 创建成功立即切换为编辑已有文章；后续公告设置失败也不能重复建文。
+      activeId.value = created.id
+      detail.value = created
+      editing.value = false
       // 勾了「发成公告」就顺手开弹窗——不用再去另一区块点一次
       if (createAsPopup.value) {
         await postAdminApi.setPopup(
@@ -193,10 +219,13 @@ async function save() {
 }
 
 async function remove() {
-  if (!detail.value) return
+  if (!detail.value || busy.value) return
+  const id = detail.value.id
   if (!await confirmAction(`确定删除《${detail.value.title}》？`)) return
+  if (busy.value || activeId.value !== id) return
+  saving.value = true
   try {
-    await postAdminApi.remove(detail.value.id)
+    await postAdminApi.remove(id)
     detail.value = null
     activeId.value = null
     editing.value = false
@@ -204,11 +233,11 @@ async function remove() {
     await load()
   } catch (err) {
     error.value = err instanceof ApiError ? err.message : '删除失败'
-  }
+  } finally { saving.value = false }
 }
 
 async function togglePopup(on: boolean) {
-  if (!detail.value) return
+  if (!detail.value || busy.value) return
   togglingPopup.value = true
   error.value = ''
   try {
@@ -227,7 +256,8 @@ async function togglePopup(on: boolean) {
 }
 
 async function togglePublish() {
-  if (!detail.value) return
+  if (!detail.value || busy.value) return
+  saving.value = true
   const next = !detail.value.published
   try {
     await postAdminApi.setPublished(detail.value.id, next)
@@ -235,20 +265,22 @@ async function togglePublish() {
     await load()
   } catch (err) {
     error.value = err instanceof ApiError ? err.message : '操作失败'
-  }
+  } finally { saving.value = false }
 }
 
 onMounted(async () => {
+  window.addEventListener('beforeunload', beforeUnload)
   await ensureLoaded()
   await load()
 })
+onUnmounted(() => { disposed = true; ++requestId; window.removeEventListener('beforeunload', beforeUnload) })
 </script>
 
 <template>
   <div class="mx-auto w-full max-w-6xl space-y-4">
-    <AdminWorkspaceNav active="posts" />
+    <AdminWorkspaceNav active="posts"><RefreshButton :busy="loading || busy" @click="refresh" /></AdminWorkspaceNav>
 
-    <p v-if="error" class="text-sm text-destructive">{{ error }}</p>
+    <ActionNotice :message="error" variant="error" />
     <ActionNotice :message="notice" />
 
     <div v-if="loading" class="flex items-center gap-2 py-10 text-sm text-muted-foreground">
@@ -270,7 +302,7 @@ onMounted(async () => {
               {{ sortMode === 'front' ? '前台顺序' : '按时间' }}
             </button>
           </div>
-          <Button size="sm" class="h-7 gap-1 px-2 text-xs" @click="startNew">
+          <Button size="sm" :disabled="busy" @click="startNew">
             <Plus class="h-3.5 w-3.5" />
             写新的
           </Button>
@@ -283,7 +315,8 @@ onMounted(async () => {
             v-for="post in sortedPosts"
             :key="post.id"
             type="button"
-            class="row-action flex w-full items-center gap-2 rounded-md px-3 py-2 text-left"
+            :disabled="busy"
+            class="row-action flex min-h-16 w-full items-center gap-2 rounded-md px-3 py-2 text-left"
             :class="activeId === post.id ? 'bg-accent' : ''"
             @click="select(post.id)"
           >
@@ -305,7 +338,7 @@ onMounted(async () => {
       </Card>
 
       <!-- 右：编辑区 -->
-      <div class="space-y-3" :class="editing || activeId ? '' : 'hidden lg:block'">
+      <div class="min-w-0 space-y-3" :class="editing || activeId ? '' : 'hidden lg:block'">
         <div v-if="detailLoading" class="flex items-center gap-2 py-16 text-sm text-muted-foreground">
           <Loader2 class="h-4 w-4 animate-spin" />
           正在读取文章…
@@ -336,38 +369,30 @@ onMounted(async () => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  class="h-7 px-2 text-xs"
+                  :disabled="busy"
                   @click="togglePublish"
                 >
                   <component :is="detail.published ? EyeOff : Eye" class="mr-1 h-3.5 w-3.5" />
                   {{ detail.published ? '下架' : '上架' }}
                 </Button>
-                <Button
-                  v-if="isAdmin"
-                  variant="ghost"
-                  size="sm"
-                  class="h-7 px-2 text-xs text-destructive hover:text-destructive"
-                  @click="remove"
-                >
-                  <Trash2 class="h-3.5 w-3.5" />
-                </Button>
+                <IconButton v-if="isAdmin" label="删除文章" destructive :disabled="busy" @click="remove"><Trash2 class="h-4 w-4" /></IconButton>
               </div>
             </div>
           </CardHeader>
           <CardContent class="space-y-3">
             <div class="grid gap-2 sm:grid-cols-[1fr_180px_100px]">
-              <Input v-model="editTitle" placeholder="标题" class="h-8 text-sm" />
+              <Input v-model="editTitle" aria-label="文章标题" placeholder="标题" :disabled="busy" />
               <Input
                 v-model="editSlug"
                 placeholder="slug（留空自动生成）"
-                class="h-8 font-mono text-sm"
-                :disabled="isEditingExisting"
+                class="font-mono"
+                :disabled="isEditingExisting || busy"
               />
               <Input
                 v-model.number="editSort"
                 type="number"
                 placeholder="排序"
-                class="h-8 text-sm"
+                :disabled="busy"
                 title="大的排前面"
               />
             </div>
@@ -393,13 +418,13 @@ onMounted(async () => {
               </label>
               <template v-if="createAsPopup">
                 <label class="text-xs text-muted-foreground">自动下架</label>
-                <Input v-model="popupUntil" type="datetime-local" class="h-7 w-auto text-xs" />
+                <Input v-model="popupUntil" type="datetime-local" class="w-auto" :disabled="busy" />
                 <span class="text-[10px] text-muted-foreground/70">留空 = 手动关</span>
               </template>
             </div>
 
             <div class="flex items-center gap-2">
-              <Button size="sm" :disabled="saving || !editTitle.trim()" @click="save">
+              <Button :disabled="busy || !editTitle.trim() || (isEditingExisting && !dirty)" @click="save">
                 <Loader2 v-if="saving" class="mr-1.5 h-3.5 w-3.5 animate-spin" />
                 <Check v-else class="mr-1.5 h-3.5 w-3.5" />
                 {{ isEditingExisting ? '保存' : '发布' }}
@@ -427,7 +452,7 @@ onMounted(async () => {
               <Button
                 size="sm"
                 :variant="detail.is_popup ? 'secondary' : 'default'"
-                :disabled="togglingPopup"
+                :disabled="busy"
                 @click="togglePopup(!detail.is_popup)"
               >
                 <Loader2 v-if="togglingPopup" class="mr-1.5 h-3.5 w-3.5 animate-spin" />
@@ -438,7 +463,8 @@ onMounted(async () => {
                 <Input
                   v-model="popupUntil"
                   type="datetime-local"
-                  class="h-8 w-auto text-xs"
+                  class="w-auto"
+                  :disabled="busy"
                 />
                 <span class="text-[11px] text-muted-foreground/70">留空 = 手动关</span>
               </template>
@@ -459,7 +485,7 @@ onMounted(async () => {
               发到开了通知的设备上，页面关着也能收到。
             </p>
             <div class="flex items-center gap-2">
-              <Button size="sm" variant="outline" :disabled="!detail.published" @click="pushOpen = true">
+              <Button size="sm" variant="outline" :disabled="busy || !detail.published" @click="pushOpen = true">
                 <Bell class="mr-1.5 h-3.5 w-3.5" />
                 推送
               </Button>

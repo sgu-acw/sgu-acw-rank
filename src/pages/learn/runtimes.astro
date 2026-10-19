@@ -1,0 +1,6 @@
+---
+import LearningLayout from '../../layouts/LearningLayout.astro'
+import RuntimeManager from '../../components/learning/RuntimeManager.vue'
+if (import.meta.env.PUBLIC_LEARN_ENABLED === 'false') return Astro.redirect('/404')
+---
+<LearningLayout title="语言包管理"><RuntimeManager client:load /></LearningLayout>

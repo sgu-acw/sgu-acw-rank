@@ -9,7 +9,11 @@
     "preview": "astro preview",
     "astro": "astro",
     "check": "astro check",
-    "lint": "eslint src/"
+    "lint": "eslint src/",
+    "learning:prepare": "node tools/learning/prepare.cjs",
+    "learning:java": "python3 tools/learning/prepare-java-probe.py",
+    "learning:dev": "node tools/learning/dev.cjs",
+    "learning:test": "node --experimental-strip-types --test tools/learning/*.test.ts"
   },
   "dependencies": {
     "@astrojs/tailwind": "^6.0.2",

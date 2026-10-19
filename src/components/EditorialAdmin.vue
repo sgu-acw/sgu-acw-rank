@@ -124,7 +124,9 @@ function isVisible(item: AdminEditorial): boolean {
 }
 
 /** 代码是否对成员可见。 */
+let loadRequestId = 0
 async function load() {
+  const token = ++loadRequestId
   loading.value = true
   error.value = ''
   try {
@@ -137,17 +139,19 @@ async function load() {
       }),
       adminApi.missingEditorials(30),
     ])
+    if (token !== loadRequestId) return
     items.value = page.items
     total.value = page.total
     missing.value = miss
   } catch (err) {
-    error.value = err instanceof ApiError ? err.message : '加载失败'
+    if (token === loadRequestId) error.value = err instanceof ApiError ? err.message : '加载失败'
   } finally {
-    loading.value = false
+    if (token === loadRequestId) loading.value = false
   }
 }
 
 function startEdit(item: AdminEditorial) {
+  if (saving.value) return
   editingId.value = item.id
   draft.value = {
     hints: item.hints,
@@ -158,11 +162,12 @@ function startEdit(item: AdminEditorial) {
 }
 
 function cancelEdit() {
+  if (saving.value) return
   editingId.value = null
 }
 
 async function save() {
-  if (!editingId.value) return
+  if (!editingId.value || saving.value) return
   saving.value = true
   error.value = ''
   try {
@@ -185,6 +190,8 @@ async function save() {
 }
 
 async function togglePublish(item: AdminEditorial) {
+  if (saving.value) return
+  saving.value = true
   error.value = ''
   try {
     const updated = isVisible(item)
@@ -195,11 +202,14 @@ async function togglePublish(item: AdminEditorial) {
     flash(isVisible(updated) ? '已公布' : '已收回')
   } catch (err) {
     error.value = err instanceof ApiError ? err.message : '操作失败'
-  }
+  } finally { saving.value = false }
 }
 
 async function remove(item: AdminEditorial) {
+  if (saving.value) return
   if (!await confirmAction(`确定删除 ${item.key} 的题解？删掉后下次生成会重写。`)) return
+  if (saving.value) return
+  saving.value = true
   error.value = ''
   try {
     await adminApi.deleteEditorial(item.id)
@@ -209,7 +219,7 @@ async function remove(item: AdminEditorial) {
     flash('已删除')
   } catch (err) {
     error.value = err instanceof ApiError ? err.message : '删除失败'
-  }
+  } finally { saving.value = false }
 }
 
 // 筛选变化就重拉。搜索做防抖，别每敲一个字都发请求。
@@ -224,9 +234,9 @@ onMounted(load)
 </script>
 
 <template>
-  <div class="space-y-6">
+  <div class="mx-auto w-full max-w-6xl space-y-4">
     <AdminWorkspaceNav active="editorials">
-      <RefreshButton :busy="loading" @click="load" />
+      <RefreshButton :busy="loading || saving" @click="load" />
     </AdminWorkspaceNav>
 
     <Alert v-if="error" variant="destructive" class="flex items-start gap-2">
@@ -305,11 +315,12 @@ onMounted(load)
     <!-- 筛选 -->
     <div class="flex flex-wrap items-center gap-2">
       <div class="relative min-w-48 flex-1">
-        <Input v-model="filterQuery" placeholder="题号或日期" class="h-9" />
+        <Input v-model="filterQuery" placeholder="题号或日期" aria-label="搜索题解" />
       </div>
       <select
         v-model="filterStatus"
-        class="h-9 rounded-md border border-input bg-background px-2 text-sm"
+        aria-label="题解状态"
+        class="form-select w-auto"
       >
         <option value="">全部状态</option>
         <option value="draft">草稿</option>
@@ -357,7 +368,7 @@ onMounted(load)
           </span>
 
           <div class="ml-auto flex items-center gap-1">
-            <Button variant="ghost" size="sm" @click="togglePublish(item)">
+            <Button variant="ghost" size="sm" :disabled="saving" @click="togglePublish(item)">
               <component :is="isVisible(item) ? EyeOff : Eye" class="mr-1 h-3.5 w-3.5" />
               {{ isVisible(item) ? '收回' : '公布' }}
             </Button>
@@ -369,7 +380,7 @@ onMounted(load)
               <Pencil class="mr-1 h-3.5 w-3.5" />
               {{ editingId === item.id ? '取消' : '编辑' }}
             </Button>
-            <Button variant="ghost" size="sm" @click="remove(item)">
+            <Button variant="ghost" size="sm" :disabled="saving" @click="remove(item)">
               <Trash2 class="h-3.5 w-3.5" />
             </Button>
           </div>
@@ -382,7 +393,8 @@ onMounted(load)
             <textarea
               v-model="draft.hints"
               rows="3"
-              class="w-full rounded-md border border-input bg-background px-3 py-2 text-xs"
+              aria-label="解题提示"
+              class="form-textarea"
             />
           </div>
 
@@ -396,7 +408,8 @@ onMounted(load)
             <textarea
               v-model="draft.body"
               rows="16"
-              class="w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-xs leading-relaxed"
+              aria-label="题解正文"
+              class="form-textarea font-mono leading-relaxed"
             />
           </div>
 
@@ -421,8 +434,9 @@ onMounted(load)
             <textarea
               v-model="draft.code[editLang]"
               rows="14"
+              aria-label="参考代码"
               spellcheck="false"
-              class="w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-xs leading-relaxed"
+              class="form-textarea font-mono leading-relaxed"
             />
           </div>
 
@@ -432,7 +446,7 @@ onMounted(load)
               <Check v-else class="mr-1.5 h-3.5 w-3.5" />
               保存
             </Button>
-            <Button variant="ghost" size="sm" @click="cancelEdit">取消</Button>
+            <Button variant="outline" :disabled="saving" @click="cancelEdit">取消</Button>
             <span class="text-xs text-muted-foreground">
               模型：{{ item.model || '未知' }} · 生成于 {{ formatTime(item.generated_at) }}
             </span>

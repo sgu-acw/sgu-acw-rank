@@ -18,6 +18,7 @@ import {
 import { Bell, Check, Loader2, Search } from 'lucide-vue-next'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
+import ActionNotice from './ui/ActionNotice.vue'
 import { ApiError, adminApi, campAdminApi, pushApi, type AdminUser, type CampSummary } from '../lib/api'
 
 const props = defineProps<{
@@ -59,8 +60,9 @@ const searchResults = computed(() => {
 const classGroups = computed(() => {
   const map = new Map<string, AdminUser[]>()
   for (const u of allUsers.value) {
-    const label = u.class_label?.trim()
-    if (!label) continue
+    const classLabel = u.class_label?.trim()
+    if (!classLabel) continue
+    const label = `${u.enroll_year} 级 · ${classLabel}`
     const list = map.get(label) ?? []
     list.push(u)
     map.set(label, list)
@@ -73,12 +75,18 @@ const classGroups = computed(() => {
 const sending = ref(false)
 const result = ref('')
 const error = ref('')
+const sent = ref(false)
+let requestId = ''
+let requestSignature = ''
 
 watch(
   () => props.open,
   (v) => {
     if (v) {
       title.value = props.initialTitle ?? ''
+      body.value = ''; category.value = 'all'; picked.value = []; search.value = ''
+      year.value = null; classKey.value = ''; campId.value = null
+      sent.value = false; requestId = ''; requestSignature = ''
       url.value = props.initialUrl ?? '/'
       result.value = ''
       error.value = ''
@@ -94,7 +102,12 @@ onMounted(async () => {
   }
   try {
     const page = await adminApi.users({ page_size: 500 })
-    allUsers.value = page.items
+    allUsers.value = [...page.items]
+    for (let pageNumber = 2; allUsers.value.length < page.total; pageNumber++) {
+      const more = await adminApi.users({ page: pageNumber, page_size: 500 })
+      if (!more.items.length) break
+      allUsers.value.push(...more.items)
+    }
     years.value = page.enroll_years.length
       ? [...page.enroll_years].sort((a, b) => b - a)
       : [...new Set(page.items.map((u) => u.enroll_year).filter((y): y is number => !!y))].sort(
@@ -137,6 +150,7 @@ function audienceLabel(): string {
 }
 
 async function send() {
+  if (sending.value || sent.value) return
   const audience = audienceString()
   if (!title.value.trim() || !audience) {
     error.value = '标题和群体都得有'
@@ -146,13 +160,17 @@ async function send() {
   error.value = ''
   result.value = ''
   try {
-    const r = await pushApi.announce({
-      title: title.value.trim(),
-      body: body.value.trim(),
-      url: url.value.trim() || '/',
-      audience,
-    })
-    result.value = `已发给${audienceLabel()}：送达 ${r.sent} 台设备`
+    const payload = {
+      title: title.value.trim(), body: body.value.trim(), url: url.value.trim() || '/', audience,
+    }
+    const signature = JSON.stringify(payload)
+    if (signature !== requestSignature) {
+      requestId = window.crypto.randomUUID(); requestSignature = signature
+    }
+    const label = audienceLabel()
+    const r = await pushApi.announce({ ...payload, request_id: requestId })
+    sent.value = true
+    result.value = `已提交给推送服务：${label}，成功 ${r.sent} 台设备`
     if (r.failed || r.dead) result.value += `（失败 ${r.failed}，过期清理 ${r.dead}）`
   } catch (err) {
     error.value = err instanceof ApiError ? err.message : '推送失败'
@@ -163,7 +181,7 @@ async function send() {
 </script>
 
 <template>
-  <DialogRoot :open="open" @update:open="(v) => emit('update:open', v)">
+  <DialogRoot :open="open" @update:open="(v) => { if (!sending) emit('update:open', v) }">
     <DialogPortal>
       <DialogOverlay class="fixed inset-0 z-[100] bg-black/40" />
       <DialogContent class="fixed left-1/2 top-1/2 z-[101] max-h-[85dvh] w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-xl border border-border bg-popover p-6 shadow-xl">
@@ -175,15 +193,17 @@ async function send() {
         </DialogDescription>
 
         <div class="mt-4 space-y-3">
-          <Input v-model="title" placeholder="通知标题" maxlength="80" class="min-h-11" />
+          <fieldset :disabled="sending || sent" class="min-w-0 space-y-3">
+          <Input v-model="title" aria-label="通知标题" placeholder="通知标题" maxlength="80" class="min-h-11" />
           <textarea
             v-model="body"
             rows="2"
             placeholder="正文（可选）"
             maxlength="300"
-            class="w-full rounded-md border border-input bg-background p-3 text-sm"
+            class="form-textarea"
+            aria-label="通知正文"
           />
-          <Input v-model="url" placeholder="点通知打开的地址，如 /post/xxx" maxlength="200" class="min-h-11" />
+          <Input v-model="url" aria-label="通知链接" placeholder="点通知打开的地址，如 /post/xxx" maxlength="200" class="min-h-11" />
 
           <div class="space-y-2">
             <p class="text-xs font-medium text-muted-foreground">发给</p>
@@ -199,8 +219,8 @@ async function send() {
                 ]"
                 :key="c.key"
                 type="button"
-                class="min-h-10 rounded-md border text-sm transition-colors"
-                :class="category === c.key ? 'border-primary bg-primary/10 font-medium' : 'border-input text-muted-foreground hover:text-foreground'"
+                class="choice-button"
+                :aria-pressed="category === c.key"
                 @click="category = c.key as typeof category"
               >
                 {{ c.label }}
@@ -210,7 +230,8 @@ async function send() {
             <select
               v-if="category === 'year'"
               v-model="year"
-              class="min-h-11 w-full rounded-md border border-input bg-background px-3 text-sm"
+              aria-label="推送年级"
+              class="form-select"
             >
               <option :value="null" disabled>选年级</option>
               <option v-for="y in years" :key="y" :value="y">{{ y }} 级</option>
@@ -218,7 +239,8 @@ async function send() {
             <select
               v-else-if="category === 'class'"
               v-model="classKey"
-              class="min-h-11 w-full rounded-md border border-input bg-background px-3 text-sm"
+              aria-label="推送班级"
+              class="form-select"
             >
               <option value="" disabled>选班级</option>
               <option v-for="g in classGroups" :key="g.label" :value="g.label">{{ g.label }}（{{ g.users.length }} 人）</option>
@@ -226,7 +248,8 @@ async function send() {
             <select
               v-else-if="category === 'camp'"
               v-model="campId"
-              class="min-h-11 w-full rounded-md border border-input bg-background px-3 text-sm"
+              aria-label="推送集训"
+              class="form-select"
             >
               <option :value="null" disabled>选集训</option>
               <option v-for="c in camps" :key="c.id" :value="c.id">{{ c.name }}</option>
@@ -271,15 +294,15 @@ async function send() {
               </div>
             </div>
           </div>
-
-          <p v-if="error" class="text-sm text-destructive">{{ error }}</p>
-          <p v-else-if="result" class="text-sm text-emerald-600 dark:text-emerald-500">{{ result }}</p>
+</fieldset>
+          <ActionNotice :message="error" variant="error" />
+          <ActionNotice :message="result" />
 
           <div class="flex justify-end gap-2 pt-1">
-            <Button variant="outline" class="min-h-11" @click="emit('update:open', false)">关闭</Button>
-            <Button class="min-h-11" :disabled="sending || !title.trim() || !audienceString()" @click="send">
+            <Button variant="outline" :disabled="sending" @click="emit('update:open', false)">关闭</Button>
+            <Button :disabled="sending || sent || !title.trim() || !audienceString()" @click="send">
               <Loader2 v-if="sending" class="mr-1.5 h-4 w-4 animate-spin" />
-              推送{{ audienceString() && category !== 'all' && category !== 'admins' ? `（${audienceLabel()}）` : '' }}
+              {{ sent ? '已推送' : sending ? '正在推送…' : '推送通知' }}
             </Button>
           </div>
         </div>

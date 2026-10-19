@@ -1,0 +1,10 @@
+---
+import BaseLayout from './BaseLayout.astro'
+interface Props { title: string }
+const { title } = Astro.props
+---
+<BaseLayout title={title === '题库' ? '题库' : `${title} · 题库`}>
+  <div class="mx-auto min-w-0 max-w-6xl">
+    <slot />
+  </div>
+</BaseLayout>

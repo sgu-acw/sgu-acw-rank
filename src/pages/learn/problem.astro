@@ -1,0 +1,6 @@
+---
+import LearningLayout from '../../layouts/LearningLayout.astro'
+import ProblemWorkbench from '../../components/learning/ProblemWorkbench.vue'
+if (import.meta.env.PUBLIC_LEARN_ENABLED === 'false') return Astro.redirect('/404')
+---
+<LearningLayout title="题目"><ProblemWorkbench client:load /></LearningLayout>

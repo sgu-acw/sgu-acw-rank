@@ -32,6 +32,7 @@ const totpError = ref('')
 const notice = ref('')
 
 async function beginTotp() {
+  if (totpBusy.value) return
   totpError.value = ''
   totpBusy.value = true
   try {
@@ -126,6 +127,7 @@ async function addPasskey() {
 }
 
 async function removePasskey(p: PasskeyEntry) {
+  if (pkBusy.value) return
   if (!await confirmAction(`删掉通行密钥「${p.name || '未命名'}」？以后就不能用它登录了。`)) return
   pkBusy.value = true
   try {
@@ -176,7 +178,7 @@ onMounted(async () => {
         <!-- 开启流程 -->
         <div v-if="totpSetup" class="space-y-2.5 rounded-md border border-border/60 p-3">
           <p class="text-xs text-muted-foreground">用认证器扫下面的码，或手输密钥</p>
-          <div class="flex justify-center" v-html="totpSetup.qr" />
+          <img :src="`data:image/svg+xml;charset=utf-8,${encodeURIComponent(totpSetup.qr)}`" alt="两步验证设置二维码" class="mx-auto h-48 w-48 rounded bg-white p-2" />
           <p class="break-all text-center font-mono text-xs text-muted-foreground">{{ totpSetup.secret }}</p>
           <Input v-model="totpCode" placeholder="认证器里的 6 位数字" inputmode="numeric" maxlength="8" class="min-h-11 font-mono tracking-widest" />
           <div class="flex gap-2">

@@ -1,0 +1,136 @@
+// @ts-nocheck
+// Node-only local build; uses the Vite version already supplied by Astro.
+const fs = require('node:fs')
+const path = require('node:path')
+const crypto = require('node:crypto')
+const { createRequire } = require('node:module')
+const { spawnSync } = require('node:child_process')
+const zlib = require('node:zlib')
+const root = path.resolve(__dirname, '../..')
+const work = path.join(root, '.local/learning')
+const source = path.resolve(process.env.LEARN_OJPP_DIST || path.join(root, '../OJ-Plus-Plus/dist-extension'))
+const packages = path.join(work, 'packages')
+
+function command(args) {
+  const result = spawnSync(args[0], args.slice(1), { stdio: 'inherit' })
+  if (result.error || result.status !== 0) throw result.error || new Error(`${args[0]} failed`)
+}
+async function buildEngine() {
+  const fromAstro = createRequire(fs.realpathSync(path.join(root, 'node_modules/astro/package.json')))
+  const { build } = await import(fromAstro.resolve('vite'))
+  // 父域白名单构建期写死：运行器只接受这个站点嵌它。
+  const parent = process.env.LEARN_PARENT_ORIGIN || 'http://127.0.0.1:4324'
+  await build({ configFile: false, root, publicDir: false, logLevel: 'warn',
+    define: { 'import.meta.env.VITE_LEARN_PARENT': JSON.stringify(parent) }, build: {
+    outDir: path.join(work, 'engine'), emptyOutDir: true, minify: false, sourcemap: true,
+    rollupOptions: { input: { host: path.join(__dirname, 'host.ts'), worker: path.join(__dirname, 'worker.ts') },
+      output: { entryFileNames: '[name].js', chunkFileNames: 'chunks/[name]-[hash].js' } },
+  } })
+  fs.copyFileSync(path.join(__dirname, 'sw.js'), path.join(work, 'engine/sw.js'))
+  // 沙箱 iframe 入口页：data-parent 只是给本地调试看的，真正的白名单在 host.js 里。
+  fs.writeFileSync(path.join(work, 'engine/index.html'),
+    `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="robots" content="noindex"><title>评测运行器</title></head><body><script type="module" src="/engine/host.js"></script></body></html>\n`)
+}
+async function asset(name, bytes, type) {
+  const hash = crypto.createHash('sha256').update(bytes).digest('hex')
+  const dir = path.join(packages, 'objects', hash)
+  fs.mkdirSync(dir, { recursive: true })
+  const raw = path.join(dir, name), packed = raw + '.br'
+  fs.mkdirSync(path.dirname(raw), { recursive: true })
+  if (!fs.existsSync(raw)) fs.writeFileSync(raw, bytes)
+  else if (fs.statSync(raw).size !== bytes.length) fs.writeFileSync(raw, bytes)
+  if (!fs.existsSync(packed)) {
+    console.log(`Brotli 11: ${name} (${(bytes.length / 1048576).toFixed(1)} MiB decoded)`)
+    // 先写临时文件再改名；上次被中断的半成品 .br 会解压不全，必须重建。
+    const tmp = packed + '.tmp'
+    command(['brotli', '-q', '11', '-f', raw, '-o', tmp])
+    fs.renameSync(tmp, packed)
+  }
+  return { path: `/packages/objects/${hash}/${name}`, bytes: bytes.length,
+    transferBytes: fs.statSync(packed).size, sha256: hash, type }
+}
+async function main() {
+  fs.mkdirSync(packages, { recursive: true })
+  await buildEngine()
+  const stage = path.join(work, 'source')
+  fs.mkdirSync(stage, { recursive: true })
+  const yowasp = path.join(source, 'runtimes/yowasp')
+  if (!fs.existsSync(yowasp)) throw new Error('Set LEARN_OJPP_DIST to the locally built OJ++ extension directory')
+  const clangAssets = []
+  for (const name of ['bundle.js', 'llvm.core.wasm', 'llvm.core2.wasm', 'llvm.core3.wasm', 'llvm.core4.wasm', 'llvm-resources.tar']) {
+    const local = path.join(stage, name)
+    if (name.endsWith('.js')) fs.copyFileSync(path.join(yowasp, name), local)
+    else command(['zstd', '-dq', '-f', path.join(yowasp, name + '.zst'), '-o', local])
+    clangAssets.push(await asset(name, fs.readFileSync(local), name.endsWith('.js') ? 'text/javascript' : name.endsWith('.wasm') ? 'application/wasm' : 'application/x-tar'))
+  }
+  // The loader resolves its sibling resources relative to bundle.js. Rewrite these paths
+  // to immutable object URLs rather than introducing a decompression fetch shim.
+  let glue = fs.readFileSync(path.join(stage, 'bundle.js'), 'utf8')
+  for (const a of clangAssets.filter(a => !a.path.endsWith('bundle.js'))) {
+    glue = glue.replaceAll(path.basename(a.path), a.path)
+  }
+  glue = glue.replaceAll('".//packages/', '"/packages/')
+  clangAssets[0] = await asset('bundle.js', Buffer.from(glue), 'text/javascript')
+  const pythonAssets = [
+    await asset('python.wasm', fs.readFileSync(path.join(source, 'runtimes/python-3.11.3.wasm')), 'application/wasm'),
+    await asset('python.tar', zlib.gunzipSync(fs.readFileSync(path.join(source, 'runtimes/python-3.11.3.tar.gz'))), 'application/x-tar'),
+  ]
+  const version = assets => crypto.createHash('sha256').update(assets.map(a => a.sha256).join('\n')).digest('hex').slice(0, 16)
+
+  // Java 运行时（prepare-java-probe.py 产物）：B-JVM WASM + 打平 JDK 类库 +
+  // jimage + ECJ + 补丁类。两个环境共享全部资产，java8 只多一个 rt.jar。
+  const javaRoot = path.join(packages, 'java-probe')
+  const javaShared = []
+  const javaFiles = ['bjvm_main.js', 'bjvm_main.wasm', 'java21.jar', 'modules21', 'ecj.jar',
+    'JudgeProbe.class', 'tzdb.dat', 'jdk-release', 'bundle-classes-index.json',
+    'jdk-conf-index.json', 'ecj-res-index.json']
+  const javaReady = javaFiles.every(f => fs.existsSync(path.join(javaRoot, f)))
+    && fs.existsSync(path.join(javaRoot, 'bundle-classes'))
+    && fs.existsSync(path.join(javaRoot, 'jdk-conf'))
+    && fs.existsSync(path.join(javaRoot, 'ecj-res'))
+  if (javaReady) {
+    const walk = dir => fs.readdirSync(dir, { withFileTypes: true }).flatMap(e =>
+      e.isDirectory() ? walk(path.join(dir, e.name)) : [path.join(dir, e.name)])
+    const all = [
+      ...javaFiles.map(f => [f, path.join(javaRoot, f)]),
+      ...walk(path.join(javaRoot, 'bundle-classes')).map(f => [path.join('bundle-classes', path.relative(path.join(javaRoot, 'bundle-classes'), f)), f]),
+      ...walk(path.join(javaRoot, 'jdk-conf')).map(f => [path.join('jdk-conf', path.relative(path.join(javaRoot, 'jdk-conf'), f)), f]),
+      ...walk(path.join(javaRoot, 'ecj-res')).map(f => [path.join('ecj-res', path.relative(path.join(javaRoot, 'ecj-res'), f)), f]),
+      ['patch-classes-index.json', path.join(javaRoot, 'patch-classes-index.json')],
+      ...(fs.existsSync(path.join(javaRoot, 'patch-classes'))
+        ? walk(path.join(javaRoot, 'patch-classes')).map(f => [path.join('patch-classes', path.relative(path.join(javaRoot, 'patch-classes'), f)), f]) : []),
+    ]
+    for (const [name, file] of all) {
+      const stat = fs.statSync(file)
+      javaShared.push(await asset(name, fs.readFileSync(file),
+        name.endsWith('.js') ? 'text/javascript' : name.endsWith('.wasm') ? 'application/wasm'
+        : name.endsWith('.json') ? 'application/json' : 'application/octet-stream'))
+    }
+  }
+  const java8Assets = javaReady && fs.existsSync(path.join(javaRoot, 'java8.jar'))
+    ? [...javaShared, await asset('java8.jar', fs.readFileSync(path.join(javaRoot, 'java8.jar')), 'application/octet-stream')]
+    : null
+
+  const runtimes = [
+    { id: 'c-cpp', label: 'C / C++ · Clang 22', version: `clang22-${version(clangAssets)}`, available: true,
+      assets: clangAssets, provenance: 'YoWASP Clang 22.0.0-git20542-10; local OJ++ build' },
+    { id: 'python', label: 'Python 3.11.3', version: `cpython311-${version(pythonAssets)}`, available: true,
+      assets: pythonAssets, provenance: 'CPython 3.11.3 WASI from Runno, local OJ++ build' },
+    { id: 'java21', label: 'Java 21', version: javaReady ? `bjvm-jdk21-${version(javaShared)}` : 'pending-validation',
+      available: javaReady, assets: javaShared,
+      reason: javaReady ? undefined : '运行 pnpm learning:java 构建 B-JVM 与 JDK 21 类库后可用。',
+      provenance: 'B-JVM + real JDK 21 classlib + ECJ, browser-compiled' },
+    { id: 'java8', label: 'Java 8', version: java8Assets ? `bjvm-jdk8api-${version(java8Assets)}` : 'pending-validation',
+      available: !!java8Assets, assets: java8Assets || [],
+      reason: java8Assets ? '编译期为真实 JDK 8 rt.jar，运行期复用 JDK 21 运行时。' : '运行 pnpm learning:java 构建后可用。',
+      provenance: 'ECJ -1.8 vs real JDK 8 rt.jar, executed on the validated JDK 21 runtime' },
+  ]
+  const temporary = path.join(packages, 'manifest.next.json')
+  fs.writeFileSync(temporary, JSON.stringify({ schema: 1, runtimes }, null, 2) + '\n')
+  fs.renameSync(temporary, path.join(packages, 'manifest.json'))
+  const notices = path.resolve(source, '../THIRD_PARTY_NOTICES.md')
+  if (fs.existsSync(notices)) fs.copyFileSync(notices, path.join(packages, 'THIRD_PARTY_NOTICES.md'))
+  console.log('Local packages prepared. No production files or services were accessed.')
+}
+module.exports = { buildEngine, work, root }
+if (require.main === module) main().catch(error => { console.error(error); process.exitCode = 1 })

@@ -1,0 +1,6 @@
+---
+import LearningLayout from '../../layouts/LearningLayout.astro'
+import ProblemIndex from '../../components/learning/ProblemIndex.vue'
+if (import.meta.env.PUBLIC_LEARN_ENABLED === 'false') return Astro.redirect('/404')
+---
+<LearningLayout title="题库"><ProblemIndex client:load /></LearningLayout>

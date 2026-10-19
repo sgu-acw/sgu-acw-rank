@@ -33,6 +33,8 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Input } from './ui/input'
 import {
   ApiError,
+  LEARN_LOCAL,
+  LEARN_PLATFORM,
   PLATFORM_META,
   PROBLEM_KEY_HINT,
   problemListApi,
@@ -41,6 +43,8 @@ import {
   type ProblemListDetail,
   type ProblemListSummary,
 } from '../lib/api'
+import { learningApi } from '../lib/learning/api'
+import type { ProblemSummary } from '../lib/learning/types'
 
 const lists = ref<ProblemListSummary[]>([])
 const loading = ref(true)
@@ -65,7 +69,17 @@ const creating = ref(false)
 
 //: 加题表单。key 是题单 id，值为该题单正在输入的内容。
 const addingTo = ref<number | null>(null)
-const newPlatform = ref<Platform>('codeforces')
+const newPlatform = ref<Platform | 'learn'>('codeforces')
+const learnProblems = ref<ProblemSummary[]>([])
+const learnProblemId = ref<number | null>(null)
+const keyHint = computed(() =>
+  newPlatform.value === LEARN_PLATFORM ? '' : PROBLEM_KEY_HINT[newPlatform.value],
+)
+async function loadLearnProblems() {
+  if (learnProblems.value.length) return
+  learnProblems.value = await learningApi.list()
+  learnProblemId.value = learnProblems.value[0]?.id ?? null
+}
 const newKey = ref('')
 const newNote = ref('')
 const adding = ref(false)
@@ -79,6 +93,8 @@ const lookupState = ref<
 
 const refreshing = ref(false)
 const purging = ref(false)
+const mutating = ref(false)
+const busy = computed(() => creating.value || adding.value || refreshing.value || purging.value || mutating.value)
 
 /**
  * 展开的题单 id → 它的题目列表。
@@ -139,7 +155,7 @@ async function load() {
 }
 
 async function create() {
-  if (!newTitle.value.trim()) return
+  if (busy.value || !newTitle.value.trim()) return
   creating.value = true
   error.value = ''
   try {
@@ -163,6 +179,7 @@ async function create() {
 }
 
 function startEdit(item: ProblemListSummary) {
+  if (busy.value) return
   editingId.value = item.id
   editTitle.value = item.title
   editDescription.value = item.description
@@ -170,6 +187,8 @@ function startEdit(item: ProblemListSummary) {
 }
 
 async function saveEdit(id: number) {
+  if (busy.value) return
+  mutating.value = true
   const item = lists.value.find((row) => row.id === id)
   try {
     await problemListApi.update(id, {
@@ -184,16 +203,19 @@ async function saveEdit(id: number) {
     await load()
   } catch (err) {
     error.value = err instanceof ApiError ? err.message : '保存失败'
-  }
+  } finally { mutating.value = false }
 }
 
 async function remove(item: ProblemListSummary) {
+  if (busy.value) return
   const what = item.kind === 'collection' ? '合集' : '题单'
   const extra =
     item.kind === 'collection' && item.item_count > 0
       ? `\n里面的 ${item.item_count} 个题单不会被删除，只是不再属于这个合集。`
       : ''
   if (!await confirmAction(`删除${what}「${item.title}」？${extra}`)) return
+  if (busy.value) return
+  mutating.value = true
 
   try {
     await problemListApi.remove(item.id)
@@ -201,10 +223,11 @@ async function remove(item: ProblemListSummary) {
     await load()
   } catch (err) {
     error.value = err instanceof ApiError ? err.message : '删除失败'
-  }
+  } finally { mutating.value = false }
 }
 
 async function move(item: ProblemListSummary, delta: number) {
+  if (busy.value) return
   const siblings = item.kind === 'collection' ? collections.value : standalone.value
   const index = siblings.findIndex((s) => s.id === item.id)
   const target = index + delta
@@ -214,12 +237,13 @@ async function move(item: ProblemListSummary, delta: number) {
   const [moved] = reordered.splice(index, 1)
   reordered.splice(target, 0, moved)
 
+  mutating.value = true
   try {
     await problemListApi.reorder(reordered.map((s) => s.id))
     await load()
   } catch (err) {
     error.value = err instanceof ApiError ? err.message : '排序失败'
-  }
+  } finally { mutating.value = false }
 }
 
 /**
@@ -257,9 +281,16 @@ async function lookupKey() {
 }
 
 async function addProblem(listId: number) {
-  const key = newKey.value.trim()
-  if (!key) return
-  if (lookupState.value?.status === 'bad') return
+  if (busy.value) return
+  let key = newKey.value.trim()
+  if (newPlatform.value === LEARN_PLATFORM) {
+    const picked = learnProblems.value.find(p => p.id === learnProblemId.value)
+    if (!picked) return
+    key = String(picked.id)
+  } else {
+    if (!key) return
+    if (lookupState.value?.status === 'bad') return
+  }
 
   adding.value = true
   error.value = ''
@@ -317,7 +348,10 @@ async function refreshProblems(listId: number) {
 }
 
 async function removeProblem(listId: number, problem: ProblemEntry) {
+  if (busy.value) return
   if (!await confirmAction(`从题单里移除「${problem.name || problem.key}」？`)) return
+  if (busy.value) return
+  mutating.value = true
   try {
     await problemListApi.removeProblem(listId, problem.id)
     await refreshProblems(listId)
@@ -325,7 +359,7 @@ async function removeProblem(listId: number, problem: ProblemEntry) {
     flash('已移除')
   } catch (err) {
     error.value = err instanceof ApiError ? err.message : '移除失败'
-  }
+  } finally { mutating.value = false }
 }
 
 function startEditNote(problem: ProblemEntry) {
@@ -334,6 +368,8 @@ function startEditNote(problem: ProblemEntry) {
 }
 
 async function saveNote(listId: number, problem: ProblemEntry) {
+  if (busy.value) return
+  mutating.value = true
   try {
     await problemListApi.updateProblem(listId, problem.id, { note: editNote.value.trim() })
     editingNoteId.value = null
@@ -341,7 +377,7 @@ async function saveNote(listId: number, problem: ProblemEntry) {
     flash('已保存')
   } catch (err) {
     error.value = err instanceof ApiError ? err.message : '保存失败'
-  }
+  } finally { mutating.value = false }
 }
 
 /**
@@ -350,6 +386,7 @@ async function saveNote(listId: number, problem: ProblemEntry) {
  * 后端收的是完整的 id 顺序，所以先算出新顺序再整串发过去。
  */
 async function moveProblem(listId: number, index: number, delta: number) {
+  if (busy.value) return
   const items = expanded.value[listId]
   if (!items) return
   const target = index + delta
@@ -358,6 +395,7 @@ async function moveProblem(listId: number, index: number, delta: number) {
   const reordered = [...items]
   const [moved] = reordered.splice(index, 1)
   reordered.splice(target, 0, moved)
+  mutating.value = true
   // 先本地更新，界面立刻有反应；失败再拉回真实状态。
   expanded.value = { ...expanded.value, [listId]: reordered }
 
@@ -370,10 +408,11 @@ async function moveProblem(listId: number, index: number, delta: number) {
   } catch (err) {
     error.value = err instanceof ApiError ? err.message : '排序失败'
     await refreshProblems(listId)
-  }
+  } finally { mutating.value = false }
 }
 
 async function refreshCodeforces() {
+  if (busy.value) return
   refreshing.value = true
   error.value = ''
   try {
@@ -404,7 +443,7 @@ onMounted(load)
 </script>
 
 <template>
-  <div class="space-y-6">
+  <div class="mx-auto w-full max-w-6xl space-y-4" :aria-busy="busy">
     <AdminWorkspaceNav active="problems">
       <Button
         variant="outline"
@@ -416,7 +455,7 @@ onMounted(load)
         <Eraser class="mr-1.5 h-3.5 w-3.5" :class="purging && 'animate-pulse'" />
         <span class="hidden sm:inline">清理缓存</span>
       </Button>
-      <RefreshButton :busy="refreshing" label="刷新 CF 题库" @click="refreshCodeforces" />
+      <RefreshButton :busy="busy" label="刷新 CF 题库" @click="refreshCodeforces" />
     </AdminWorkspaceNav>
 
     <Alert v-if="error" variant="destructive" class="flex items-start gap-2">
@@ -436,7 +475,7 @@ onMounted(load)
             <label class="text-xs font-medium">类型</label>
             <select
               v-model="newKind"
-              class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+              class="form-select"
             >
               <option value="list">题单</option>
               <option value="collection">合集</option>
@@ -446,7 +485,7 @@ onMounted(load)
             <label class="text-xs font-medium">所属合集（可不选）</label>
             <select
               v-model="newCollectionId"
-              class="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+              class="form-select"
             >
               <option :value="null">不放进合集</option>
               <option v-for="c in collections" :key="c.id" :value="c.id">{{ c.title }}</option>
@@ -589,14 +628,25 @@ onMounted(load)
         <div class="flex flex-wrap gap-2">
           <select
             v-model="newPlatform"
-            class="h-9 rounded-md border border-input bg-background px-2.5 text-sm"
-            @change="newKey && lookupKey()"
+            aria-label="题目平台"
+            class="form-select w-auto"
+            @change="newKey && lookupKey(); newPlatform === LEARN_PLATFORM && loadLearnProblems().catch(e => { error = String(e) })"
           >
             <option v-for="p in PLATFORMS" :key="p" :value="p">{{ PLATFORM_META[p].label }}</option>
+            <option v-if="LEARN_LOCAL" value="learn">题库</option>
+          </select>
+          <select
+            v-if="newPlatform === LEARN_PLATFORM"
+            v-model="learnProblemId"
+            aria-label="题库题目"
+            class="form-select min-w-0 flex-1"
+          >
+            <option v-for="lp in learnProblems" :key="lp.id" :value="lp.id">{{ lp.id }}. {{ lp.title }}</option>
           </select>
           <Input
+            v-else
             v-model="newKey"
-            :placeholder="PROBLEM_KEY_HINT[newPlatform]"
+            :placeholder="keyHint"
             class="h-9 min-w-[160px] flex-1 font-mono text-sm"
             @blur="lookupKey"
             @keyup.enter="addProblem(addingTo)"
@@ -604,7 +654,7 @@ onMounted(load)
           <Button
             size="sm"
             class="h-9"
-            :disabled="adding || !newKey.trim() || lookupState?.status === 'bad'"
+            :disabled="adding || (newPlatform === LEARN_PLATFORM ? !learnProblemId : (!newKey.trim() || lookupState?.status === 'bad'))"
             @click="addProblem(addingTo)"
           >
             <Loader2 v-if="adding" class="mr-1 h-3.5 w-3.5 animate-spin" />
@@ -710,16 +760,27 @@ onMounted(load)
               <div class="flex flex-wrap gap-2">
                 <select
                   v-model="newPlatform"
-                  class="h-9 rounded-md border border-input bg-background px-2.5 text-sm"
-                  @change="newKey && lookupKey()"
+                  aria-label="题目平台"
+                  class="form-select w-auto"
+                  @change="newKey && lookupKey(); newPlatform === LEARN_PLATFORM && loadLearnProblems().catch(e => { error = String(e) })"
                 >
                   <option v-for="p in PLATFORMS" :key="p" :value="p">
                     {{ PLATFORM_META[p].label }}
                   </option>
+                  <option v-if="LEARN_LOCAL" value="learn">题库</option>
+                </select>
+                <select
+                  v-if="newPlatform === LEARN_PLATFORM"
+                  v-model="learnProblemId"
+                  aria-label="题库题目"
+                  class="form-select min-w-0 flex-1"
+                >
+                  <option v-for="lp in learnProblems" :key="lp.id" :value="lp.id">{{ lp.id }}. {{ lp.title }}</option>
                 </select>
                 <Input
+                  v-else
                   v-model="newKey"
-                  :placeholder="PROBLEM_KEY_HINT[newPlatform]"
+                  :placeholder="keyHint"
                   class="h-9 min-w-[160px] flex-1 font-mono text-sm"
                   @blur="lookupKey"
                   @keyup.enter="addProblem(item.id)"
@@ -727,7 +788,7 @@ onMounted(load)
                 <Button
                   size="sm"
                   class="h-9"
-                  :disabled="adding || !newKey.trim() || lookupState?.status === 'bad'"
+                  :disabled="adding || (newPlatform === LEARN_PLATFORM ? !learnProblemId : (!newKey.trim() || lookupState?.status === 'bad'))"
                   @click="addProblem(item.id)"
                 >
                   <Loader2 v-if="adding" class="mr-1 h-3.5 w-3.5 animate-spin" />

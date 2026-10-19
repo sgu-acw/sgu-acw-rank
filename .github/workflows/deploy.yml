@@ -1,0 +1,113 @@
+name: Deploy frontend
+
+# 前端静态站已从 Cloudflare Pages 迁到自有服务器（OpenResty 源站 +
+# Cloudflare CDN）。Pages 单文件 25 MiB 上限放不下题库语言包，且运行器需要
+# 独立域名与自有缓存策略，所以改由服务器直出。
+#
+# 推 main → lint/类型检查/构建 → 打包上传 → 原子切换 → 源站健康检查。
+#
+# 注意：这里只发布主站。评测运行器（judge.zh314.xyz）的产物是 159 MiB 的
+# Brotli 语言包，由本地 ./deploy/deploy-judge.sh 发布——它依赖 OJ++ 构建产物，
+# 不适合每次 push 都重建。
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: frontend-deploy
+  cancel-in-progress: false
+
+env:
+  REMOTE_ROOT: /opt/1panel/apps/openresty/openresty/www/sites/sgu-acw.zh314.xyz
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.30.1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # astro build 只打包不检查；astro check 不检查模板里调用的函数是否存在。
+      # 模板里用了不存在的函数只有 eslint 的 vue/no-undef-properties 能抓到。
+      - name: Lint
+        run: pnpm lint
+
+      - name: Type check
+        run: pnpm check
+
+      - name: Build
+        env:
+          # 题库在线上启用；运行器在独立域名。
+          PUBLIC_LEARN_ENABLED: "true"
+          PUBLIC_LEARN_RUNNER_ORIGIN: https://judge.zh314.xyz
+        run: pnpm build
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
+          retention-days: 1
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+      - name: SSH setup
+        env:
+          SSH_KEY: ${{ secrets.SGU_ACW_SSH_KEY }}
+          SSH_HOST: ${{ secrets.SGU_ACW_SSH_HOST }}
+          SSH_USER: ${{ secrets.SGU_ACW_SSH_USER }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          # 后端 CI 用的是 user/host 两个独立 secret，这里保持一致。
+          cat >> ~/.ssh/config <<EOF
+          Host deploy-target
+            HostName $SSH_HOST
+            User $SSH_USER
+            IdentityFile ~/.ssh/deploy_key
+            StrictHostKeyChecking accept-new
+          EOF
+
+      - name: Publish release
+        run: |
+          RELEASE_ID="$(date -u +%Y%m%d%H%M%S)-${GITHUB_SHA::7}"
+          ssh deploy-target "mkdir -p '$REMOTE_ROOT/releases/$RELEASE_ID'"
+          # 单流 tar：长连接大流量下比 rsync 更稳。
+          tar -C dist -czf - . | ssh deploy-target "tar -xzf - -C '$REMOTE_ROOT/releases/$RELEASE_ID'"
+          # 相对链接：OpenResty 在容器内运行，宿主机绝对路径不可见。
+          ssh deploy-target "set -e
+            ln -sfn 'releases/$RELEASE_ID' '$REMOTE_ROOT/dist.next'
+            mv -Tf '$REMOTE_ROOT/dist.next' '$REMOTE_ROOT/dist'
+            ls -1dt '$REMOTE_ROOT'/releases/*/ | tail -n +4 | xargs -r rm -rf
+          "
+
+      - name: Health check
+        run: |
+          ssh deploy-target "set -e
+            curl -fsS -o /dev/null -H 'Host: sgu-acw.zh314.xyz' http://127.0.0.1/
+            curl -fsS -o /dev/null -H 'Host: sgu-acw.zh314.xyz' http://127.0.0.1/api/config
+            curl -fsS -o /dev/null -H 'Host: sgu-acw.zh314.xyz' http://127.0.0.1/post/health-check
+          "

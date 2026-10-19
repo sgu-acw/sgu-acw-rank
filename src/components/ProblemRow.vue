@@ -10,7 +10,7 @@ import { Check, ExternalLink, Pencil, Trash2, X } from 'lucide-vue-next'
 import { difficultyLabel } from '../lib/format'
 import { Input } from './ui/input'
 import { Button } from './ui/button'
-import { PLATFORM_META, type ProblemEntry } from '../lib/api'
+import { LEARN_PLATFORM, platformLabel, type ProblemEntry } from '../lib/api'
 
 withDefaults(
   defineProps<{
@@ -72,11 +72,11 @@ const emit = defineEmits<{
         >
           {{ problem.name || problem.key }}
         </a>
-        <span class="shrink-0 font-mono text-[11px] text-muted-foreground/60">
+        <span v-if="problem.platform !== LEARN_PLATFORM" class="shrink-0 font-mono text-[11px] text-muted-foreground/60">
           {{ problem.key }}
-        </span>
+      </span>
         <span class="shrink-0 text-[11px] text-muted-foreground/70">
-          {{ PLATFORM_META[problem.platform]?.label ?? problem.platform }}
+          {{ platformLabel(problem.platform) }}
         </span>
         <span
           v-if="difficultyLabel(problem.platform, problem.rating)"

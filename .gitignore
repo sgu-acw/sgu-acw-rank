@@ -38,3 +38,6 @@ firmware/**/secrets.h
 
 # 本地密钥文本，绝不入库
 sgu-deepseek.txt
+
+# Isolated learning preview databases, runtime binaries and generated engine
+.local/learning/

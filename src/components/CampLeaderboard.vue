@@ -6,13 +6,16 @@ import type { CampLeaderboardEntry, Platform } from '../lib/api'
 
 const props = defineProps<{
   entries: CampLeaderboardEntry[]
-  problems: { platform: Platform; key: string; name?: string }[]
+  problems: { platform: Platform | 'learn'; key: string; name?: string }[]
 }>()
 
 // 筛选参考练习榜：学院、年级、姓名/学号搜索。纯客户端过滤——榜单已经在手上了。
 const college = ref('')
 const year = ref<number | null>(null)
 const search = ref('')
+
+// 本地练习题的 AC 是客户端自报的，不进成绩榜。
+const scoredProblems = computed(() => props.problems.filter(p => p.platform !== 'learn'))
 
 const colleges = computed(() =>
   [...new Set(props.entries.map((e) => e.college_name).filter(Boolean))].sort() as string[],
@@ -56,7 +59,7 @@ function clearFilters() {
       <div class="flex flex-wrap items-center gap-2 border-t border-border/40 px-3 py-2.5" data-export-hidden>
         <select
           v-model="college"
-          class="h-9 rounded-md border border-input bg-background px-2.5 text-sm"
+          class="form-select w-auto max-w-full"
           aria-label="按学院筛选"
         >
           <option value="">全部学院</option>
@@ -64,7 +67,7 @@ function clearFilters() {
         </select>
         <select
           v-model="year"
-          class="h-9 rounded-md border border-input bg-background px-2.5 text-sm"
+          class="form-select w-auto max-w-full"
           aria-label="按年级筛选"
         >
           <option :value="null">全部年级</option>
@@ -99,7 +102,8 @@ function clearFilters() {
               <th class="px-3 py-3 font-medium">姓名</th>
               <th class="px-3 py-3 font-medium">年级</th>
               <th class="px-3 py-3 text-right font-medium">过题</th>
-              <th v-for="p in problems" :key="`${p.platform}:${p.key}`" class="px-3 py-3 text-center font-mono font-medium" :title="`${p.platform} ${p.name || p.key}`">{{ p.key }}</th>
+              <!-- 本地练习题不进成绩榜，列里没有它。 -->
+              <th v-for="p in scoredProblems" :key="`${p.platform}:${p.key}`" class="px-3 py-3 text-center font-mono font-medium" :title="`${p.platform} ${p.name || p.key}`">{{ p.key }}</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-border/40">
@@ -111,7 +115,7 @@ function clearFilters() {
               </td>
               <td class="px-3 py-3 text-xs text-muted-foreground">{{ entry.enroll_year ? `${entry.enroll_year} 级` : '—' }}</td>
               <td class="px-3 py-3 text-right font-mono font-semibold">{{ entry.solved_count }}</td>
-              <td v-for="p in problems" :key="`${p.platform}:${p.key}`" class="px-3 py-3 text-center">
+              <td v-for="p in scoredProblems" :key="`${p.platform}:${p.key}`" class="px-3 py-3 text-center">
                 <CircleCheck v-if="entry.per_problem[`${p.platform}:${p.key}`]" class="mx-auto h-4 w-4 text-emerald-600 dark:text-emerald-500" aria-label="已通过" />
                 <Minus v-else class="mx-auto h-4 w-4 text-muted-foreground/40" aria-label="未通过" />
               </td>

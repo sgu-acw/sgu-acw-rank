@@ -14,8 +14,10 @@ import {
   Settings,
   BookOpen,
   Trophy,
+  Terminal,
 } from 'lucide-vue-next'
 import { useAuth } from '../lib/auth'
+import { LEARN_LOCAL } from '../lib/api'
 
 // 当前路径。服务端渲染时为空，客户端挂载后填上。
 //
@@ -48,6 +50,8 @@ const navGroups = [
     items: [
       { title: '每日一题', route: '/daily', icon: CalendarCheck },
       { title: '题单', route: '/problems', icon: ListChecks },
+      // 基础练习只在本地预览启用；生产构建里 /learn 是 404。
+      ...(LEARN_LOCAL ? [{ title: '题库', route: '/learn', icon: Terminal }] : []),
       { title: '练习数据', route: '/practice', icon: BarChart3 },
       { title: '集训', route: '/camps', icon: Trophy },
     ],

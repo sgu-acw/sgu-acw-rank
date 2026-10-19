@@ -32,11 +32,11 @@ const tone = computed(() => {
   <Transition name="action-notice">
     <div
       v-if="props.message"
-      role="status"
+      :role="props.variant === 'error' ? 'alert' : 'status'"
       :class="cn('flex items-start gap-2 rounded-lg border px-3 py-2.5 text-sm', tone)"
     >
       <component :is="icon" class="mt-0.5 h-4 w-4 shrink-0" />
-      <span class="min-w-0">{{ props.message }}</span>
+      <span class="min-w-0 whitespace-pre-line break-words">{{ props.message }}</span>
     </div>
   </Transition>
 </template>

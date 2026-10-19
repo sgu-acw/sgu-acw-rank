@@ -5,15 +5,18 @@
  * 状态本身是大家看的（/status 页、首页卡片），管理是管理员的事——
  * 所以这张表只出现在管理工作台，公共页面只读。
  */
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { CalendarDays, Loader2, Pencil, Plus, X } from 'lucide-vue-next'
 import RefreshButton from './ui/RefreshButton.vue'
+import IconButton from './ui/IconButton.vue'
 import { ApiError, workshopApi, type WorkshopOverride } from '../lib/api'
 import { confirmAction } from '../lib/confirm'
 import AdminWorkspaceNav from './AdminWorkspaceNav.vue'
 import ActionNotice from './ui/ActionNotice.vue'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
+import { useNow } from '../lib/useNow'
+const clock = useNow()
 
 const schedule = ref<WorkshopOverride[]>([])
 const loading = ref(true)
@@ -27,6 +30,7 @@ const editUntil = ref('')
 const saving = ref(false)
 const notice = ref('')
 const error = ref('')
+const currentId = computed(() => schedule.value.filter(isCurrent).reduce((id, r) => Math.max(id, r.id), 0))
 
 function fmtRange(r: WorkshopOverride): string {
   const pad = (n: number) => String(n).padStart(2, '0')
@@ -42,7 +46,7 @@ function fmtRange(r: WorkshopOverride): string {
 }
 
 function isCurrent(r: WorkshopOverride): boolean {
-  const now = Date.now()
+  const now = clock.value
   if (r.start_at && new Date(r.start_at).getTime() > now) return false
   if (r.until && new Date(r.until).getTime() <= now) return false
   return true
@@ -52,7 +56,7 @@ async function load() {
   loading.value = true
   error.value = ''
   try {
-    schedule.value = await workshopApi.schedule()
+    schedule.value = await workshopApi.adminSchedule()
   } catch (err) {
     error.value = err instanceof ApiError ? err.message : '读取失败'
   } finally {
@@ -67,6 +71,7 @@ function toLocalInput(iso: string): string {
 }
 
 function startCreate() {
+  if (saving.value) return
   editingId.value = null
   editLabel.value = ''
   editNote.value = ''
@@ -77,6 +82,7 @@ function startCreate() {
 }
 
 function startEdit(r: WorkshopOverride) {
+  if (saving.value) return
   editingId.value = r.id
   editLabel.value = r.label
   editNote.value = r.note
@@ -92,6 +98,7 @@ function cancelEdit() {
 }
 
 async function save() {
+  if (saving.value) return
   const label = editLabel.value.trim()
   if (!label) {
     error.value = '状态词不能为空'
@@ -128,7 +135,9 @@ async function save() {
 }
 
 async function remove(r: WorkshopOverride) {
+  if (saving.value) return
   if (!await confirmAction(`删掉「${r.label}」这条状态？`)) return
+  if (saving.value) return
   saving.value = true
   error.value = ''
   try {
@@ -145,13 +154,13 @@ onMounted(load)
 </script>
 
 <template>
-  <div class="space-y-4">
+  <div class="mx-auto w-full max-w-6xl space-y-4">
     <AdminWorkspaceNav active="status">
-      <RefreshButton :busy="loading" @click="load" />
+      <RefreshButton :busy="loading || saving" @click="() => { if (!saving) load() }" />
     </AdminWorkspaceNav>
 
     <ActionNotice :message="notice" />
-    <p v-if="error" class="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">{{ error }}</p>
+    <ActionNotice :message="error" variant="error" />
     <p v-if="loading" class="flex items-center gap-2 py-10 text-sm text-muted-foreground"><Loader2 class="h-4 w-4 animate-spin" />正在读取…</p>
 
     <template v-else>
@@ -160,7 +169,7 @@ onMounted(load)
           <h2 class="flex items-center gap-1.5 text-sm font-semibold">
             <CalendarDays class="h-4 w-4" />状态时间表
           </h2>
-          <Button v-if="!editing" size="sm" @click="startCreate">
+          <Button v-if="!editing" :disabled="saving" @click="startCreate">
             <Plus class="mr-1 h-3.5 w-3.5" />添加状态
           </Button>
         </div>
@@ -172,33 +181,21 @@ onMounted(load)
           <div v-for="r in schedule" :key="r.id" class="flex items-start gap-3 py-3">
             <span
               class="mt-1.5 h-2 w-2 shrink-0 rounded-full"
-              :class="isCurrent(r) ? 'bg-violet-500' : 'bg-muted-foreground/40'"
+              :class="r.id === currentId ? 'bg-violet-500' : 'bg-muted-foreground/40'"
             />
             <div class="min-w-0 flex-1">
               <p class="text-sm font-medium">{{ r.label }}</p>
               <p class="mt-0.5 text-xs text-muted-foreground">
                 {{ fmtRange(r) }}
-                <template v-if="isCurrent(r)"> · <span class="text-violet-600 dark:text-violet-400">生效中</span></template>
+                <span v-if="r.id === currentId" class="text-violet-600 dark:text-violet-400"> · 生效中</span>
+                <span v-else-if="isCurrent(r)"> · 被较新状态覆盖</span>
+                <span v-else>{{ r.until && Date.parse(r.until) <= clock ? ' · 已结束' : ' · 未开始' }}</span>
               </p>
               <p v-if="r.note" class="mt-0.5 text-xs text-muted-foreground/80">{{ r.note }}</p>
             </div>
             <div class="mt-1 flex shrink-0 items-center">
-              <button
-                class="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-                title="编辑这条状态"
-                :disabled="saving"
-                @click="startEdit(r)"
-              >
-                <Pencil class="h-4 w-4" />
-              </button>
-              <button
-                class="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
-                title="删掉这条状态"
-                :disabled="saving"
-                @click="remove(r)"
-              >
-                <X class="h-4 w-4" />
-              </button>
+              <IconButton :label="`编辑状态 ${r.label}`" :disabled="saving" @click="startEdit(r)"><Pencil class="h-4 w-4" /></IconButton>
+              <IconButton :label="`删除状态 ${r.label}`" destructive :disabled="saving" @click="remove(r)"><X class="h-4 w-4" /></IconButton>
             </div>
           </div>
         </div>
@@ -215,18 +212,18 @@ onMounted(load)
           <div class="grid gap-3 sm:grid-cols-2">
             <div>
               <label class="mb-1 block text-xs text-muted-foreground">开始（留空 = 立即生效）</label>
-              <input v-model="editStart" type="datetime-local" class="min-h-11 w-full rounded-md border border-input bg-background px-3 text-sm" />
+              <Input v-model="editStart" type="datetime-local" aria-label="开始时间" :disabled="saving" />
             </div>
             <div>
               <label class="mb-1 block text-xs text-muted-foreground">结束（留空 = 手动关闭）</label>
-              <input v-model="editUntil" type="datetime-local" class="min-h-11 w-full rounded-md border border-input bg-background px-3 text-sm" />
+              <Input v-model="editUntil" type="datetime-local" aria-label="结束时间" :disabled="saving" />
             </div>
           </div>
           <div class="flex gap-2">
-            <Button size="sm" :disabled="saving" @click="save">
+            <Button :disabled="saving" @click="save">
               <Loader2 v-if="saving" class="mr-1 h-3.5 w-3.5 animate-spin" />保存
             </Button>
-            <Button size="sm" variant="ghost" :disabled="saving" @click="cancelEdit">取消</Button>
+            <Button variant="outline" :disabled="saving" @click="cancelEdit">取消</Button>
           </div>
         </div>
       </div>

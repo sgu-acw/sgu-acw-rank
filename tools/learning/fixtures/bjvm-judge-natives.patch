@@ -1,0 +1,351 @@
+diff --git a/natives/share/java/io/FileInputStream.c b/natives/share/java/io/FileInputStream.c
+index dee6973..9d2824f 100644
+--- a/natives/share/java/io/FileInputStream.c
++++ b/natives/share/java/io/FileInputStream.c
+@@ -6,6 +6,7 @@
+ #include <sys/fcntl.h>
+ #endif
+ #include <sys/ioctl.h>
++#include <sys/stat.h>
+ #include <unistd.h>
+ 
+ DECLARE_NATIVE("java/io", FileInputStream, initIDs, "()V") { return value_null(); }
+@@ -137,10 +138,17 @@ DECLARE_NATIVE("java/io", FileInputStream, available0, "()I") {
+   if (unix_fd == 0 && thread->vm->poll_available_stdin) {
+     available = thread->vm->poll_available_stdin(thread->vm->stdio_override_param);
+   } else {
+-    int err = ioctl(unix_fd, FIONREAD, &available);
+-    if (err < 0) {
+-      raise_vm_exception(thread, STR("java/io/IOException"), STR("Error getting available bytes"));
+-      return value_null();
++    struct stat st;
++    // Emscripten 的 ioctl 不支持普通文件；常规文件用 size-pos 计算。
++    if (fstat(unix_fd, &st) == 0 && S_ISREG(st.st_mode)) {
++      off_t pos = lseek(unix_fd, 0, SEEK_CUR);
++      available = pos < 0 || st.st_size <= pos ? 0 : (int)(st.st_size - pos);
++    } else {
++      int err = ioctl(unix_fd, FIONREAD, &available);
++      if (err < 0) {
++        raise_vm_exception(thread, STR("java/io/IOException"), STR("Error getting available bytes"));
++        return value_null();
++      }
+     }
+   }
+ 
+diff --git a/natives/share/java/io/FileOutputStream.c b/natives/share/java/io/FileOutputStream.c
+index aa4877d..bc19d63 100644
+--- a/natives/share/java/io/FileOutputStream.c
++++ b/natives/share/java/io/FileOutputStream.c
+@@ -1,8 +1,31 @@
+ #include <natives-dsl.h>
++#include <errno.h>
++#include <fcntl.h>
+ #include <unistd.h>
+ 
+ DECLARE_NATIVE("java/io", FileOutputStream, initIDs, "()V") { return value_null(); }
+ 
++DECLARE_NATIVE("java/io", FileOutputStream, open0, "(Ljava/lang/String;Z)V") {
++  if (!args[0].handle->obj)
++    return value_null();
++
++  heap_string filename = AsHeapString(args[0].handle->obj, on_oom);
++  obj_header *fd = LoadFieldObject(obj->obj, "java/io/FileDescriptor", "fd");
++  DCHECK(fd);
++  s32 unix_fd = open(filename.chars, O_WRONLY | O_CREAT | (args[1].i ? O_APPEND : O_TRUNC), 0666);
++  free_heap_str(filename);
++
++  if (unix_fd < 0) {
++    raise_vm_exception(thread, STR("java/io/FileNotFoundException"), STR("open failed"));
++    return value_null();
++  }
++  StoreFieldInt(fd, "fd", unix_fd);
++  return value_null();
++
++on_oom:
++  return value_null();
++}
++
+ DECLARE_NATIVE("java/io", FileOutputStream, writeBytes, "([BIIZ)V") {
+   obj_header *fd = LoadFieldObject(obj->obj, "java/io/FileDescriptor", "fd");
+   s32 unix_fd = LoadFieldInt(fd, "fd");
+diff --git a/natives/share/java/io/UnixFileSystem.c b/natives/share/java/io/UnixFileSystem.c
+index f596189..a17aa57 100644
+--- a/natives/share/java/io/UnixFileSystem.c
++++ b/natives/share/java/io/UnixFileSystem.c
+@@ -1,5 +1,6 @@
+ #include "unixlike-fs.h"
+ 
++#include <dirent.h>
+ #include <natives-dsl.h>
+ #include <sys/stat.h>
+ #include <unistd.h>
+@@ -80,6 +81,51 @@ DECLARE_NATIVE("java/io", UnixFileSystem, canonicalize0, "(Ljava/lang/String;)Lj
+   return (stack_value){.obj = result};
+ }
+ 
++DECLARE_NATIVE("java/io", UnixFileSystem, list0, "(Ljava/io/File;)[Ljava/lang/String;") {
++  obj_header *file_obj = args[0].handle->obj;
++  if (!file_obj)
++    return value_null();
++  obj_header *path = LoadFieldObject(file_obj, "java/lang/String", "path");
++  heap_string path_str = AsHeapString(path, on_oom);
++  DIR *dir = opendir(path_str.chars);
++  free_heap_str(path_str);
++  if (!dir)
++    return value_null();
++
++  int n = 0;
++  struct dirent *e;
++  while ((e = readdir(dir)))
++    if (strcmp(e->d_name, ".") && strcmp(e->d_name, ".."))
++      n++;
++  rewinddir(dir);
++
++  // 组件类型是 java.lang.String；传数组类会造出 String[][]。
++  classdesc *arr = bootstrap_lookup_class(thread, STR("java/lang/String"));
++  if (!arr) {
++    closedir(dir);
++    return value_null();
++  }
++  handle *array = make_handle(thread, CreateObjectArray1D(thread, arr, n));
++  if (!array->obj) {
++    closedir(dir);
++    return value_null();
++  }
++  int i = 0;
++  while ((e = readdir(dir)) && i < n) {
++    if (!strcmp(e->d_name, ".") || !strcmp(e->d_name, ".."))
++      continue;
++    slice name = {.chars = e->d_name, .len = (int)strlen(e->d_name)};
++    *((obj_header **)ArrayData(array->obj) + i++) = MakeJStringFromModifiedUTF8(thread, name, false);
++  }
++  closedir(dir);
++  obj_header *result = array->obj;
++  drop_handle(thread, array);
++  return (stack_value){.obj = result};
++
++on_oom:
++  return value_null();
++}
++
+ DECLARE_NATIVE("java/io", UnixFileSystem, getLastModifiedTime, "(Ljava/io/File;)J") {
+   obj_header *file_obj = args[0].handle->obj;
+   obj_header *path = LoadFieldObject(file_obj, "java/lang/String", "path");
+diff --git a/natives/share/jdk/internal/jimage/NativeImageBuffer.c b/natives/share/jdk/internal/jimage/NativeImageBuffer.c
+index ec20d90..36671a5 100644
+--- a/natives/share/jdk/internal/jimage/NativeImageBuffer.c
++++ b/natives/share/jdk/internal/jimage/NativeImageBuffer.c
+@@ -1,5 +1,50 @@
+ #include <natives-dsl.h>
++#include <stdio.h>
+ 
++// JDK 约定：返回 jimage 文件的内存映射。wasm 里没有真正的 mmap，就把整个
++// 文件读进 byte[]，再用 ByteBuffer.wrap 包一层——ImageReader 只走 buffer
++// 的 get/getInt 接口，不区分 direct/heap。
+ DECLARE_NATIVE("jdk/internal/jimage", NativeImageBuffer, getNativeMap, "(Ljava/lang/String;)Ljava/nio/ByteBuffer;") {
++  if (!args[0].handle->obj)
++    return value_null();
++
++  heap_string path = AsHeapString(args[0].handle->obj, on_oom);
++  FILE *f = fopen(path.chars, "rb");
++  free_heap_str(path);
++  if (!f)
++    return value_null();
++
++  fseek(f, 0, SEEK_END);
++  long size = ftell(f);
++  fseek(f, 0, SEEK_SET);
++  if (size < 0 || size > 512 * 1024 * 1024) {
++    fclose(f);
++    return value_null();
++  }
++
++  obj_header *bytes = CreatePrimitiveArray1D(thread, TYPE_KIND_BYTE, (int)size);
++  if (!bytes) {
++    fclose(f);
++    return value_null();
++  }
++  if (fread(ArrayData(bytes), 1, (size_t)size, f) != (size_t)size) {
++    fclose(f);
++    return value_null();
++  }
++  fclose(f);
++
++  classdesc *bb = bootstrap_lookup_class(thread, STR("java/nio/ByteBuffer"));
++  if (!bb)
++    return value_null();
++  cp_method *wrap = method_lookup(bb, STR("wrap"), STR("([B)Ljava/nio/ByteBuffer;"), false, false);
++  if (!wrap)
++    return value_null();
++  stack_value argv[1] = {{.obj = bytes}};
++  stack_value result = call_interpreter_synchronous(thread, wrap, argv);
++  if (thread->current_exception)
++    return value_null();
++  return result;
++
++on_oom:
+   return value_null();
+ }
+diff --git a/natives/share/jdk/internal/misc/Unsafe.c b/natives/share/jdk/internal/misc/Unsafe.c
+index ba85b6f..9e8d488 100644
+--- a/natives/share/jdk/internal/misc/Unsafe.c
++++ b/natives/share/jdk/internal/misc/Unsafe.c
+@@ -321,6 +321,16 @@ DECLARE_NATIVE("jdk/internal/misc", Unsafe, getByte, "(Ljava/lang/Object;J)B") {
+   return (stack_value){.i = *(s8 *)((uintptr_t)args[0].handle->obj + args[1].l)};
+ }
+ 
++DECLARE_NATIVE("jdk/internal/misc", Unsafe, getChar, "(Ljava/lang/Object;J)C") {
++  DCHECK(argc == 2);
++  return (stack_value){.i = *(u16 *)((uintptr_t)args[0].handle->obj + args[1].l)};
++}
++
++DECLARE_NATIVE_OVERLOADED("jdk/internal/misc", Unsafe, getChar, "(J)C", 1) {
++  DCHECK(argc == 1);
++  return (stack_value){.i = *(u16 *)args[0].l};
++}
++
+ DECLARE_NATIVE("jdk/internal/misc", Unsafe, getBoolean, "(Ljava/lang/Object;J)Z") {
+   DCHECK(argc == 2);
+   return (stack_value){.i = (bool)*(u8 *)((uintptr_t)args[0].handle->obj + args[1].l)};
+diff --git a/natives/share/sun/nio/fs/UnixNativeDispatcher.c b/natives/share/sun/nio/fs/UnixNativeDispatcher.c
+index 091e88e..d67223f 100644
+--- a/natives/share/sun/nio/fs/UnixNativeDispatcher.c
++++ b/natives/share/sun/nio/fs/UnixNativeDispatcher.c
+@@ -28,6 +28,19 @@ static obj_header *create_unix_exception(vm_thread *thread, int errno_code) {
+ 
+ DECLARE_NATIVE("sun/nio/fs", UnixNativeDispatcher, init, "()I") { return value_null(); }
+ 
++DECLARE_NATIVE("sun/nio/fs", UnixNativeDispatcher, realpath0, "(J)[B") {
++  char *resolved = realpath((const char *)(uintptr_t)args[0].l, nullptr);
++  if (!resolved) {
++    thread->current_exception = create_unix_exception(thread, errno);
++    return value_null();
++  }
++  size_t length = strlen(resolved);
++  obj_header *array = CreatePrimitiveArray1D(thread, TYPE_KIND_BYTE, length);
++  if (array) memcpy(ArrayData(array), resolved, length);
++  free(resolved);
++  return (stack_value){.obj = array};
++}
++
+ DECLARE_NATIVE("sun/nio/fs", UnixNativeDispatcher, getcwd, "()[B") {
+   INIT_STACK_STRING(cwd, 1024);
+   char *p = getcwd(cwd.chars, 1024);
+@@ -147,12 +160,9 @@ DECLARE_NATIVE("sun/nio/fs", UnixNativeDispatcher, open0, "(JII)I") {
+ }
+ 
+ DECLARE_NATIVE("sun/nio/fs", UnixNativeDispatcher, access0, "(JI)I") {
++  // JDK 约定：access0 返回 errno 数值，不抛异常（Files.exists 靠它判存在性）。
+   int result = access((char const *)args[0].l, args[1].i);
+-  if (result == 0)
+-    return (stack_value){.i = 0};
+-
+-  thread->current_exception = create_unix_exception(thread, errno);
+-  return value_null();
++  return (stack_value){.i = result == 0 ? 0 : errno};
+ }
+ 
+ DECLARE_NATIVE("sun/nio/ch", UnixFileDispatcherImpl, size0, "(Ljava/io/FileDescriptor;)J") {
+@@ -213,4 +223,81 @@ DECLARE_NATIVE("sun/nio/fs", UnixNativeDispatcher, strerror, "(I)[B") {
+   return (stack_value){.obj = array};
+ }
+ 
+-DECLARE_NATIVE("sun/nio/ch", FileDispatcherImpl, init0, "()V") { return value_null(); }
+\ No newline at end of file
++DECLARE_NATIVE("sun/nio/ch", FileDispatcherImpl, init0, "()V") { return value_null(); }
++
++// FileChannel 路径：nio 层直接读写 FileDescriptor 里的 unix fd。
++// 直接缓冲区的地址就是 wasm 线性内存偏移。
++
++static s32 ufd_read_fd(obj_header *fdobj) {
++  return fdobj ? LoadFieldInt(fdobj, "fd") : -1;
++}
++
++DECLARE_NATIVE("sun/nio/ch", UnixFileDispatcherImpl, read0, "(Ljava/io/FileDescriptor;JI)I") {
++  DCHECK(argc == 3);
++  s32 fd = ufd_read_fd(args[0].handle->obj);
++  if (fd < 0) {
++    raise_vm_exception(thread, STR("java/io/IOException"), STR("Bad file descriptor"));
++    return value_null();
++  }
++  ssize_t n;
++  if (fd == 0 && thread->vm->read_stdin) {
++    n = thread->vm->read_stdin((void *)(uintptr_t)args[1].l, args[2].i, thread->vm->stdio_override_param);
++  } else {
++    n = read(fd, (void *)(uintptr_t)args[1].l, (size_t)args[2].i);
++  }
++  if (n < 0) {
++    raise_vm_exception(thread, STR("java/io/IOException"), STR("Read failed"));
++    return value_null();
++  }
++  return (stack_value){.i = n == 0 ? -1 : (s32)n};
++}
++
++DECLARE_NATIVE("sun/nio/ch", UnixFileDispatcherImpl, pread0, "(Ljava/io/FileDescriptor;JIJ)I") {
++  DCHECK(argc == 4);
++  s32 fd = ufd_read_fd(args[0].handle->obj);
++  if (fd < 0) {
++    raise_vm_exception(thread, STR("java/io/IOException"), STR("Bad file descriptor"));
++    return value_null();
++  }
++  ssize_t n = pread(fd, (void *)(uintptr_t)args[1].l, (size_t)args[2].i, (off_t)args[3].l);
++  if (n < 0) {
++    raise_vm_exception(thread, STR("java/io/IOException"), STR("Pread failed"));
++    return value_null();
++  }
++  return (stack_value){.i = n == 0 ? -1 : (s32)n};
++}
++
++DECLARE_NATIVE("sun/nio/ch", UnixFileDispatcherImpl, write0, "(Ljava/io/FileDescriptor;JI)I") {
++  DCHECK(argc == 3);
++  s32 fd = ufd_read_fd(args[0].handle->obj);
++  if (fd < 0) {
++    raise_vm_exception(thread, STR("java/io/IOException"), STR("Bad file descriptor"));
++    return value_null();
++  }
++  ssize_t n = write(fd, (const void *)(uintptr_t)args[1].l, (size_t)args[2].i);
++  if (n < 0) {
++    raise_vm_exception(thread, STR("java/io/IOException"), STR("Write failed"));
++    return value_null();
++  }
++  return (stack_value){.i = (s32)n};
++}
++
++DECLARE_NATIVE("sun/nio/ch", UnixFileDispatcherImpl, close0, "(Ljava/io/FileDescriptor;)V") {
++  DCHECK(argc == 1);
++  s32 fd = ufd_read_fd(args[0].handle->obj);
++  if (fd >= 0)
++    close(fd);
++  return value_null();
++}
++
++DECLARE_NATIVE("sun/nio/ch", UnixFileDispatcherImpl, force0, "(Ljava/io/FileDescriptor;Z)I") {
++  return (stack_value){.i = 0};
++}
++
++DECLARE_NATIVE("sun/nio/ch", UnixFileDispatcherImpl, truncate0, "(Ljava/io/FileDescriptor;J)I") {
++  DCHECK(argc == 2);
++  s32 fd = ufd_read_fd(args[0].handle->obj);
++  if (fd >= 0)
++    ftruncate(fd, (off_t)args[1].l);
++  return (stack_value){.i = 0};
++}
+\ No newline at end of file
+diff --git a/vm/bin/main.c b/vm/bin/main.c
+index 5925aaa..d9e4bf8 100644
+--- a/vm/bin/main.c
++++ b/vm/bin/main.c
+@@ -26,6 +26,13 @@ vm *ffi_create_vm(const char *classpath, size_t heap_size, write_bytes stdout_,
+   return vm;
+ }
+ 
++EMSCRIPTEN_KEEPALIVE
++void ffi_set_stdin(vm *vm, read_bytes read_fn, poll_available_bytes poll_fn, void *param) {
++  vm->read_stdin = read_fn;
++  vm->poll_available_stdin = poll_fn;
++  vm->stdio_override_param = param;
++}
++
+ EMSCRIPTEN_KEEPALIVE
+ vm_thread *ffi_create_thread(vm *vm) {
+   vm_thread *thr = create_main_thread(vm, default_thread_options());

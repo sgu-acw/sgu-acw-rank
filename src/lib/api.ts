@@ -1,7 +1,7 @@
 /**
  * 与后端通信的薄封装。
  *
- * 后端在 VPS 上，浏览器始终只跟本站说话：生产由 Pages Function 把 /api/*
+ * 后端在 VPS 上，浏览器始终只跟本站说话：生产由源站 OpenResty 把 /api/*
  * 转发过去，本地由 vite 代理转给 localhost:8091。两种情况都是同源，所以
  * 这里不需要配置 base URL，也不需要处理 CORS。
  *
@@ -307,6 +307,20 @@ export const PROBLEM_KEY_HINT: Record<Platform, string> = {
   luogu: '题号，如 P1001',
   // 牛客填数字就行，竞赛站的题目 id。主站的题是 uuid，很少手填。
   nowcoder: '题号，如 233234',
+}
+
+/** 本地浏览器评测的练习题。不是同步平台，只在本地预览里出现在题单/集训中。 */
+export const LEARN_PLATFORM = 'learn'
+/**
+ * 题库是否启用。默认开启；需要临时下线时构建时设
+ * PUBLIC_LEARN_ENABLED=false（导航入口、页面、管理页一起消失）。
+ */
+export const LEARN_LOCAL = import.meta.env.PUBLIC_LEARN_ENABLED !== 'false'
+
+/** 题行、题单、集训用的平台显示名；覆盖 PLATFORM_META 之外的本地平台。 */
+export function platformLabel(platform: string): string {
+  if (platform === LEARN_PLATFORM) return '题库'
+  return PLATFORM_META[platform as Platform]?.label ?? platform
 }
 
 export interface PracticeDay {
@@ -653,7 +667,8 @@ export type ProblemListKind = 'collection' | 'list'
 
 export interface ProblemEntry {
   id: number
-  platform: Platform
+  /** 同步平台或本地练习（learn）；本地条目的完成标记来自客户端自报 AC。 */
+  platform: Platform | 'learn'
   key: string
   position: number
   note: string
@@ -952,7 +967,7 @@ export const problemListApi = {
     api.post<ProblemListSummary[]>('/problem-lists/reorder', { ids }),
 
   /** 按题号查题目信息，用于输入时预览。 */
-  lookup: (platform: Platform, key: string) =>
+  lookup: (platform: Platform | 'learn', key: string) =>
     api.get<ProblemLookup>(
       `/problem-lists/lookup/problem?platform=${platform}&key=${encodeURIComponent(key)}`,
     ),
@@ -970,7 +985,7 @@ export const problemListApi = {
       {},
     ),
 
-  addProblem: (listId: number, payload: { platform: Platform; key: string; note?: string }) =>
+  addProblem: (listId: number, payload: { platform: Platform | 'learn'; key: string; note?: string }) =>
     api.post<ProblemEntry>(`/problem-lists/${listId}/problems`, payload),
 
   updateProblem: (listId: number, itemId: number, payload: { note?: string }) =>
@@ -1056,12 +1071,12 @@ export interface AdminMemberDetail {
 
 /** 集训里的一道题。 */
 export interface CampProblem {
-  platform: Platform
+  platform: Platform | 'learn'
   key: string
   name: string
   rating: number | null
   url: string
-  /** 当前查看的人过了没有。未报名者恒为 false——题面本身不给他们看。 */
+  /** 已报名成员的集训通过状态；未报名访问者恒为 false，界面不展示通过标记。 */
   done: boolean
 }
 
@@ -1086,7 +1101,7 @@ export interface CampResultStatus {
   pending_accounts: number
 }
 
-/** 题目和排行榜只有已报名且已经开始才返回，管理员预览走管理接口。 */
+/** 截止后题单公开；截止前仅已报名且已开始可见。排行榜始终仅已报名且已开始返回。 */
 export interface CampDetail extends CampResultStatus {
   id: number
   name: string
@@ -1174,7 +1189,7 @@ export const campAdminApi = {
   remove: (id: number) => api.delete(`/admin/camps/${id}`),
   reorderProblems: (id: number, ids: number[]) =>
     api.post<CampAdminProblem[]>(`/admin/camps/${id}/problems/reorder`, { ids }),
-  addProblem: (id: number, platform: Platform, key: string) =>
+  addProblem: (id: number, platform: Platform | 'learn', key: string) =>
     api.post(`/admin/camps/${id}/problems`, { platform, key }),
   /**
    * 批量导入题目。items 和 problem_list_id 可以一起给，重复的跳过。
@@ -1182,7 +1197,7 @@ export const campAdminApi = {
    */
   importProblems: (
     id: number,
-    payload: { items?: { platform: Platform; key: string }[]; problem_list_id?: number },
+    payload: { items?: { platform: Platform | 'learn'; key: string }[]; problem_list_id?: number },
   ) => api.post<{ added: number; skipped: number; failed: string[] }>(`/admin/camps/${id}/problems/import`, payload),
   removeProblem: (id: number, problemId: number) =>
     api.delete(`/admin/camps/${id}/problems/${problemId}`),
@@ -1296,6 +1311,7 @@ export interface WorkshopOverride {
 export const workshopApi = {
   override: () => api.get<WorkshopOverride | null>('/workshop/override'),
   schedule: () => api.get<WorkshopOverride[]>('/workshop/schedule'),
+  adminSchedule: () => api.get<WorkshopOverride[]>('/admin/workshop/schedule'),
   setOverride: (payload: {
     label: string
     note?: string
@@ -1328,6 +1344,7 @@ export const pushApi = {
     api.post('/push/subscribe', payload),
   unsubscribe: (endpoint: string) => api.post('/push/unsubscribe', { endpoint }),
   announce: (payload: {
+    request_id: string
     title: string
     body?: string
     url?: string
@@ -1391,7 +1408,7 @@ export const signupApi = {
 export interface SignupPayload {
   name: string
   description?: string
-  fields?: Omit<SignupFieldDef, 'key'>[]
+  fields?: (Omit<SignupFieldDef, 'key'> & { key?: string })[]
   /** 前置条件：这些平台的账号都要绑定并验证。 */
   required_platforms?: Platform[]
   /** 前置条件：仅限这些入学年级。 */

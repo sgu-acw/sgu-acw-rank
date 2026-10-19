@@ -9,21 +9,38 @@ import ActionNotice from './ui/ActionNotice.vue'
 import { ApiError, PLATFORM_META, signupApi, type SignupAnswer, type SignupSummary } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { confirmAction } from '../lib/confirm'
+import { useNow } from '../lib/useNow'
 
 const { user, ensureLoaded } = useAuth()
 
 const id = ref<number | null>(null)
 const signup = ref<SignupSummary | null>(null)
+const now = useNow()
+const currentStatus = computed(() => {
+  const s = signup.value
+  if (!s) return 'upcoming'
+  if (now.value < Date.parse(s.open_at)) return 'upcoming'
+  if (s.close_at && now.value >= Date.parse(s.close_at)) return 'closed'
+  return 'open'
+})
 const answers = ref<Record<string, SignupAnswer>>({})
 const loading = ref(true)
 const busy = ref(false)
 const error = ref('')
 const notice = ref('')
 const editing = ref(false) // 已报名的人改答案
+let savedAnswers: Record<string, SignupAnswer> = {}
+function cancelEdit() {
+  if (busy.value) return
+  answers.value = window.structuredClone(savedAnswers)
+  editing.value = false
+}
+const yearEligible = computed(() => !signup.value?.required_years.length
+  || (!!user.value && signup.value.required_years.includes(user.value.enroll_year)))
 
 const canSubmit = computed(() => {
-  if (!signup.value || signup.value.status !== 'open') return false
-  if (!user.value) return false
+  if (!signup.value || currentStatus.value !== 'open') return false
+  if (!user.value || !yearEligible.value || full.value) return false
   for (const f of signup.value.fields) {
     if (!f.required) continue
     const v = answers.value[f.key]
@@ -55,15 +72,21 @@ async function load() {
   error.value = ''
   try {
     signup.value = await signupApi.detail(id.value)
+    const values: Record<string, SignupAnswer> = {}
+    for (const f of signup.value.fields) {
+      values[f.key] = f.type === 'checkbox' ? false : f.type === 'multiselect' ? [] : ''
+    }
     if (signup.value.my_entry) {
       const mine = await signupApi.myEntry(id.value)
-      answers.value = { ...mine.answers }
-      editing.value = false
-    } else {
       for (const f of signup.value.fields) {
-        answers.value[f.key] = f.type === 'checkbox' ? false : f.type === 'multiselect' ? [] : ''
+        const answer = mine.answers[f.key]
+        if (answer !== undefined) values[f.key] = f.type === 'multiselect'
+          ? (Array.isArray(answer) ? answer : []) : answer
       }
     }
+    savedAnswers = window.structuredClone(values)
+    answers.value = values
+    editing.value = false
   } catch (err) {
     error.value = err instanceof ApiError ? err.message : '读取失败'
   } finally {
@@ -72,7 +95,7 @@ async function load() {
 }
 
 async function submit() {
-  if (!id.value || busy.value) return
+  if (!id.value || busy.value || !canSubmit.value) return
   busy.value = true
   error.value = ''
   try {
@@ -89,7 +112,7 @@ async function submit() {
 }
 
 async function withdraw() {
-  if (!id.value || !signup.value?.my_entry) return
+  if (!id.value || busy.value || !signup.value?.my_entry) return
   if (!await confirmAction(`撤销「${signup.value.name}」的报名？`)) return
   busy.value = true
   error.value = ''
@@ -147,11 +170,11 @@ onMounted(async () => {
             class="text-xs font-medium"
             :class="{
               'text-emerald-600 dark:text-emerald-500': signup.my_entry,
-              'text-primary': !signup.my_entry && signup.status === 'open',
-              'text-muted-foreground': signup.status !== 'open' && !signup.my_entry,
+              'text-primary': !signup.my_entry && currentStatus === 'open',
+              'text-muted-foreground': currentStatus !== 'open' && !signup.my_entry,
             }"
           >
-            {{ signup.my_entry ? '已报名' : signup.status === 'open' ? '报名中' : signup.status === 'upcoming' ? '未开始' : '已截止' }}
+            {{ signup.my_entry ? '已报名' : currentStatus === 'open' ? '报名中' : currentStatus === 'upcoming' ? '未开始' : '已截止' }}
           </span>
         </div>
         <p class="text-sm text-muted-foreground">
@@ -162,6 +185,7 @@ onMounted(async () => {
           需要先绑定并验证这些平台的账号：
           <template v-for="(p, i) in signup.required_platforms" :key="p"><template v-if="i">、</template><span class="font-medium">{{ PLATFORM_META[p]?.label ?? p }}</span></template>
         </p>
+        <p v-if="signup.required_years.length" class="text-sm text-muted-foreground">入学年级：{{ signup.required_years.join('、') }} 级</p>
         <p v-if="signup.description" class="whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">{{ signup.description }}</p>
       </div>
 
@@ -179,8 +203,8 @@ onMounted(async () => {
               </dd>
             </div>
           </dl>
-          <div v-if="signup.status === 'open'" class="flex gap-2">
-            <Button size="sm" variant="outline" @click="editing = true">修改报名信息</Button>
+          <div v-if="currentStatus === 'open'" class="flex gap-2">
+            <Button size="sm" variant="outline" :disabled="busy" @click="editing = true">修改报名信息</Button>
             <Button size="sm" variant="ghost" class="text-destructive hover:text-destructive" :disabled="busy" @click="withdraw">
               <Trash2 class="mr-1 h-3.5 w-3.5" />撤销报名
             </Button>
@@ -189,7 +213,7 @@ onMounted(async () => {
       </Card>
 
       <!-- 表单：未报名的人填，已报名的点修改后也是这份 -->
-      <Card v-else-if="signup.status === 'open' && (!signup.my_entry || editing)">
+      <Card v-else-if="currentStatus === 'open' && (!signup.my_entry || editing)">
         <CardContent class="space-y-4 py-5">
           <p v-if="full" class="rounded-md bg-muted px-3 py-2 text-sm text-muted-foreground">名额已满</p>
           <div v-else-if="!user" class="flex items-center gap-3">
@@ -197,9 +221,11 @@ onMounted(async () => {
             <p class="mr-auto text-sm text-muted-foreground">登录后可以报名</p>
             <a href="/login" class="rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground">登录</a>
           </div>
-          <template v-else>
+          <p v-else-if="!yearEligible" class="text-sm text-muted-foreground">你的入学年级不在本次报名范围内。</p>
+          <form v-else class="space-y-4" @submit.prevent="submit">
+            <fieldset :disabled="busy" class="min-w-0 space-y-4">
             <div v-for="f in signup.fields" :key="f.key" class="space-y-1.5">
-              <label class="block text-sm font-medium">
+              <label :for="`signup-field-${f.key}`" class="block text-sm font-medium">
                 {{ f.label }}
                 <span v-if="f.required" class="text-destructive">*</span>
               </label>
@@ -207,25 +233,29 @@ onMounted(async () => {
 
               <Input
                 v-if="f.type === 'text'"
+                :id="`signup-field-${f.key}`"
                 v-model="answers[f.key] as string"
                 class="min-h-11"
                 :placeholder="f.hint"
               />
               <textarea
                 v-else-if="f.type === 'textarea'"
+                :id="`signup-field-${f.key}`"
                 v-model="answers[f.key] as string"
                 rows="3"
-                class="w-full rounded-md border border-input bg-background p-3 text-sm"
+                class="form-textarea"
                 :placeholder="f.hint"
               />
               <Input
                 v-else-if="f.type === 'number'"
+                :id="`signup-field-${f.key}`"
                 v-model="answers[f.key] as string"
                 type="number"
                 class="min-h-11"
               />
               <Input
                 v-else-if="f.type === 'phone'"
+                :id="`signup-field-${f.key}`"
                 v-model="answers[f.key] as string"
                 type="tel"
                 inputmode="numeric"
@@ -235,6 +265,7 @@ onMounted(async () => {
               />
               <Input
                 v-else-if="f.type === 'email'"
+                :id="`signup-field-${f.key}`"
                 v-model="answers[f.key] as string"
                 type="email"
                 placeholder="name@example.com"
@@ -242,8 +273,9 @@ onMounted(async () => {
               />
               <select
                 v-else-if="f.type === 'select'"
+                :id="`signup-field-${f.key}`"
                 v-model="answers[f.key] as string"
-                class="min-h-11 w-full rounded-md border border-input bg-background px-3 text-sm"
+                class="form-select"
               >
                 <option value="">请选择</option>
                 <option v-for="o in f.options" :key="o" :value="o">{{ o }}</option>
@@ -276,21 +308,24 @@ onMounted(async () => {
                 <span class="text-sm">是</span>
               </label>
             </div>
-            <Button :disabled="busy || !canSubmit" @click="submit">
-              <Loader2 v-if="busy" class="mr-2 h-4 w-4 animate-spin" />
-              {{ editing ? '保存修改' : '报名' }}
-            </Button>
-            <Button v-if="editing" variant="ghost" @click="editing = false">取消</Button>
-          </template>
+            </fieldset>
+            <div class="flex flex-wrap gap-2">
+              <Button type="submit" :disabled="busy || !canSubmit">
+                <Loader2 v-if="busy" class="mr-2 h-4 w-4 animate-spin" />
+                {{ editing ? '保存修改' : '报名' }}
+              </Button>
+              <Button v-if="editing" variant="outline" :disabled="busy" @click="cancelEdit">取消</Button>
+            </div>
+          </form>
         </CardContent>
       </Card>
 
-      <Card v-else-if="signup.status === 'upcoming'">
+      <Card v-else-if="currentStatus === 'upcoming'">
         <CardContent class="py-6 text-center text-sm text-muted-foreground">
           报名还没开始，{{ fmt(signup.open_at) }} 开放
         </CardContent>
       </Card>
-      <Card v-else-if="signup.status === 'closed'">
+      <Card v-else-if="currentStatus === 'closed'">
         <CardContent class="py-6 text-center text-sm text-muted-foreground">报名已截止</CardContent>
       </Card>
     </template>

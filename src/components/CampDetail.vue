@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue'
-import { ArrowLeft, CircleCheck, Loader2, LogIn, RefreshCw, Settings } from 'lucide-vue-next'
+import { ArrowLeft, BookOpen, CircleCheck, Loader2, LogIn, RefreshCw, Settings } from 'lucide-vue-next'
 import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import ActionNotice from './ui/ActionNotice.vue'
 import CampLeaderboard from './CampLeaderboard.vue'
 import CampResultNotice from './CampResultNotice.vue'
-import { ApiError, campApi, PLATFORM_META, type CampDetail } from '../lib/api'
+import { ApiError, campApi, LEARN_PLATFORM, PLATFORM_META, platformLabel, type CampDetail } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { confirmAction } from '../lib/confirm'
 const { user, isAdmin, ensureLoaded } = useAuth()
@@ -91,7 +91,14 @@ onUnmounted(() => { disposed = true; clearInterval(timer); document.removeEventL
         <p v-if="camp.description" class="whitespace-pre-wrap break-words text-sm leading-relaxed text-muted-foreground">{{ camp.description }}</p>
       </div>
       <CampResultNotice :status="camp" />
-      <Card v-if="!user"><CardContent class="flex flex-wrap items-center gap-3 py-5"><LogIn class="h-4 w-4 text-muted-foreground" /><p class="mr-auto text-sm text-muted-foreground">{{ camp.ended ? '报名已截止，已报名成员登录后可查看成绩。' : '登录后可以报名集训。' }}</p><a href="/login" class="inline-flex min-h-11 items-center rounded-md bg-primary px-4 text-sm text-primary-foreground">登录</a></CardContent></Card>
+      <Card v-if="camp.ended && !camp.registered">
+        <CardContent class="flex flex-wrap items-center gap-3 py-5">
+          <BookOpen class="h-4 w-4 shrink-0 text-muted-foreground" />
+          <p class="mr-auto text-sm text-muted-foreground">集训已结束，题单已公开，可以直接查看和练习。</p>
+          <a v-if="!user" href="/login" class="inline-flex min-h-11 items-center text-sm text-primary hover:underline">已报名？登录查看成绩</a>
+        </CardContent>
+      </Card>
+      <Card v-else-if="!user"><CardContent class="flex flex-wrap items-center gap-3 py-5"><LogIn class="h-4 w-4 text-muted-foreground" /><p class="mr-auto text-sm text-muted-foreground">登录后可以报名集训。</p><a href="/login" class="inline-flex min-h-11 items-center rounded-md bg-primary px-4 text-sm text-primary-foreground">登录</a></CardContent></Card>
       <Card v-else-if="!camp.registered">
 <CardContent class="space-y-3 py-5">
         <template v-if="!camp.ended">
@@ -104,22 +111,23 @@ onUnmounted(() => { disposed = true; clearInterval(timer); document.removeEventL
       </CardContent>
 </Card>
       <Card v-else><CardContent class="flex flex-wrap items-center gap-3 py-5"><CircleCheck class="h-4 w-4 shrink-0 text-emerald-600" /><p class="min-w-0 flex-1 text-sm">{{ !camp.started ? `已报名，题目将在 ${fmt(camp.start_at)} 开放。` : '已报名，成绩定期自动更新。' }}</p><Button v-if="canCancel" variant="outline" :disabled="busy || refreshing" @click="unregister">取消报名</Button></CardContent></Card>
-      <template v-if="camp.registered && camp.started">
+      <template v-if="camp.ended || (camp.registered && camp.started)">
         <Card>
           <CardHeader><CardTitle class="text-sm">题目 · {{ camp.problems.length }}</CardTitle></CardHeader>
           <CardContent class="p-0">
             <p v-if="!camp.problems.length" class="px-6 py-8 text-sm text-muted-foreground">管理员尚未添加题目，请稍后刷新。</p>
             <div class="divide-y divide-border/40 border-t border-border/40">
               <a v-for="p in camp.problems" :key="`${p.platform}:${p.key}`" :href="p.url" target="_blank" rel="noreferrer" class="row-action flex min-h-16 items-center gap-3 px-4 py-3" :class="p.done ? 'bg-emerald-500/5' : ''">
-                <CircleCheck class="h-5 w-5 shrink-0" :class="p.done ? 'text-emerald-600 dark:text-emerald-500' : 'text-muted-foreground/30'" :aria-label="p.done ? '已通过' : '未通过'" />
-                <div class="min-w-0 flex-1"><p class="break-words text-sm font-medium">{{ p.name || p.key }}</p><p class="mt-1 break-all text-xs text-muted-foreground">{{ PLATFORM_META[p.platform]?.label || p.platform }} · {{ p.key }}</p></div>
+                <CircleCheck v-if="camp.registered" class="h-5 w-5 shrink-0" :class="p.done ? 'text-emerald-600 dark:text-emerald-500' : 'text-muted-foreground/30'" :aria-label="p.done ? '已通过' : '未通过'" />
+                <BookOpen v-else class="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden="true" />
+                <div class="min-w-0 flex-1"><p class="break-words text-sm font-medium">{{ p.name || p.key }}</p><p class="mt-1 break-all text-xs text-muted-foreground">{{ platformLabel(p.platform) }}<template v-if="p.platform !== LEARN_PLATFORM"> · {{ p.key }}</template><template v-else> · 题库</template></p></div>
                 <span class="shrink-0 text-xs text-muted-foreground">做题 ↗</span>
               </a>
             </div>
           </CardContent>
         </Card>
-        <CampLeaderboard :entries="camp.leaderboard" :problems="camp.problems" />
       </template>
+      <CampLeaderboard v-if="camp.registered && camp.started" :entries="camp.leaderboard" :problems="camp.problems" />
     </template>
   </div>
 </template>

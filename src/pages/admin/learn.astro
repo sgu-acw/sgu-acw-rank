@@ -1,0 +1,6 @@
+---
+import LearningLayout from '../../layouts/LearningLayout.astro'
+import LearningAdmin from '../../components/learning/LearningAdmin.vue'
+if (import.meta.env.PUBLIC_LEARN_ENABLED === 'false') return Astro.redirect('/404')
+---
+<LearningLayout title="题库管理"><LearningAdmin client:load /></LearningLayout>

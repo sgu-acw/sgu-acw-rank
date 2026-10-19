@@ -3,7 +3,7 @@ import pluginVue from 'eslint-plugin-vue'
 import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
-  { ignores: ['dist/**', 'node_modules/**', '.astro/**', '.playwright-mcp/**'] },
+  { ignores: ['dist/**', 'node_modules/**', '.astro/**', '.playwright-mcp/**', 'tools/learning/vendor/**'] },
 
   js.configs.recommended,
   ...tseslint.configs.recommended,
@@ -41,11 +41,31 @@ export default tseslint.config(
         KeyboardEvent: 'readonly',
         Event: 'readonly',
         CustomEvent: 'readonly',
+        AbortController: 'readonly',
+        BeforeUnloadEvent: 'readonly',
         requestAnimationFrame: 'readonly',
         getComputedStyle: 'readonly',
         matchMedia: 'readonly',
         Node: 'readonly',
       },
+    },
+  },
+
+  {
+    files: ['tools/**/*.{js,cjs,mjs,ts}'],
+    languageOptions: {
+      globals: {
+        require: 'readonly', module: 'writable', process: 'readonly', __dirname: 'readonly',
+        Buffer: 'readonly', console: 'readonly', URL: 'readonly', setTimeout: 'readonly',
+        clearTimeout: 'readonly', setInterval: 'readonly', fetch: 'readonly', self: 'readonly',
+        caches: 'readonly', TextEncoder: 'readonly', TextDecoder: 'readonly', Worker: 'readonly',
+        AbortSignal: 'readonly', DOMException: 'readonly', MessageEvent: 'readonly',
+      },
+    },
+    rules: {
+      // tools/ 是 Node/Worker 脚本，不是打包产物，允许 CommonJS 与显式关检查的实验文件。
+      '@typescript-eslint/no-require-imports': 'off',
+      '@typescript-eslint/ban-ts-comment': 'off',
     },
   },
 

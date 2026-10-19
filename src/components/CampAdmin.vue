@@ -3,6 +3,7 @@ import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { ArrowDown, ArrowLeft, ArrowUp, ChevronRight, Download, GripVertical, Loader2, Plus, Search, Trash2, Trophy, X } from 'lucide-vue-next'
 import Sortable from 'sortablejs'
 import ActionNotice from './ui/ActionNotice.vue'
+import IconButton from './ui/IconButton.vue'
 import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Input } from './ui/input'
@@ -11,9 +12,13 @@ import RefreshButton from './ui/RefreshButton.vue'
 import CampLeaderboard from './CampLeaderboard.vue'
 import CampResultNotice from './CampResultNotice.vue'
 import CampTimingField from './CampTimingField.vue'
-import { adminApi, ApiError, campAdminApi, PLATFORM_META, problemListApi, type AdminUser, type CampAdminDetail, type CampSummary, type Platform } from '../lib/api'
+import { adminApi, ApiError, campAdminApi, LEARN_LOCAL, LEARN_PLATFORM, PLATFORM_META, platformLabel, problemListApi, type AdminUser, type CampAdminDetail, type CampSummary, type Platform } from '../lib/api'
+import { learningApi } from '../lib/learning/api'
+import type { ProblemSummary } from '../lib/learning/types'
 import { useAuth } from '../lib/auth'
 import { confirmAction } from '../lib/confirm'
+import { useNow } from '../lib/useNow'
+const now = useNow()
 
 const { user, isAdmin, ensureLoaded } = useAuth()
 const camps = ref<CampSummary[]>([])
@@ -47,7 +52,15 @@ const editRegAt = ref('')
 const editVisMode = ref<'relative' | 'absolute'>('relative')
 const editVisDays = ref(3)
 const editVisAt = ref('')
-const newPlatform = ref<Platform>('luogu')
+const newPlatform = ref<Platform | 'learn'>('luogu')
+const learnProblems = ref<ProblemSummary[]>([])
+const learnProblemId = ref<number | null>(null)
+async function loadLearnProblems() {
+  if (learnProblems.value.length) return
+  learnProblems.value = await learningApi.list()
+  learnProblemId.value = learnProblems.value[0]?.id ?? null
+}
+watch(newPlatform, v => { if (v === LEARN_PLATFORM) void loadLearnProblems().catch(e => { error.value = String(e) }) })
 const newKey = ref('')
 const lookup = ref('')
 const memberQuery = ref('')
@@ -58,9 +71,9 @@ let sortable: Sortable | null = null
 let requestId = 0
 let disposed = false
 const filtered = computed(() => camps.value.filter(c => c.name.toLowerCase().includes(query.value.toLowerCase())))
-const locked = computed(() => !!detail.value?.ended || (!!detail.value && Date.now() >= Date.parse(detail.value.end_at)))
+const locked = computed(() => !!detail.value?.ended || (!!detail.value && now.value >= Date.parse(detail.value.end_at)))
 /** 开始后：开放报名/开始显示已经生效，改它们只会把集训藏起来。 */
-const timingLocked = computed(() => locked.value || (!!detail.value && Date.now() >= Date.parse(detail.value.start_at)))
+const timingLocked = computed(() => locked.value || (!!detail.value && now.value >= Date.parse(detail.value.start_at)))
 const registeredIds = computed(() => new Set(detail.value?.registrations.map(r => r.user_id) ?? []))
 const dirty = computed(() => {
   const d = detail.value
@@ -76,6 +89,13 @@ const dirty = computed(() => {
   return false
 })
 
+const newFormSnapshot = computed(() => JSON.stringify([
+  newName.value, newDesc.value, newStart.value, newEnd.value,
+  newRegMode.value, newRegDays.value, newRegAt.value, newVisMode.value, newVisDays.value, newVisAt.value,
+]))
+const newFormBaseline = ref('')
+const hasUnsavedChanges = computed(() => dirty.value || (creating.value && newFormSnapshot.value !== newFormBaseline.value))
+
 function toLocal(iso: string) {
   const d = new Date(iso)
   const pad = (n: number) => String(n).padStart(2, '0')
@@ -84,7 +104,7 @@ function toLocal(iso: string) {
 function validTimes(start: string, end: string) {
   return Number.isFinite(Date.parse(start)) && Number.isFinite(Date.parse(end)) && Date.parse(end) > Date.parse(start)
 }
-function message(err: unknown) { return err instanceof ApiError ? err.message : '操作失败，请稍后重试' }
+function message(err: unknown) { return err instanceof Error ? err.message : '操作失败，请稍后重试' }
 function updateUrl() {
   const url = new URL(location.href)
   if (activeId.value) url.searchParams.set('id', String(activeId.value))
@@ -114,11 +134,12 @@ async function loadDetail(id: number, resetForm = true) {
   } finally { if (token === requestId) detailLoading.value = false }
 }
 async function leaveDetail() {
-  return !dirty.value || await confirmAction('还有未保存的集训信息，离开后会丢失这些修改。', '放弃修改？')
+  return !hasUnsavedChanges.value || await confirmAction('还有未保存的集训信息，离开后会丢失这些修改。', '放弃修改？')
 }
 async function select(id: number) {
   if (busy.value || !await leaveDetail()) return
   activeId.value = id; detail.value = null; creating.value = false
+  resetImport(); exportCollege.value = ''; exportYear.value = null
   error.value = ''; notice.value = ''; memberResults.value = []; memberQuery.value = ''; newKey.value = ''; lookup.value = ''
   updateUrl()
   await loadDetail(id)
@@ -157,6 +178,8 @@ async function startCreate() {
   newEnd.value = toLocal(new Date(Date.now() + 7200000).toISOString())
   newRegMode.value = 'relative'; newRegDays.value = 3; newRegAt.value = ''
   newVisMode.value = 'relative'; newVisDays.value = 3; newVisAt.value = ''
+  resetImport(); error.value = ''; notice.value = ''
+  newFormBaseline.value = newFormSnapshot.value
 }
 
 function timingPayload(mode: 'relative' | 'absolute', days: number, at: string, key: 'register_open' | 'visible'): Record<string, string | number | null> {
@@ -181,20 +204,23 @@ async function create() {
   }, '集训已创建', true)
 }
 async function save() {
-  if (!detail.value || !editName.value.trim() || (!locked.value && !validTimes(editStart.value, editEnd.value))) return
-  const id = detail.value.id
-  await mutate(() => campAdminApi.update(id, {
-    name: editName.value.trim(),
-    description: editDesc.value.trim(),
-    ...(!locked.value ? {
-      start_at: new Date(editStart.value).toISOString(),
-      end_at: new Date(editEnd.value).toISOString(),
-    } : {}),
-    ...(!timingLocked.value ? {
-      ...timingPayload(editRegMode.value, editRegDays.value, editRegAt.value, 'register_open'),
-      ...timingPayload(editVisMode.value, editVisDays.value, editVisAt.value, 'visible'),
-    } : {}),
-  }), '集训信息已保存', true)
+  const d = detail.value
+  if (!d || !editName.value.trim() || (!locked.value && !validTimes(editStart.value, editEnd.value))) return
+  const payload: Parameters<typeof campAdminApi.update>[1] = {
+    name: editName.value.trim(), description: editDesc.value.trim(),
+  }
+  // datetime-local 只有分钟精度；未改时间时不能把服务器的秒数截掉再保存。
+  if (!locked.value && editEnd.value !== toLocal(d.end_at)) payload.end_at = new Date(editEnd.value).toISOString()
+  if (!timingLocked.value) {
+    if (editStart.value !== toLocal(d.start_at)) payload.start_at = new Date(editStart.value).toISOString()
+    const regChanged = editRegMode.value !== (d.register_open_at ? 'absolute' : 'relative')
+      || (editRegMode.value === 'absolute' ? editRegAt.value !== (d.register_open_at ? toLocal(d.register_open_at) : '') : editRegDays.value !== (d.register_open_days ?? 3))
+    const visChanged = editVisMode.value !== (d.visible_at ? 'absolute' : 'relative')
+      || (editVisMode.value === 'absolute' ? editVisAt.value !== (d.visible_at ? toLocal(d.visible_at) : '') : editVisDays.value !== (d.visible_days ?? 3))
+    if (regChanged) Object.assign(payload, timingPayload(editRegMode.value, editRegDays.value, editRegAt.value, 'register_open'))
+    if (visChanged) Object.assign(payload, timingPayload(editVisMode.value, editVisDays.value, editVisAt.value, 'visible'))
+  }
+  await mutate(() => campAdminApi.update(d.id, payload), '集训信息已保存', true)
 }
 async function removeCamp() {
   if (!detail.value || busy.value) return
@@ -203,9 +229,20 @@ async function removeCamp() {
   await mutate(async () => { await campAdminApi.remove(id); activeId.value = null; detail.value = null; updateUrl() }, '集训已删除')
 }
 async function addProblem() {
-  if (!detail.value || locked.value || !newKey.value.trim() || busy.value) return
+  if (!detail.value || locked.value || busy.value) return
   const id = detail.value.id
-  const platform = newPlatform.value, key = newKey.value.trim()
+  const platform = newPlatform.value
+  if (platform === LEARN_PLATFORM) {
+    const picked = learnProblems.value.find(p => p.id === learnProblemId.value)
+    if (!picked) return
+    await mutate(async () => {
+      await campAdminApi.addProblem(id, LEARN_PLATFORM, String(picked.id))
+      lookup.value = `题库：${picked.title}`
+    }, '题目已添加')
+    return
+  }
+  if (!newKey.value.trim()) return
+  const key = newKey.value.trim()
   await mutate(async () => {
     const info = await problemListApi.lookup(platform, key)
     if (info.missing_reason) throw new ApiError(400, info.missing_reason)
@@ -225,8 +262,14 @@ const importListId = ref<number | null>(null)
 const importText = ref('')
 const importDefaultPlatform = ref<Platform>('luogu')
 const importResult = ref('')
+const importHadFailures = ref(false)
+const importListsLoading = ref(false)
+function resetImport() {
+  importOpen.value = false; importListId.value = null; importText.value = ''
+  importResult.value = ''; importHadFailures.value = false
+}
 
-const PLATFORM_PREFIXES: Record<string, Platform> = {
+const PLATFORM_PREFIXES: Record<string, Platform | 'learn'> = {
   luogu: 'luogu',
   codeforces: 'codeforces',
   cf: 'codeforces',
@@ -236,10 +279,11 @@ const PLATFORM_PREFIXES: Record<string, Platform> = {
   nc: 'nowcoder',
   '\u6d1b\u8c37': 'luogu',   // 洛谷
   '\u725b\u5ba2': 'nowcoder', // 牛客
+  ...(LEARN_LOCAL ? { learn: LEARN_PLATFORM, '\u7ec3\u4e60': LEARN_PLATFORM } : {}),
 }
 
-function parseImportText(): { items: { platform: Platform; key: string }[]; failed: string[] } {
-  const items: { platform: Platform; key: string }[] = []
+function parseImportText(): { items: { platform: Platform | 'learn'; key: string }[]; failed: string[] } {
+  const items: { platform: Platform | 'learn'; key: string }[] = []
   const failed: string[] = []
   for (const raw of importText.value.split('\n')) {
     const line = raw.trim()
@@ -249,7 +293,7 @@ function parseImportText(): { items: { platform: Platform; key: string }[]; fail
     const prefix = m ? PLATFORM_PREFIXES[m[1].toLowerCase()] : undefined
     if (m && prefix) {
       items.push({ platform: prefix, key: m[2].trim() })
-    } else if (line.includes(':') || line.includes(' ')) {
+    } else if (/[:：\s]/.test(line)) {
       // 看起来想写平台前缀但不认识，进 failed 而不是悄悄按默认平台。
       failed.push(line)
     } else {
@@ -263,30 +307,31 @@ async function runImport(source: 'list' | 'text') {
   if (!detail.value || busy.value || locked.value) return
   const id = detail.value.id
   busy.value = true
-  error.value = ''
+  error.value = ''; notice.value = ''; importResult.value = ''; importHadFailures.value = false
   try {
-    let payload: Parameters<typeof campAdminApi.importProblems>[1] = {}
+    const payload: Parameters<typeof campAdminApi.importProblems>[1] = {}
+    let rejected: string[] = []
     if (source === 'list') {
-      if (!importListId.value) { error.value = '选一张题单'; return }
+      if (!importListId.value) { error.value = '请选择题单'; return }
       payload.problem_list_id = importListId.value
     } else {
       const { items, failed } = parseImportText()
-      if (!items.length && !failed.length) { error.value = '没有可导入的题'; return }
-      payload.items = items
-      if (failed.length) {
-        importResult.value = `无法识别 ${failed.length} 行：${failed.slice(0, 3).join('、')}${failed.length > 3 ? '…' : ''}`
+      rejected = failed
+      if (!items.length) {
+        importHadFailures.value = true
+        importResult.value = failed.length ? `没有可导入的题，无法识别：\n${failed.join('\n')}` : '没有可导入的题'
+        return
       }
+      payload.items = items
     }
     const r = await campAdminApi.importProblems(id, payload)
-    importResult.value = [
-      `导入 ${r.added} 道`,
-      r.skipped ? `跳过 ${r.skipped} 道重复` : '',
-      r.failed.length ? `${r.failed.length} 条无法识别` : '',
-    ].filter(Boolean).join('，')
-    if (r.failed.length) {
-      importResult.value += `（${r.failed.slice(0, 3).join('、')}${r.failed.length > 3 ? '…' : ''}）`
-    }
-    await loadDetail(id)
+    rejected = [...rejected, ...r.failed]
+    importHadFailures.value = rejected.length > 0
+    importResult.value = `导入 ${r.added} 道，跳过 ${r.skipped} 道重复题`
+      + (rejected.length ? `；${rejected.length} 行未导入：\n${rejected.join('\n')}` : '')
+    if (source === 'text') importText.value = rejected.join('\n')
+    await loadList()
+    await loadDetail(id, false)
   } catch (err) {
     error.value = message(err)
   } finally {
@@ -295,9 +340,10 @@ async function runImport(source: 'list' | 'text') {
 }
 
 async function openImport() {
+  if (busy.value || importListsLoading.value) return
   importOpen.value = !importOpen.value
-  importResult.value = ''
   if (!importOpen.value || importLists.value.length) return
+  importListsLoading.value = true
   try {
     const lists = await problemListApi.list({ include_nested: true })
     importLists.value = lists.map((l) => ({
@@ -306,7 +352,7 @@ async function openImport() {
     }))
   } catch (err) {
     error.value = message(err)
-  }
+  } finally { importListsLoading.value = false }
 }
 async function removeProblem(id: number, name: string) {
   if (!detail.value || busy.value || locked.value || !await confirmAction(`从集训中移除「${name}」？过题统计会随题目列表重新计算。`, '移除题目')) return
@@ -437,7 +483,7 @@ async function exportPng() {
     exportingPng.value = false
   }
 }
-function beforeUnload(event: Event) { if (dirty.value) { event.preventDefault() } }
+function beforeUnload(event: Event) { if (hasUnsavedChanges.value) { event.preventDefault() } }
 onMounted(async () => {
   await ensureLoaded()
   if (!isAdmin.value) { loading.value = false; return }
@@ -461,7 +507,7 @@ onUnmounted(() => { disposed = true; ++requestId; sortable?.destroy(); window.re
         <h2 class="mr-auto text-base font-semibold">集训管理 <span class="text-sm font-normal text-muted-foreground">{{ camps.length }} 场</span></h2>
         <Button :disabled="busy" @click="startCreate"><Plus class="mr-2 h-4 w-4" />新建集训</Button>
       </div>
-      <div v-if="error" role="alert" class="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">{{ error }} <button class="ml-2 min-h-11 underline" :disabled="busy" @click="refresh">重新读取</button></div>
+      <ActionNotice :message="error" variant="error" />
       <ActionNotice :message="notice" />
       <p v-if="loading" class="flex items-center gap-2 py-10 text-sm text-muted-foreground"><Loader2 class="h-4 w-4 animate-spin" />正在读取集训…</p>
       <div v-else class="grid grid-cols-1 gap-4 lg:grid-cols-[260px_minmax(0,1fr)]">
@@ -484,7 +530,7 @@ onUnmounted(() => { disposed = true; ++requestId; sortable?.destroy(); window.re
             <CardContent>
               <form class="space-y-4" @submit.prevent="create">
                 <label class="block space-y-1 text-sm"><span>集训名称</span><Input v-model="newName" required maxlength="200" class="min-h-11" /></label>
-                <label class="block space-y-1 text-sm"><span>说明</span><textarea v-model="newDesc" rows="3" maxlength="5000" class="w-full rounded-md border border-input bg-background p-3" /></label>
+                <label class="block space-y-1 text-sm"><span>说明</span><textarea v-model="newDesc" rows="3" maxlength="5000" class="form-textarea" /></label>
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <label class="block space-y-1 text-sm"><span>开始时间（本地时间）</span><Input v-model="newStart" type="datetime-local" required class="min-h-11" /></label>
                   <label class="block space-y-1 text-sm"><span>截止时间（本地时间）</span><Input v-model="newEnd" type="datetime-local" required class="min-h-11" /></label>
@@ -507,9 +553,9 @@ onUnmounted(() => { disposed = true; ++requestId; sortable?.destroy(); window.re
               <CardContent>
                 <form class="space-y-4" @submit.prevent="save">
                   <label class="block space-y-1 text-sm"><span>名称</span><Input v-model="editName" required maxlength="200" class="min-h-11" /></label>
-                  <label class="block space-y-1 text-sm"><span>说明</span><textarea v-model="editDesc" rows="3" maxlength="5000" class="w-full rounded-md border border-input bg-background p-3" /></label>
+                  <label class="block space-y-1 text-sm"><span>说明</span><textarea v-model="editDesc" rows="3" maxlength="5000" class="form-textarea" /></label>
                   <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <label class="block space-y-1 text-sm"><span>开始时间（本地时间）</span><Input v-model="editStart" type="datetime-local" required :disabled="locked" class="min-h-11" /></label>
+                    <label class="block space-y-1 text-sm"><span>开始时间（本地时间）</span><Input v-model="editStart" type="datetime-local" required :disabled="timingLocked" class="min-h-11" /></label>
                     <label class="block space-y-1 text-sm"><span>截止时间（本地时间）</span><Input v-model="editEnd" type="datetime-local" required :disabled="locked" class="min-h-11" /></label>
                   </div>
                   <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -528,11 +574,11 @@ onUnmounted(() => { disposed = true; ++requestId; sortable?.destroy(); window.re
                 <div v-if="detail.problems.length" ref="problemsEl" class="divide-y divide-border/40">
                   <div v-for="(p, index) in detail.problems" :key="p.id" class="flex items-center gap-2 py-2">
                     <span v-if="!locked" data-drag-handle class="hidden shrink-0 cursor-grab p-2 text-muted-foreground lg:block" title="拖动排序"><GripVertical class="h-4 w-4" /></span>
-                    <div class="min-w-0 flex-1"><p class="break-words text-sm font-medium">{{ p.name || p.key }}</p><p class="break-all text-xs text-muted-foreground">{{ PLATFORM_META[p.platform]?.label }} · {{ p.key }}</p></div>
+                    <div class="min-w-0 flex-1"><p class="break-words text-sm font-medium">{{ p.name || p.key }}</p><p class="break-all text-xs text-muted-foreground">{{ platformLabel(p.platform) }} · {{ p.platform === LEARN_PLATFORM ? `#${p.key}` : p.key }}</p></div>
                     <div v-if="!locked" class="flex shrink-0">
-                      <button type="button" class="flex h-11 w-9 items-center justify-center rounded-md hover:bg-muted disabled:opacity-30" :disabled="busy || index === 0" :aria-label="`上移 ${p.name || p.key}`" @click="reorder(index, index - 1)"><ArrowUp class="h-4 w-4" /></button>
-                      <button type="button" class="flex h-11 w-9 items-center justify-center rounded-md hover:bg-muted disabled:opacity-30" :disabled="busy || index === detail.problems.length - 1" :aria-label="`下移 ${p.name || p.key}`" @click="reorder(index, index + 1)"><ArrowDown class="h-4 w-4" /></button>
-                      <button type="button" class="flex h-11 w-9 items-center justify-center rounded-md text-muted-foreground hover:bg-destructive/10 hover:text-destructive" :disabled="busy" :aria-label="`移除 ${p.name || p.key}`" @click="removeProblem(p.id, p.name || p.key)"><X class="h-4 w-4" /></button>
+                    <IconButton :disabled="busy || index === 0" :label="`上移 ${p.name || p.key}`" @click="reorder(index, index - 1)"><ArrowUp class="h-4 w-4" /></IconButton>
+                      <IconButton :disabled="busy || index === detail.problems.length - 1" :label="`下移 ${p.name || p.key}`" @click="reorder(index, index + 1)"><ArrowDown class="h-4 w-4" /></IconButton>
+                      <IconButton destructive :disabled="busy" :label="`移除 ${p.name || p.key}`" @click="removeProblem(p.id, p.name || p.key)"><X class="h-4 w-4" /></IconButton>
                     </div>
                   </div>
                 </div>
@@ -540,51 +586,49 @@ onUnmounted(() => { disposed = true; ++requestId; sortable?.destroy(); window.re
                 <form v-if="!locked" class="space-y-2" @submit.prevent="addProblem">
                   <label class="block text-sm font-medium">添加题目</label>
                   <div class="flex flex-wrap gap-2">
-                    <select v-model="newPlatform" aria-label="题目平台" class="h-11 rounded-md border border-input bg-background px-2 text-sm" :disabled="busy"><option v-for="p in PLATFORMS" :key="p" :value="p">{{ PLATFORM_META[p].label }}</option></select>
-                    <Input v-model="newKey" aria-label="题号" placeholder="题号，如 P1001" class="min-h-11 min-w-0 flex-1" :disabled="busy" />
-                    <Button type="submit" :disabled="busy || !newKey.trim()" class="w-full sm:w-auto"><Plus class="mr-1 h-4 w-4" />添加题目</Button>
+                    <select v-model="newPlatform" aria-label="题目平台" class="form-select w-auto" :disabled="busy"><option v-for="p in PLATFORMS" :key="p" :value="p">{{ PLATFORM_META[p].label }}</option><option v-if="LEARN_LOCAL" value="learn">题库</option></select>
+                    <select v-if="newPlatform === LEARN_PLATFORM" v-model="learnProblemId" aria-label="题库题目" class="form-select min-w-0 flex-1" :disabled="busy">
+                      <option v-for="lp in learnProblems" :key="lp.id" :value="lp.id">{{ lp.id }}. {{ lp.title }}</option>
+                    </select>
+                    <Input v-else v-model="newKey" aria-label="题号" placeholder="题号，如 P1001" class="min-h-11 min-w-0 flex-1" :disabled="busy" />
+                    <Button type="submit" :disabled="busy || (newPlatform === LEARN_PLATFORM ? !learnProblemId : !newKey.trim())" class="w-full sm:w-auto"><Plus class="mr-1 h-4 w-4" />添加题目</Button>
                   </div>
                   <p v-if="lookup" class="text-xs text-muted-foreground">最近添加：{{ lookup }}</p>
-
-                  <div class="border-t border-border/40 pt-2">
-                    <button type="button" class="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground" @click="openImport">
-                      <ChevronRight class="h-3.5 w-3.5 transition-transform" :class="{ 'rotate-90': importOpen }" />批量导入
-                    </button>
-                    <div v-if="importOpen" class="mt-2 space-y-2.5">
-                      <div class="flex flex-wrap items-center gap-2">
-                        <select v-model="importListId" class="h-9 min-w-0 flex-1 rounded-md border border-input bg-background px-2 text-sm" :disabled="busy">
-                          <option :value="null">选择题单 / 合集</option>
+                </form>
+                <div v-if="!locked" class="border-t border-border/40 pt-3">
+                  <Button variant="outline" :aria-expanded="importOpen" aria-controls="camp-import" :disabled="busy || importListsLoading" @click="openImport">
+                    <ChevronRight class="mr-2 h-4 w-4" :class="{ 'rotate-90': importOpen }" />批量导入
+                  </Button>
+                  <div v-if="importOpen" id="camp-import" class="mt-4 space-y-4">
+                    <form class="space-y-2" @submit.prevent="runImport('list')">
+                      <label for="camp-import-list" class="text-sm font-medium">从题单导入</label>
+                      <div class="flex flex-wrap gap-2">
+                        <select id="camp-import-list" v-model="importListId" class="form-select flex-1 basis-48" :disabled="busy || importListsLoading">
+                          <option :value="null">{{ importListsLoading ? '正在读取题单…' : '选择题单 / 合集' }}</option>
                           <option v-for="l in importLists" :key="l.id" :value="l.id">{{ l.label }}</option>
                         </select>
-                        <Button size="sm" variant="outline" :disabled="busy || !importListId" @click="runImport('list')">整单导入</Button>
+                        <Button type="submit" variant="outline" :disabled="busy || !importListId">导入题单</Button>
                       </div>
-                      <div class="space-y-1.5">
-                        <div class="flex items-center justify-between gap-2">
-                          <p class="text-xs text-muted-foreground">或按行粘贴「平台:题号」</p>
-                          <select v-model="importDefaultPlatform" class="h-7 rounded border border-input bg-background px-1.5 text-xs" :disabled="busy">
-                            <option v-for="p in PLATFORMS" :key="p" :value="p">无前缀按{{ PLATFORM_META[p].label }}</option>
-                          </select>
-                        </div>
-                        <textarea
-                          v-model="importText"
-                          rows="4"
-                          placeholder="luogu:P1000\ncf:1234A\nac:abc300_a\nP1002"
-                          class="w-full rounded-md border border-input bg-background p-2 font-mono text-xs"
-                          :disabled="busy"
-                        />
-                        <Button size="sm" variant="outline" :disabled="busy || !importText.trim()" @click="runImport('text')">导入粘贴文本</Button>
-                      </div>
-                      <p v-if="importResult" class="text-xs text-emerald-600 dark:text-emerald-500">{{ importResult }}</p>
-                    </div>
+                    </form>
+                    <form class="space-y-2" @submit.prevent="runImport('text')">
+                      <label for="camp-import-text" class="text-sm font-medium">按行粘贴题号</label>
+                      <label class="block space-y-1 text-sm text-muted-foreground">
+                        <span>未写平台前缀时使用</span>
+                        <select v-model="importDefaultPlatform" class="form-select" :disabled="busy"><option v-for="p in PLATFORMS" :key="p" :value="p">{{ PLATFORM_META[p].label }}</option><option v-if="LEARN_LOCAL" value="learn">题库</option></select>
+                      </label>
+                      <textarea id="camp-import-text" v-model="importText" rows="4" :placeholder="'luogu:P1000\ncf:1234A\nac:abc300_a\nP1002'" class="form-textarea font-mono" :disabled="busy" />
+                      <Button type="submit" variant="outline" :disabled="busy || !importText.trim()">导入题号</Button>
+                    </form>
+                    <ActionNotice :message="importResult" :variant="importHadFailures ? 'info' : 'success'" />
                   </div>
-                </form>
+                </div>
               </CardContent>
             </Card>
             <Card>
               <CardHeader><CardTitle class="text-sm">报名名单 <span class="text-muted-foreground">{{ detail.registrations.length }}</span></CardTitle></CardHeader>
               <CardContent class="space-y-4">
                 <div class="divide-y divide-border/40">
-                  <div v-for="r in detail.registrations" :key="r.user_id" class="flex min-h-12 items-center gap-3"><span class="min-w-0 flex-1 truncate text-sm">{{ r.display_name }}</span><button v-if="!locked" type="button" class="flex h-11 w-11 items-center justify-center rounded-md text-muted-foreground hover:bg-destructive/10 hover:text-destructive" :disabled="busy" :aria-label="`移除报名成员 ${r.display_name}`" @click="removeMember(r.user_id, r.display_name)"><X class="h-4 w-4" /></button></div>
+                  <div v-for="r in detail.registrations" :key="r.user_id" class="flex min-h-12 items-center gap-3"><span class="min-w-0 flex-1 truncate text-sm">{{ r.display_name }}</span><IconButton v-if="!locked" destructive :disabled="busy" :label="`移除报名成员 ${r.display_name}`" @click="removeMember(r.user_id, r.display_name)"><X class="h-4 w-4" /></IconButton></div>
                 </div>
                 <p v-if="!detail.registrations.length" class="text-sm text-muted-foreground">还没有成员报名。</p>
                 <form v-if="!locked" class="flex gap-2" @submit.prevent="searchMembers"><Input v-model="memberQuery" aria-label="搜索成员" placeholder="姓名或学号" class="min-h-11 min-w-0 flex-1" /><Button type="submit" variant="outline" :disabled="busy || !memberQuery.trim()"><Search class="mr-1 h-4 w-4" />搜索</Button></form>
@@ -593,13 +637,27 @@ onUnmounted(() => { disposed = true; ++requestId; sortable?.destroy(); window.re
               </CardContent>
             </Card>
             <CampLeaderboard :entries="detail.leaderboard ?? []" :problems="detail.problems" />
-            <div class="flex flex-wrap items-center gap-2 rounded-lg border border-border/60 p-4"><span class="mr-auto text-sm font-medium">{{ detail.phase === 'finalized' ? '导出最终成绩' : '导出当前成绩（未封榜）' }}</span><Button v-for="fmt in (['xlsx', 'csv', 'json'] as const)" :key="fmt" variant="outline" :disabled="busy" @click="exportResults(fmt)"><Download class="mr-1 h-4 w-4" />{{ fmt.toUpperCase() }}</Button><select v-model="exportCollege" class="h-9 rounded-md border border-input bg-background px-2.5 text-sm" aria-label="导出筛选：学院"><option value="">全部学院</option><option v-for="c in exportColleges" :key="c" :value="c">{{ c }}</option></select><select v-model="exportYear" class="h-9 rounded-md border border-input bg-background px-2.5 text-sm" aria-label="导出筛选：年级"><option :value="null">全部年级</option><option v-for="y in exportYears" :key="y" :value="y">{{ y }} 级</option></select><Button variant="outline" :disabled="busy" title="排行榜截成 PNG 图片，浅色版" @click="exportPng"><Download class="mr-1 h-4 w-4" />PNG 榜单图</Button></div>
+            <Card>
+              <CardHeader><CardTitle class="text-sm">{{ detail.phase === 'finalized' ? '导出最终成绩' : '导出当前成绩（未封榜）' }}</CardTitle></CardHeader>
+              <CardContent class="space-y-4">
+                <div class="flex flex-wrap gap-2"><Button v-for="fmt in (['xlsx', 'csv', 'json'] as const)" :key="fmt" variant="outline" :disabled="busy" @click="exportResults(fmt)"><Download class="mr-2 h-4 w-4" />{{ fmt.toUpperCase() }}</Button></div>
+                <div class="space-y-2 border-t border-border/40 pt-4">
+                  <p class="text-sm font-medium">PNG 榜单图</p>
+                  <p class="text-xs text-muted-foreground">以下筛选仅用于图片，保留原榜名次。</p>
+                  <div class="flex flex-wrap gap-2">
+                    <select v-model="exportCollege" class="form-select flex-1 basis-40" aria-label="图片筛选：学院" :disabled="busy"><option value="">全部学院</option><option v-for="c in exportColleges" :key="c" :value="c">{{ c }}</option></select>
+                    <select v-model="exportYear" class="form-select flex-1 basis-32" aria-label="图片筛选：年级" :disabled="busy"><option :value="null">全部年级</option><option v-for="y in exportYears" :key="y" :value="y">{{ y }} 级</option></select>
+                    <Button variant="outline" :disabled="busy" @click="exportPng"><Download class="mr-2 h-4 w-4" />导出 PNG</Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
             <!-- 离屏渲染：导出 PNG 用。export-light 强制浅色，跟用户端看到的浅色版一致。
                  w-max + 内层 overflow-visible：排行榜表格在自然宽度下全量铺开，
                  题多的时候不能被横向滚动裁掉。 -->
-            <div v-if="exportingPng" class="export-light fixed -left-[6000px] top-0 w-max min-w-[960px] bg-background p-14 [&_.overflow-x-auto]:!overflow-visible">
-              <div ref="pngHost">
+            <div v-if="exportingPng" class="fixed -left-[6000px] top-0" aria-hidden="true">
+              <div ref="pngHost" class="export-light w-max min-w-[960px] bg-background p-14 [&_.overflow-x-auto]:!overflow-visible">
                 <div class="mb-7">
                   <p class="text-xl font-semibold text-foreground">
                     {{ detail.name }}{{ exportCollege ? ` · ${exportCollege}` : '' }}{{ exportYear !== null ? ` · ${exportYear} 级` : '' }}
