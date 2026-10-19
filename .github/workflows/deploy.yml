@@ -79,9 +79,21 @@ jobs:
           SSH_USER: ${{ secrets.SGU_ACW_SSH_USER }}
         run: |
           mkdir -p ~/.ssh
-          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 700 ~/.ssh
+          # secret 可能带 CRLF 或缺少结尾换行，两种 OpenSSH 都拒读。
+          # 用 heredoc 写脚本：内联 python -c 会被 YAML 缩进带进源码。
+          cat > /tmp/fixkey.py <<'PYEOF'
+          import os
+          data = os.environ["SSH_KEY"].replace(chr(13) + chr(10), chr(10)).strip() + chr(10)
+          path = os.path.expanduser("~/.ssh/deploy_key")
+          with open(path, "w", newline=chr(10)) as fh:
+              fh.write(data)
+          PYEOF
+          python3 /tmp/fixkey.py
           chmod 600 ~/.ssh/deploy_key
+          ssh-keygen -y -f ~/.ssh/deploy_key > /dev/null || { echo 'SSH 私钥无效' >&2; exit 1; }
           ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          grep -q "$SSH_HOST" ~/.ssh/known_hosts || { echo 'ssh-keyscan 未取到主机公钥' >&2; exit 1; }
           # 后端 CI 用的是 user/host 两个独立 secret，这里保持一致。
           cat >> ~/.ssh/config <<EOF
           Host deploy-target
