@@ -61,8 +61,8 @@ jobs:
       - name: Configure SSH
         env:
           SSH_KEY: ${{ secrets.SGU_ACW_SSH_KEY }}
-          SSH_HOST: ${{ secrets.SGU_ACW_HOST }}
-          SSH_USER: ${{ secrets.SGU_ACW_USER }}
+          SSH_HOST: ${{ secrets.SGU_ACW_SSH_HOST }}
+          SSH_USER: ${{ secrets.SGU_ACW_SSH_USER }}
         run: |
           mkdir -p ~/.ssh
           # 密钥可能带 CRLF 或缺少结尾换行，先规范化；ssh-keygen -y 提前暴露格式问题。
