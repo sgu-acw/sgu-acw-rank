@@ -60,10 +60,13 @@ jobs:
           SGU_ACW_HOST: deploy-target
         run: |
           mkdir -p .local/learning/packages
+          # 先打印服务器上的实际情况，方便排查；ssh 的退出码不要直接决定分支。
+          ssh deploy-target 'ls -l /root/sgu-judge-artifacts/ 2>&1 || true'
           if ssh deploy-target 'test -f /root/sgu-judge-artifacts/java-probe.tar.zst'; then
             ssh deploy-target 'cat /root/sgu-judge-artifacts/java-probe.tar.zst' \
               | tar -C .local/learning/packages --use-compress-program=unzstd -xf -
             echo "Java 产物已从服务器拉取"
+            ls -d .local/learning/packages/java-probe
           else
             echo "服务器上没有 Java 归档，本次不发布 Java 环境"
           fi
