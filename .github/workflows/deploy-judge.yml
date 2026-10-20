@@ -84,17 +84,15 @@ jobs:
           SGU_ACW_HOST: deploy-target
         run: ./deploy/deploy-judge.sh
 
-      # 切换后 Cloudflare 边缘需要一点时间才不再回源旧内容，重试几次。
-      - name: Verify edge
+      # 只校验源站。不要从 runner 去请求 Cloudflare：机房出口 IP 会被 WAF
+      # 判成可疑流量返回 403，而源站和真实用户访问都是 200（deploy-judge.sh
+      # 里已经用 Host 头打 127.0.0.1 验证过一轮）。
+      - name: Verify origin through SSH
+        env:
+          SGU_ACW_HOST: deploy-target
         run: |
-          for path in /engine/host.js /engine/worker.js /packages/manifest.json; do
-            code=
-            for attempt in 1 2 3 4 5; do
-              code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 "https://judge.zh314.xyz$path")
-              [ "$code" = 200 ] && break
-              echo "$path -> $code（第 $attempt 次，重试）"
-              sleep 5
-            done
-            echo "$path -> $code"
-            test "$code" = 200
-          done
+          ssh deploy-target 'for p in /engine/host.js /engine/worker.js /packages/manifest.json; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" -H "Host: judge.zh314.xyz" "http://127.0.0.1$p")
+            echo "$p -> $code"
+            test "$code" = 200 || exit 1
+          done'
