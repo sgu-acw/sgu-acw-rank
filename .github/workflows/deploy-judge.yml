@@ -55,27 +55,6 @@ jobs:
       # 本地补丁，CI 里重建不现实。改为复用服务器上预置的归档：
       # 本地 pnpm learning:java 构建后 tar 上传到 /root/sgu-judge-artifacts/。
       # 没有归档时跳过，Java 会标记为不可用，其他语言照常发布。
-      - name: Fetch prebuilt Java probe
-        env:
-          SGU_ACW_HOST: deploy-target
-        run: |
-          mkdir -p .local/learning/packages
-          # 先打印服务器上的实际情况，方便排查；ssh 的退出码不要直接决定分支。
-          ssh deploy-target 'ls -l /root/sgu-judge-artifacts/ 2>&1 || true'
-          if ssh deploy-target 'test -f /root/sgu-judge-artifacts/java-probe.tar.zst'; then
-            ssh deploy-target 'cat /root/sgu-judge-artifacts/java-probe.tar.zst' \
-              | tar -C .local/learning/packages --use-compress-program=unzstd -xf -
-            echo "Java 产物已从服务器拉取"
-            ls -d .local/learning/packages/java-probe
-          else
-            echo "服务器上没有 Java 归档，本次不发布 Java 环境"
-          fi
-
-      - name: Prepare runner packages
-        env:
-          LEARN_PARENT_ORIGIN: https://sgu-acw.zh314.xyz
-        run: pnpm learning:prepare
-
       - name: Configure SSH
         env:
           SSH_KEY: ${{ secrets.SGU_ACW_SSH_KEY }}
@@ -96,6 +75,27 @@ jobs:
             "$SSH_HOST" "$SSH_USER" > ~/.ssh/config
           chmod 600 ~/.ssh/config
           ssh -o BatchMode=yes deploy-target true
+
+      - name: Fetch prebuilt Java probe
+        env:
+          SGU_ACW_HOST: deploy-target
+        run: |
+          mkdir -p .local/learning/packages
+          # 先打印服务器上的实际情况，方便排查；ssh 的退出码不要直接决定分支。
+          ssh deploy-target 'ls -l /root/sgu-judge-artifacts/ 2>&1 || true'
+          if ssh deploy-target 'test -f /root/sgu-judge-artifacts/java-probe.tar.zst'; then
+            ssh deploy-target 'cat /root/sgu-judge-artifacts/java-probe.tar.zst' \
+              | tar -C .local/learning/packages --use-compress-program=unzstd -xf -
+            echo "Java 产物已从服务器拉取"
+            ls -d .local/learning/packages/java-probe
+          else
+            echo "服务器上没有 Java 归档，本次不发布 Java 环境"
+          fi
+
+      - name: Prepare runner packages
+        env:
+          LEARN_PARENT_ORIGIN: https://sgu-acw.zh314.xyz
+        run: pnpm learning:prepare
 
       - name: Upload and switch release
         env:
