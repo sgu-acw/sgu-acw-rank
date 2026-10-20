@@ -19,6 +19,26 @@ function command(args) {
   const result = spawnSync(args[0], args.slice(1), { stdio: 'inherit' })
   if (result.error || result.status !== 0) throw result.error || new Error(`${args[0]} failed`)
 }
+/**
+ * 把 clangd 整棵目录原样复制到 /engine/clangd/：包内 worker 用相对路径找
+ * ../assets/clangd.wasm，文件名必须保持原名，不能让 Vite 加 hash。
+ * 依赖 lsp/clangd 已生成，所以 buildEngine 之后和 packClangd 之后各调一次。
+ */
+function copyClangdIntoEngine() {
+  const source = path.join(work, 'lsp/clangd')
+  if (!fs.existsSync(source)) return
+  const out = path.join(work, 'engine/clangd')
+  fs.mkdirSync(out, { recursive: true })
+  const copyTree = (from, to) => {
+    for (const e of fs.readdirSync(from, { withFileTypes: true })) {
+      const src = path.join(from, e.name), dst = path.join(to, e.name)
+      if (e.isDirectory()) { fs.mkdirSync(dst, { recursive: true }); copyTree(src, dst) }
+      else fs.copyFileSync(src, dst)
+    }
+  }
+  copyTree(source, out)
+}
+
 async function buildEngine() {
   const fromAstro = createRequire(fs.realpathSync(path.join(root, 'node_modules/astro/package.json')))
   const { build } = await import(fromAstro.resolve('vite'))
@@ -40,23 +60,7 @@ async function buildEngine() {
       output: { entryFileNames: '[name].js', chunkFileNames: 'chunks/[name]-[hash].js', assetFileNames: 'assets/[name]-[hash][extname]' },
     },
   } })
-  // clangd 整棵目录原样复制到 /engine/clangd/：包内 worker 用相对路径找
-  // ../assets/clangd.wasm，文件名必须保持原名，不能让 Vite 加 hash。
-  // 放在 build 之后，因为 emptyOutDir 会清空 engine/；dev.cjs 也会调本函数，
-  // 所以复制必须在这里而不是只在 prepare 里做一次。
-  const clangdSource = path.join(work, 'lsp/clangd')
-  if (fs.existsSync(clangdSource)) {
-    const clangdOut = path.join(work, 'engine/clangd')
-    fs.mkdirSync(clangdOut, { recursive: true })
-    const copyTree = (from, to) => {
-      for (const e of fs.readdirSync(from, { withFileTypes: true })) {
-        const src = path.join(from, e.name), dst = path.join(to, e.name)
-        if (e.isDirectory()) { fs.mkdirSync(dst, { recursive: true }); copyTree(src, dst) }
-        else fs.copyFileSync(src, dst)
-      }
-    }
-    copyTree(clangdSource, clangdOut)
-  }
+  copyClangdIntoEngine()
   fs.copyFileSync(path.join(__dirname, 'sw.js'), path.join(work, 'engine/sw.js'))
   // 沙箱 iframe 入口页：data-parent 只是给本地调试看的，真正的白名单在 host.js 里。
   fs.writeFileSync(path.join(work, 'engine/index.html'),
@@ -186,6 +190,9 @@ async function main() {
       try { build() } catch (error) { console.warn(`跳过 ${kind} 语言服务：${error.message}`) }
     }
   }
+  // buildEngine 跑的时候 lsp/clangd 可能还不存在（首次构建），这里补一次。
+  copyClangdIntoEngine()
+
   const lspAssets = {}
   for (const [kind, dir] of Object.entries(lspRoots)) {
     if (!fs.existsSync(dir)) continue
