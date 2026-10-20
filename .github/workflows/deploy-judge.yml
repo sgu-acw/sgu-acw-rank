@@ -43,16 +43,31 @@ jobs:
           node-version: 24
           cache: pnpm
 
-      # brotli 用来统计 .br 传输量（压缩由 Cloudflare 做，源站存原件）。
-      - name: Install brotli
-        run: sudo apt-get update && sudo apt-get install -y brotli
+      # brotli 统计 .br 传输量（压缩由 Cloudflare 做，源站存原件）；
+      # zstd 解压服务器上预置的 Java 归档。
+      - name: Install brotli and zstd
+        run: sudo apt-get update && sudo apt-get install -y brotli zstd
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # Java 运行时由 prepare-java-probe.py 生成（B-JVM + JDK 类库 + ECJ），
-      # 需要 JDK 与本地构建产物。CI 里没有就跳过，Java 会标记为不可用，
-      # 其他语言照常发布。
+      # Java 运行时（B-JVM + JDK 21 类库 + ECJ）需要 Emscripten 编译和大量
+      # 本地补丁，CI 里重建不现实。改为复用服务器上预置的归档：
+      # 本地 pnpm learning:java 构建后 tar 上传到 /root/sgu-judge-artifacts/。
+      # 没有归档时跳过，Java 会标记为不可用，其他语言照常发布。
+      - name: Fetch prebuilt Java probe
+        env:
+          SGU_ACW_HOST: deploy-target
+        run: |
+          mkdir -p .local/learning/packages
+          if ssh deploy-target 'test -f /root/sgu-judge-artifacts/java-probe.tar.zst'; then
+            ssh deploy-target 'cat /root/sgu-judge-artifacts/java-probe.tar.zst' \
+              | tar -C .local/learning/packages --use-compress-program=unzstd -xf -
+            echo "Java 产物已从服务器拉取"
+          else
+            echo "服务器上没有 Java 归档，本次不发布 Java 环境"
+          fi
+
       - name: Prepare runner packages
         env:
           LEARN_PARENT_ORIGIN: https://sgu-acw.zh314.xyz
