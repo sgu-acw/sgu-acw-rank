@@ -6,9 +6,9 @@ name: Deploy frontend
 #
 # 推 main → lint/类型检查/构建 → 打包上传 → 原子切换 → 源站健康检查。
 #
-# 注意：这里只发布主站。评测运行器（judge.zh314.xyz）的产物是 159 MiB 的
-# Brotli 语言包，由本地 ./deploy/deploy-judge.sh 发布——它依赖 OJ++ 构建产物，
-# 不适合每次 push 都重建。
+# 这里只发布主站。评测运行器（judge.zh314.xyz）由 deploy-judge.yml 发布：
+# 它要重建 OJ++ 运行包（约 750 MB 未压缩原件），只在 tools/learning/ 等
+# 相关路径变化时触发。
 on:
   push:
     branches:

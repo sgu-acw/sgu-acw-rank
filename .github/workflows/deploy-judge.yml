@@ -1,0 +1,109 @@
+name: Deploy judge runner
+
+# 评测运行器（judge.zh314.xyz）发布。
+#
+# 它和主站分开：运行器执行用户提交的代码，必须待在独立域名里，否则能读到
+# 主站 Cookie。产物是约 750 MB 未压缩原件（语言包），由 Cloudflare 压缩，
+# 所以发布走自己的 release 目录 + 软链，可回滚。
+#
+# 运行包来自公开的 OJ++ 仓库：CI 里 checkout 并 pnpm build:extension 重建，
+# 不依赖任何本地产物。只在 tools/learning/ 或本工作流变化时触发。
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tools/learning/**'
+      - 'src/lib/learning/**'
+      - 'src/components/learning/**'
+      - 'deploy/deploy-judge.sh'
+      - 'deploy/judge.zh314.xyz.conf'
+      - '.github/workflows/deploy-judge.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: judge-deploy
+  cancel-in-progress: false
+
+env:
+  REMOTE_ROOT: /opt/1panel/apps/openresty/openresty/www/sites/judge.zh314.xyz
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Checkout OJ++ (运行包来源)
+        uses: actions/checkout@v4
+        with:
+          repository: hsn8086/OJ-Plus-Plus
+          ref: main
+          path: OJ-Plus-Plus
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.30.1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      # brotli/zstd 是 prepare.cjs 的硬依赖：前者生成 .br 传输量统计，
+      # 后者解压 YoWASP 的 .wasm.zst。
+      - name: Install brotli and zstd
+        run: sudo apt-get update && sudo apt-get install -y brotli zstd
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install OJ++ dependencies
+        working-directory: OJ-Plus-Plus
+        run: pnpm install --frozen-lockfile
+
+      - name: Build OJ++ extension
+        working-directory: OJ-Plus-Plus
+        run: pnpm build:extension
+
+      # Java 运行时由 prepare-java-probe.py 生成（B-JVM + JDK 类库 + ECJ）。
+      # 它需要 JDK 与若干本地构建产物，CI 里没有——没有就跳过，Java 环境会
+      # 标记为不可用，其他语言照常发布。
+      - name: Prepare runner packages
+        env:
+          LEARN_OJPP_DIST: ${{ github.workspace }}/OJ-Plus-Plus/dist-extension
+          LEARN_PARENT_ORIGIN: https://sgu-acw.zh314.xyz
+        run: pnpm learning:prepare
+
+      - name: Configure SSH
+        env:
+          SSH_KEY: ${{ secrets.SGU_ACW_SSH_KEY }}
+          SSH_HOST: ${{ secrets.SGU_ACW_HOST }}
+          SSH_USER: ${{ secrets.SGU_ACW_USER }}
+        run: |
+          mkdir -p ~/.ssh
+          # 密钥可能带 CRLF 或缺少结尾换行，先规范化；ssh-keygen -y 提前暴露格式问题。
+          printf '%s\n' "$SSH_KEY" | python3 -c "import sys; sys.stdout.write(sys.stdin.read().replace('\r\n', '\n').strip() + '\n')" > ~/.ssh/deploy
+          chmod 600 ~/.ssh/deploy
+          ssh-keygen -y -f ~/.ssh/deploy > /dev/null
+          # ssh-keyscan 在 runner 上会被拦，直接写死已知主机公钥。
+          printf '%s\n' \
+            '154.9.228.109 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOueouNQCFoKLYn0EkXUyp4uRdSzC4Lq2x23nfS9wD6w' \
+            '154.9.228.109 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBHqfRQzBYzSuGi1VB9trjC+clDp5J5QRTd+4bf0Vkxd0rqj9x2ipgRodyp+Ty4Fp2kF6VkglrS3Uj7ht7f2Loa0=' \
+            > ~/.ssh/known_hosts
+          printf 'Host deploy-target\n  HostName %s\n  User %s\n  IdentityFile ~/.ssh/deploy\n  IdentitiesOnly yes\n  StrictHostKeyChecking yes\n' \
+            "$SSH_HOST" "$SSH_USER" > ~/.ssh/config
+          chmod 600 ~/.ssh/config
+          ssh -o BatchMode=yes deploy-target true
+
+      - name: Upload and switch release
+        env:
+          SGU_ACW_HOST: deploy-target
+        run: ./deploy/deploy-judge.sh
+
+      - name: Verify origin
+        run: |
+          for path in /engine/host.js /packages/manifest.json; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 "https://judge.zh314.xyz$path")
+            echo "$path -> $code"
+            test "$code" = 200
+          done
