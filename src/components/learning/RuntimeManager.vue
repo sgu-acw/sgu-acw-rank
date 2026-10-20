@@ -53,7 +53,7 @@ async function remove(id: RuntimeId) {
       <h1 class="text-2xl font-semibold">语言包</h1>
       <div class="flex items-center gap-3 text-sm text-muted-foreground">
         <a href="/learn" class="hover:text-foreground">题库</a>
-        <a href="/learn/ide" class="hover:text-foreground">云端 IDE</a>
+        <a href="/ide" class="hover:text-foreground">云端 IDE</a>
       </div>
     </div>
     <ActionNotice :message="error" variant="error" /><ActionNotice :message="notice" variant="info" />

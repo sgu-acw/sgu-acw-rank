@@ -503,16 +503,12 @@ async function ttyOpen(payload: { environment?: string; source?: string }, signa
         let done = false
         const finish = () => {
           if (done) return
-          done = true; ttyWorker = null; clearTimeout(cap)
+          done = true; ttyWorker = null
           signal.removeEventListener('abort', onAbort); worker.terminate(); resolve({ ended: true })
         }
         const onAbort = () => { emit({ event: 'exit', verdict: 'CANCELLED' }); finish() }
         signal.addEventListener('abort', onAbort, { once: true })
-        // 终端是长会话，但得有个上限防止忘关窗口。
-        const cap = setTimeout(() => {
-          emit({ event: 'error', data: '终端会话超过 120 秒，已结束' })
-          emit({ event: 'exit', verdict: 'TLE' }); finish()
-        }, 120000)
+        // 不设会话时限：程序退出、用户关终端、或离开页面时自然结束。
         worker.onmessage = event => {
           const d = event.data
           if (d?.phase) emit({ event: 'status', data: String(d.phase) })

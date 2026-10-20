@@ -54,7 +54,7 @@ const navGroups = [
       // 题库与云端 IDE 只在题库功能开启时存在。
       ...(LEARN_LOCAL ? [
         { title: '题库', route: '/learn', icon: Terminal },
-        { title: '云端 IDE', route: '/learn/ide', icon: SquareTerminal },
+        { title: '云端 IDE', route: '/ide', icon: SquareTerminal },
       ] : []),
       { title: '练习数据', route: '/practice', icon: BarChart3 },
       { title: '集训', route: '/camps', icon: Trophy },

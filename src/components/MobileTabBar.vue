@@ -37,7 +37,7 @@ const tabs = [
 const extraLinks = [
   ...(LEARN_LOCAL ? [
     { title: '题库', route: '/learn', icon: Terminal },
-    { title: '云端 IDE', route: '/learn/ide', icon: SquareTerminal },
+    { title: '云端 IDE', route: '/ide', icon: SquareTerminal },
   ] : []),
   { title: '集训', route: '/camps', icon: Trophy },
   { title: '工作坊状态', route: '/status', icon: Activity },

@@ -27,6 +27,8 @@ export interface LearningRuntime {
   diagnostics: Ref<unknown>
   connect: () => Promise<void>
   refreshPackages: () => Promise<void>
+  /** 语言服务失败后的手动重试。 */
+  retryLsp: () => Promise<void>
   /** 语言切换后调用：换语言服务、清掉旧会话。 */
   switchEnvironment: (environment: Environment, code: string) => Promise<void>
   dispose: () => void
@@ -60,7 +62,10 @@ export function useLearningRuntime(options: {
     try { lspState.value = await engine.value.lspStatus() } catch { /* 忽略 */ }
   }
 
-  /** 启动语言服务器；换语言先停旧的。clangd 首次要加载 26 MB wasm，比较慢。 */
+  /**
+   * 启动语言服务器；换语言先停旧的。clangd 首次要加载 26 MB wasm，比较慢，
+   * 但挂起不能永远转圈——90 秒还不行就标失败，用户能点状态重试。
+   */
   async function startLsp() {
     lspClientActive.value = false
     lspReason.value = ''
@@ -69,7 +74,14 @@ export function useLearningRuntime(options: {
     lspPhase.value = 'starting'
     try {
       if (lastService && lastService !== service) await engine.value.lspStop(lastService).catch(() => undefined)
-      await engine.value.lspStart(service, options.environment.value, options.code.value)
+      let timeout: ReturnType<typeof setTimeout> | undefined
+      const started = engine.value.lspStart(service, options.environment.value, options.code.value)
+      await Promise.race([
+        started,
+        new Promise<never>((_, reject) => {
+          timeout = setTimeout(() => reject(new Error('语言服务启动超时，点这条重试')), 90000)
+        }),
+      ]).finally(() => clearTimeout(timeout))
       if (!alive) return
       lastService = service
       lspClientActive.value = true
@@ -78,6 +90,10 @@ export function useLearningRuntime(options: {
       lspReason.value = String(e)
       lspPhase.value = 'failed'
     }
+  }
+  /** 失败后手动重试（点状态文字触发）。 */
+  async function retryLsp() {
+    if (lspPhase.value === 'failed') await startLsp()
   }
 
   // 引用必须随状态变化，否则 CodeEditor 的 watch 看不到更新、Compartment 不重配。
@@ -115,7 +131,7 @@ export function useLearningRuntime(options: {
     error, lspPhase, lspReason,
     completion: completion as LearningRuntime['completion'],
     diagnostics: diagnostics as LearningRuntime['diagnostics'],
-    connect, refreshPackages, switchEnvironment, dispose,
+    connect, refreshPackages, retryLsp, switchEnvironment, dispose,
   }
 }
 
