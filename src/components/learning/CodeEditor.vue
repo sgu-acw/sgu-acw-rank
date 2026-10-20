@@ -86,6 +86,8 @@ const themeFacet = new Compartment()
 // 补全源要能后配：语言包是进页面之后才装好的，编辑器创建时还没有 LSP。
 const completionFacet = new Compartment()
 const lintFacet = new Compartment()
+// readOnly 是 Facet，不能直接 reconfigure，必须走 Compartment。
+const readOnlyFacet = new Compartment()
 /** 稳定的补全源：始终注册，内部按当前 props 决定是否走 LSP。 */
 const stableSource = (context: import('@codemirror/autocomplete').CompletionContext) =>
   props.completion ? props.completion(context) : null
@@ -115,7 +117,7 @@ function buildState(value: string, env: Environment, readOnly: boolean) {
       keymap.of([...closeBracketsKeymap, ...defaultKeymap, ...searchKeymap, ...historyKeymap, ...completionKeymap, ...lintKeymap, indentWithTab]),
       EditorView.lineWrapping,
       placeholder('在此编写代码…'),
-      EditorState.readOnly.of(readOnly),
+      readOnlyFacet.of(EditorState.readOnly.of(readOnly)),
       languageFacet.of(languageOf(env)),
       themeFacet.of([dark ? darkTheme : lightTheme, syntaxHighlighting(dark ? darkHighlight : lightHighlight)]),
       lintFacet.of(lintExtension()),
@@ -150,7 +152,7 @@ watch(() => props.modelValue, value => {
   view.dispatch({ changes: { from: 0, to: current.length, insert: value } })
 })
 watch(() => props.environment, env => view?.dispatch({ effects: languageFacet.reconfigure(languageOf(env)) }))
-watch(() => props.readonly, ro => view?.dispatch({ effects: EditorState.readOnly.reconfigure(!!ro) }))
+watch(() => props.readonly, ro => view?.dispatch({ effects: readOnlyFacet.reconfigure(EditorState.readOnly.of(!!ro)) }))
 watch(() => props.completion, v => {
   const g = globalThis as Record<string, unknown>
   g.__reconf = ((g.__reconf as number) || 0) + 1
