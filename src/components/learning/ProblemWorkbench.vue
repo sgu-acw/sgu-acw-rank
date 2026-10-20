@@ -20,12 +20,10 @@ const customCases = ref<CustomCase[]>([{ id: ++customSeq, input: '20 22\n', expe
 const addCase = () => { if (customCases.value.length < 20) customCases.value.push({ id: ++customSeq, input: '', expected: '' }) }
 const removeCase = (id: number) => { if (customCases.value.length > 1) customCases.value = customCases.value.filter(c => c.id !== id) }
 const catalog = ref<Manifest | null>(null), packages = ref<PackageState[]>([]), error = ref(''), notice = ref('')
-// 语言服务：按需下载、启动后提供补全与诊断；没装时编辑器照常可用。
+// 补全与诊断随语言包安装，装好后自动可用；没装时编辑器照常能写能跑。
 const lsp = ref<{ clangd: string | null, pyright: string | null }>({ clangd: null, pyright: null })
-const lspBusy = ref(false), lspProgress = ref<Progress | null>(null)
 let lastService: LspId | null = null
 const lspUnavailable = ref('')
-let lspController: AbortController | undefined
 const activeService = computed(() => serviceFor(environment.value))
 const lspInstalled = computed(() => !!activeService.value && !!lsp.value[activeService.value])
 // 语言服务器跑在运行器 origin，页面侧只持有 RPC 句柄。
@@ -38,18 +36,6 @@ const diagnosticsExtension = computed(() => lspBinding.value.extension)
 async function refreshLsp() {
   if (!engine) return
   try { lsp.value = await engine.lspStatus() } catch { /* 忽略 */ }
-}
-async function installLsp() {
-  const service = activeService.value
-  if (!service || !engine || lspBusy.value) return
-  lspBusy.value = true; error.value = ''; lspController = new AbortController()
-  try {
-    await engine.installLsp(service, lspController.signal, p => { lspProgress.value = p })
-    await refreshLsp(); await startLsp()
-    notice.value = '语言服务已就绪，补全与诊断已开启。'
-  } catch (e) {
-    if ((e as Error).name !== 'AbortError') error.value = String(e)
-  } finally { lspBusy.value = false; lspProgress.value = null; lspController = undefined }
 }
 /** 启动语言服务器；切语言时先关旧的。 */
 async function startLsp() {
@@ -131,14 +117,19 @@ onMounted(async () => {
 })
 onUnmounted(() => {
   persist(); alive = false; clearTimeout(persistTimer); controller?.abort()
-  lspController?.abort()
   if (lastService) void engine?.lspStop(lastService).catch(() => undefined)
   engine?.dispose(); document.removeEventListener('visibilitychange', interruptBackground)
 })
 async function install() {
   if (busy.value || !engine || !runtime.value?.available) return
   busy.value = 'install'; error.value = ''; controller = new AbortController()
-  try { await engine.install(selected.value.runtime, controller.signal, p => { progress.value = p }); await refreshPackages(); notice.value = '环境已安装，可以运行代码。' }
+  try {
+    await engine.install(selected.value.runtime, controller.signal, p => { progress.value = p })
+    await refreshPackages()
+    // 语言包装好后补全与诊断自动生效，不用再点一次。
+    await refreshLsp(); await startLsp()
+    notice.value = '环境已安装，可以运行代码。'
+  }
   catch (e) { if ((e as Error).name !== 'AbortError') error.value = String(e); else notice.value = '下载已取消，草稿已保留。' }
   finally { busy.value = null; progress.value = null; controller = undefined }
 }
@@ -205,15 +196,9 @@ async function saveRecord() {
               <span class="text-sm font-medium">源码</span>
               <span v-if="environment.startsWith('java')" class="text-sm text-muted-foreground">Main.java</span>
               <span class="mr-auto" />
-              <template v-if="activeService">
-                <span v-if="lspUnavailable" class="text-xs text-muted-foreground">该语言服务在当前浏览器不可用</span>
-                <span v-else-if="lspInstalled" class="text-xs text-emerald-600 dark:text-emerald-400">补全与诊断已开启</span>
-                <Button v-else variant="outline" :disabled="lspBusy || !!busy" @click="installLsp">
-                  <Download class="mr-2 h-4 w-4" />{{ lspBusy ? '安装语言服务…' : `开启补全与诊断（${activeService === 'clangd' ? 'clangd' : 'pyright'}）` }}
-                </Button>
-              </template>
+              <span v-if="lspInstalled && !lspUnavailable" class="text-xs text-emerald-600 dark:text-emerald-400">补全与诊断已开启</span>
+              <span v-else-if="lspUnavailable" class="text-xs text-muted-foreground">该语言服务在当前浏览器不可用</span>
             </div>
-            <p v-if="lspProgress" class="text-xs text-muted-foreground" role="status">{{ lspProgress.phase }}<span v-if="lspProgress.total"> · {{ size(lspProgress.done || 0) }}/{{ size(lspProgress.total) }}</span></p>
             <div id="learning-code" role="group" aria-label="源码">
               <CodeEditor v-model="source" :environment="environment" :readonly="!!busy" :completion="lspInstalled ? completionSource : undefined" :diagnostics="lspInstalled ? diagnosticsExtension : undefined" />
             </div>

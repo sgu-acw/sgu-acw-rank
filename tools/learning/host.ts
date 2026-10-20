@@ -50,49 +50,15 @@ async function states(): Promise<PackageState[]> {
     return { id: r.id, version: ready ? active!.version : null, ready }
   }))
 }
-const lspControl = (id: LspId) => `${location.origin}/__lsp/${id}`
-/** 语言服务是否已装好：一个指针 + 对象缓存里资产齐全。 */
+/** 语言服务的资产并进了对应语言包，装语言包时就一起装好。 */
 async function lspReady(id: LspId): Promise<string | null> {
-  const response = await (await caches.open(controlName)).match(lspControl(id))
-  if (!response) return null
-  const mark = await response.json() as { mark: string }
   const service = (await manifest()).services?.[id]
   if (!service) return null
-  const cache = await caches.open(objectsName)
-  for (const a of service.assets) if (!await cache.match(a.path)) return null
-  return mark.mark
-}
-/** 下载语言服务。和评测包共用对象缓存，重复资产不会重复下载。 */
-async function installLsp(id: LspId, signal: AbortSignal, progress: (p: Progress) => void): Promise<void> {
-  const service = (await manifest()).services?.[id]
-  if (!service) throw new Error('该语言服务不可用')
-  // mark 由资产内容哈希决定：manifest 里换了文件但大小刚好相同时也要重装。
-  const mark = `${id}-${service.assets.map(a => a.sha256.slice(0, 8)).join('')}`
-  if (await lspReady(id) === mark) return
-  const cache = await caches.open(objectsName)
-  const total = service.assets.reduce((n, a) => n + a.bytes, 0)
-  let done = 0
-  for (const asset of service.assets) {
-    signal.throwIfAborted()
-    if (await cache.match(asset.path)) { done += asset.bytes; continue }
-    const response = await fetch(asset.path, { credentials: 'omit', signal, cache: 'no-cache' })
-    if (!response.ok) throw new Error(`语言服务下载失败：${asset.path}`)
-    const bytes = new Uint8Array(await response.arrayBuffer())
-    if (bytes.length !== asset.bytes) throw new Error('语言服务下载不完整')
-    const hash = [...new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))]
-      .map(n => n.toString(16).padStart(2, '0')).join('')
-    if (hash !== asset.sha256) throw new Error('语言服务校验失败，请重试')
-    await cache.put(asset.path, new Response(bytes, { headers: { 'Content-Type': asset.type } }))
-    done += bytes.length
-    progress({ phase: '下载语言服务', done, total })
-  }
-  await (await caches.open(controlName)).put(lspControl(id), Response.json({ mark }))
+  const runtime = (await manifest()).runtimes.find(r => r.id === service.runtime)
+  if (!runtime || !await installed(runtime)) return null
+  return `${id}-${runtime.version}`
 }
 
-/** 语言服务卸载：只删指针，共享对象由运行包卸载时统一回收。 */
-async function removeLsp(id: LspId): Promise<void> {
-  await (await caches.open(controlName)).delete(lspControl(id))
-}
 /**
  * 语言服务只能在运行器 origin 里启动：资源是这里的 blob: URL，
  * 主站页面 new Worker 会被同源策略拦掉。所以页面只发 RPC，服务跑在这。
@@ -417,8 +383,6 @@ window.addEventListener('message', event => {
       case 'remove': return remove(payload?.runtime, controller.signal)
       case 'run': return judge(payload, controller.signal, progress)
       case 'lspStatus': return { clangd: await lspReady('clangd'), pyright: await lspReady('pyright') }
-      case 'lspInstall': return installLsp(payload?.service, controller.signal, progress)
-      case 'lspRemove': return removeLsp(payload?.service)
       case 'lspStart': return lspStart(payload?.service, payload?.environment, payload?.code)
       case 'lspStop': return lspStop(payload?.service)
       case 'lspComplete': return lspComplete(payload?.service, payload?.code, payload?.line, payload?.character)

@@ -147,11 +147,13 @@ async function main() {
     lspAssets[kind] = files
   }
 
+  // 补全与诊断跟语言包一起装：资产直接并进对应运行包，不另开安装项。
+  const withLsp = (assets, kind) => lspAssets[kind] ? [...assets, ...lspAssets[kind]] : assets
   const runtimes = [
-    { id: 'c-cpp', label: 'C / C++ · Clang 22', version: `clang22-${version(clangAssets)}`, available: true,
-      assets: clangAssets, provenance: 'YoWASP Clang 22.0.0-git20542-10; local OJ++ build' },
-    { id: 'python', label: 'Python 3.11.3', version: `cpython311-${version(pythonAssets)}`, available: true,
-      assets: pythonAssets, provenance: 'CPython 3.11.3 WASI from Runno, local OJ++ build' },
+    { id: 'c-cpp', label: 'C / C++ · Clang 22', version: `clang22-${version(withLsp(clangAssets, 'clangd'))}`, available: true,
+      assets: withLsp(clangAssets, 'clangd'), provenance: 'YoWASP Clang 22.0.0-git20542-10; local OJ++ build' },
+    { id: 'python', label: 'Python 3.11.3', version: `cpython311-${version(withLsp(pythonAssets, 'pyright'))}`, available: true,
+      assets: withLsp(pythonAssets, 'pyright'), provenance: 'CPython 3.11.3 WASI from Runno, local OJ++ build' },
     { id: 'java21', label: 'Java 21', version: javaReady ? `bjvm-jdk21-${version(javaShared)}` : 'pending-validation',
       available: javaReady, assets: javaShared,
       reason: javaReady ? undefined : '运行 pnpm learning:java 构建 B-JVM 与 JDK 21 类库后可用。',
@@ -161,7 +163,7 @@ async function main() {
       reason: java8Assets ? '编译期为真实 JDK 8 rt.jar，运行期复用 JDK 21 运行时。' : '运行 pnpm learning:java 构建后可用。',
       provenance: 'ECJ -1.8 vs real JDK 8 rt.jar, executed on the validated JDK 21 runtime' },
   ]
-  // 语言服务按运行环境挂载：C/C++ 用 clangd，Python 用 pyright。
+  // 语言服务随语言包安装，这里只记录归属与入口，供运行器启动时查找。
   const services = {
     clangd: lspAssets.clangd ? { runtime: 'c-cpp', assets: lspAssets.clangd } : null,
     pyright: lspAssets.pyright ? { runtime: 'python', assets: lspAssets.pyright } : null,

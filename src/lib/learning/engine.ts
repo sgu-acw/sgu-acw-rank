@@ -82,10 +82,6 @@ export class LearningEngine {
   remove(runtime: RuntimeId) { return this.call<void>('remove', { runtime }) }
   run(request: JudgeRequest, signal: AbortSignal, progress: (p: Progress) => void) { return this.call<JudgeResult>('run', request, signal, progress) }
   lspStatus() { return this.call<Record<LspId, string | null>>('lspStatus') }
-  installLsp(service: LspId, signal: AbortSignal, progress: (p: Progress) => void) {
-    return this.call<void>('lspInstall', { service }, signal, progress)
-  }
-  removeLsp(service: LspId) { return this.call<void>('lspRemove', { service }) }
   lspStart(service: LspId, environment: Environment, code: string) {
     return this.call<void>('lspStart', { service, environment, code })
   }
