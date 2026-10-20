@@ -18,7 +18,8 @@ async function main() {
     if (request.headers.host !== `localhost:${runnerPort}`) { response.writeHead(403).end(); return }
     const url = new URL(request.url, `http://localhost:${runnerPort}`)
     const worker = url.pathname === '/engine/worker.js'
-    response.setHeader('Content-Security-Policy', `default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; connect-src ${worker ? "'none'" : "'self'"}; frame-ancestors ${[...parents].join(' ')}; base-uri 'none'; form-action 'none'`)
+    // 语言服务用 blob: 加载 worker 和 wasm，connect-src 要放行 blob。
+    response.setHeader('Content-Security-Policy', `default-src 'none'; script-src 'self' 'wasm-unsafe-eval' blob:; worker-src 'self' blob:; connect-src ${worker ? "'none'" : "'self' blob:"}; frame-ancestors ${[...parents].join(' ')}; base-uri 'none'; form-action 'none'`)
     if (url.pathname === '/engine/' || url.pathname === '/engine/index.html') {
       const parent = url.searchParams.get('parent')
       if (!parents.has(parent)) { response.writeHead(403).end(); return }

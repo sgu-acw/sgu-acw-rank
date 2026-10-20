@@ -23,8 +23,15 @@ async function buildEngine() {
   await build({ configFile: false, root, publicDir: false, logLevel: 'warn',
     define: { 'import.meta.env.VITE_LEARN_PARENT': JSON.stringify(parent) }, build: {
     outDir: path.join(work, 'engine'), emptyOutDir: true, minify: false, sourcemap: true,
-    rollupOptions: { input: { host: path.join(__dirname, 'host.ts'), worker: path.join(__dirname, 'worker.ts') },
-      output: { entryFileNames: '[name].js', chunkFileNames: 'chunks/[name]-[hash].js' } },
+    rollupOptions: {
+      // clangd 入口必须过打包器：包内用 new URL(..., import.meta.url) 定位
+      // SharedWorker 与 wasm，手写 new Worker 拿不到资产。
+      input: { host: path.join(__dirname, 'host.ts'), worker: path.join(__dirname, 'worker.ts'), clangd: path.join(__dirname, 'clangd.ts') },
+      // preserveEntrySignatures 必须开：clangd 入口的导出要在运行时动态
+      // import，默认的 'exports-only' 会把它摇成空 chunk（实测空壳）。
+      preserveEntrySignatures: 'strict',
+      output: { entryFileNames: '[name].js', chunkFileNames: 'chunks/[name]-[hash].js', assetFileNames: 'assets/[name]-[hash][extname]' },
+    },
   } })
   fs.copyFileSync(path.join(__dirname, 'sw.js'), path.join(work, 'engine/sw.js'))
   // 沙箱 iframe 入口页：data-parent 只是给本地调试看的，真正的白名单在 host.js 里。
@@ -113,6 +120,33 @@ async function main() {
     ? [...javaShared, await asset('java8.jar', fs.readFileSync(path.join(javaRoot, 'java8.jar')), 'application/octet-stream')]
     : null
 
+  // 语言服务（可选附件）：只有打开智能提示才下载，单独成项。
+  const { packClangd, packPyright } = require('./prepare-lsp.cjs')
+  const lspRoots = { clangd: path.join(work, 'lsp/clangd'), pyright: path.join(work, 'lsp/pyright') }
+  for (const [kind, dir] of Object.entries(lspRoots)) {
+    if (!fs.existsSync(dir)) {
+      const build = kind === 'clangd' ? packClangd : packPyright
+      try { build() } catch (error) { console.warn(`跳过 ${kind} 语言服务：${error.message}`) }
+    }
+  }
+  const lspAssets = {}
+  for (const [kind, dir] of Object.entries(lspRoots)) {
+    if (!fs.existsSync(dir)) continue
+    const walk = d => fs.readdirSync(d, { withFileTypes: true })
+      .flatMap(e => e.isDirectory() ? walk(path.join(d, e.name)) : [path.join(d, e.name)])
+    const files = []
+    for (const file of walk(dir)) {
+      const rel = path.relative(dir, file)
+      const type = file.endsWith('.wasm') ? 'application/wasm'
+        : file.endsWith('.js') ? 'text/javascript'
+        : file.endsWith('.json') ? 'application/json' : 'application/octet-stream'
+      // 名字保留原始相对路径：按后缀找入口文件（clangd.shared-worker.js 等）
+      // 才不会因为前缀被改写而失配。
+      files.push(await asset(`lsp-${kind}-${rel}`, fs.readFileSync(file), type))
+    }
+    lspAssets[kind] = files
+  }
+
   const runtimes = [
     { id: 'c-cpp', label: 'C / C++ · Clang 22', version: `clang22-${version(clangAssets)}`, available: true,
       assets: clangAssets, provenance: 'YoWASP Clang 22.0.0-git20542-10; local OJ++ build' },
@@ -127,8 +161,13 @@ async function main() {
       reason: java8Assets ? '编译期为真实 JDK 8 rt.jar，运行期复用 JDK 21 运行时。' : '运行 pnpm learning:java 构建后可用。',
       provenance: 'ECJ -1.8 vs real JDK 8 rt.jar, executed on the validated JDK 21 runtime' },
   ]
+  // 语言服务按运行环境挂载：C/C++ 用 clangd，Python 用 pyright。
+  const services = {
+    clangd: lspAssets.clangd ? { runtime: 'c-cpp', assets: lspAssets.clangd } : null,
+    pyright: lspAssets.pyright ? { runtime: 'python', assets: lspAssets.pyright } : null,
+  }
   const temporary = path.join(packages, 'manifest.next.json')
-  fs.writeFileSync(temporary, JSON.stringify({ schema: 1, runtimes }, null, 2) + '\n')
+  fs.writeFileSync(temporary, JSON.stringify({ schema: 1, runtimes, services }, null, 2) + '\n')
   fs.renameSync(temporary, path.join(packages, 'manifest.json'))
   const notices = path.resolve(source, '../THIRD_PARTY_NOTICES.md')
   if (fs.existsSync(notices)) fs.copyFileSync(notices, path.join(packages, 'THIRD_PARTY_NOTICES.md'))

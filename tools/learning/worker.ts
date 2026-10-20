@@ -79,11 +79,15 @@ async function execute(binary: Uint8Array, args: string[], fs: WASIFS, input: st
 }
 
 async function run(work: Work): Promise<Execution> {
-  const get = (suffix: string) => {
+  // 大资产（>4 MiB）不进消息体，由协调者放进共享对象缓存；这里统一按需取。
+  const get = async (suffix: string): Promise<Uint8Array> => {
     const path = work.runtime.assets.find(a => a.path.endsWith(suffix))?.path
-    const value = path && work.assets[path]
-    if (!value) throw new Error(`运行包资源缺失：${suffix}，请重新安装`)
-    return value
+    if (!path) throw new Error(`运行包资源缺失：${suffix}，请重新安装`)
+    const inMessage = work.assets[path]
+    if (inMessage) return inMessage
+    const hit = await (await caches.open('learning-objects')).match(path)
+    if (!hit) throw new Error(`运行包资源缺失：${suffix}，请重新安装`)
+    return new Uint8Array(await hit.arrayBuffer())
   }
   // All byte requests are fulfilled from verified resources supplied by the coordinator
   // or the shared, hash-pinned object cache (large Java assets are never put in messages).
@@ -96,9 +100,9 @@ async function run(work: Work): Promise<Execution> {
     throw new Error('评测程序不能访问网络')
   }
   if (work.environment === 'python') {
-    const fs = unpack(get('python.tar'))
+    const fs = unpack(await get('python.tar'))
     fs['/main.py'] = file('/main.py', encoder.encode(work.source))
-    return execute(get('python.wasm'), ['python', '/main.py'], fs, work.input)
+    return execute(await get('python.wasm'), ['python', '/main.py'], fs, work.input)
   }
   if (work.environment === 'java8' || work.environment === 'java21') return runJava(work)
   let binary = work.artifact

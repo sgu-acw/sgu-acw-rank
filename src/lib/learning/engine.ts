@@ -1,4 +1,4 @@
-import type { JudgeRequest, JudgeResult, Manifest, PackageState, Progress, RuntimeId } from './types'
+import type { Environment, JudgeRequest, JudgeResult, LspId, Manifest, PackageState, Progress, RuntimeId } from './types'
 
 type Pending = { resolve: (data: unknown) => void; reject: (error: Error) => void; progress?: (p: Progress) => void; cleanup: () => void }
 
@@ -81,6 +81,19 @@ export class LearningEngine {
   install(runtime: RuntimeId, signal: AbortSignal, progress: (p: Progress) => void) { return this.call<void>('install', { runtime }, signal, progress) }
   remove(runtime: RuntimeId) { return this.call<void>('remove', { runtime }) }
   run(request: JudgeRequest, signal: AbortSignal, progress: (p: Progress) => void) { return this.call<JudgeResult>('run', request, signal, progress) }
+  lspStatus() { return this.call<Record<LspId, string | null>>('lspStatus') }
+  installLsp(service: LspId, signal: AbortSignal, progress: (p: Progress) => void) {
+    return this.call<void>('lspInstall', { service }, signal, progress)
+  }
+  removeLsp(service: LspId) { return this.call<void>('lspRemove', { service }) }
+  lspStart(service: LspId, environment: Environment, code: string) {
+    return this.call<void>('lspStart', { service, environment, code })
+  }
+  lspStop(service: LspId) { return this.call<void>('lspStop', { service }) }
+  lspComplete(service: LspId, code: string, line: number, character: number) {
+    return this.call<unknown[]>('lspComplete', { service, code, line, character })
+  }
+  lspDiagnostics(service: LspId) { return this.call<unknown[]>('lspDiagnostics', { service }) }
   dispose() {
     this.disposed = true
     // 就绪轮询在 ready 的 finish 里停；这里只需标记 disposed，attempt 会自行跳过。

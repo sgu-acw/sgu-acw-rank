@@ -1,4 +1,4 @@
-import type { Execution, JudgeRequest, JudgeResult, Manifest, PackageState, Progress, Runtime, RuntimeId, Verdict } from '../../src/lib/learning/types'
+import type { Execution, JudgeRequest, JudgeResult, LspId, Manifest, PackageState, Progress, Runtime, RuntimeId, Verdict } from '../../src/lib/learning/types'
 import { checkPoint } from './checker'
 import { policy } from './policy'
 
@@ -50,6 +50,209 @@ async function states(): Promise<PackageState[]> {
     return { id: r.id, version: ready ? active!.version : null, ready }
   }))
 }
+const lspControl = (id: LspId) => `${location.origin}/__lsp/${id}`
+/** 语言服务是否已装好：一个指针 + 对象缓存里资产齐全。 */
+async function lspReady(id: LspId): Promise<string | null> {
+  const response = await (await caches.open(controlName)).match(lspControl(id))
+  if (!response) return null
+  const mark = await response.json() as { mark: string }
+  const service = (await manifest()).services?.[id]
+  if (!service) return null
+  const cache = await caches.open(objectsName)
+  for (const a of service.assets) if (!await cache.match(a.path)) return null
+  return mark.mark
+}
+/** 下载语言服务。和评测包共用对象缓存，重复资产不会重复下载。 */
+async function installLsp(id: LspId, signal: AbortSignal, progress: (p: Progress) => void): Promise<void> {
+  const service = (await manifest()).services?.[id]
+  if (!service) throw new Error('该语言服务不可用')
+  // mark 由资产内容哈希决定：manifest 里换了文件但大小刚好相同时也要重装。
+  const mark = `${id}-${service.assets.map(a => a.sha256.slice(0, 8)).join('')}`
+  if (await lspReady(id) === mark) return
+  const cache = await caches.open(objectsName)
+  const total = service.assets.reduce((n, a) => n + a.bytes, 0)
+  let done = 0
+  for (const asset of service.assets) {
+    signal.throwIfAborted()
+    if (await cache.match(asset.path)) { done += asset.bytes; continue }
+    const response = await fetch(asset.path, { credentials: 'omit', signal, cache: 'no-cache' })
+    if (!response.ok) throw new Error(`语言服务下载失败：${asset.path}`)
+    const bytes = new Uint8Array(await response.arrayBuffer())
+    if (bytes.length !== asset.bytes) throw new Error('语言服务下载不完整')
+    const hash = [...new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))]
+      .map(n => n.toString(16).padStart(2, '0')).join('')
+    if (hash !== asset.sha256) throw new Error('语言服务校验失败，请重试')
+    await cache.put(asset.path, new Response(bytes, { headers: { 'Content-Type': asset.type } }))
+    done += bytes.length
+    progress({ phase: '下载语言服务', done, total })
+  }
+  await (await caches.open(controlName)).put(lspControl(id), Response.json({ mark }))
+}
+
+/** 语言服务卸载：只删指针，共享对象由运行包卸载时统一回收。 */
+async function removeLsp(id: LspId): Promise<void> {
+  await (await caches.open(controlName)).delete(lspControl(id))
+}
+/**
+ * 语言服务只能在运行器 origin 里启动：资源是这里的 blob: URL，
+ * 主站页面 new Worker 会被同源策略拦掉。所以页面只发 RPC，服务跑在这。
+ */
+interface LspSession {
+  worker: Worker
+  pending: Map<number, { resolve: (v: unknown) => void; reject: (e: Error) => void; timer: ReturnType<typeof setTimeout> }>
+  nextId: number
+  version: number
+  diagnostics: LspDiagnostic[]
+  waiters: Array<() => void>
+  file: string
+}
+interface LspDiagnostic { range: { start: { line: number; character: number }; end: { line: number; character: number } }; message: string; severity?: number }
+const lspSessions = new Map<string, LspSession>()
+const clangdSessions = new Map<string, { port: MessagePort; dispose(): void }>()
+const lspUri = (env: string) => env === 'python' ? 'file:///workspace/main.py' : env === 'c' ? 'file:///workspace/main.c' : 'file:///workspace/main.cpp'
+
+async function lspAssetUrl(id: LspId, suffix: string): Promise<string | null> {
+  const service = (await manifest()).services?.[id]
+  const asset = service?.assets.find(a => a.path.endsWith(suffix))
+  if (!asset) return null
+  const hit = await (await caches.open(objectsName)).match(asset.path)
+  if (!hit) throw new Error('语言服务资源缺失，请重新安装')
+  return URL.createObjectURL(await hit.blob())
+}
+
+async function lspStart(id: LspId, environment: string, code: string): Promise<void> {
+  await lspStop(id)
+  const uri = lspUri(environment)
+  const session: LspSession = { worker: null as unknown as Worker, pending: new Map(), nextId: 1, version: 1, diagnostics: [], waiters: [], file: uri }
+  const receive = (message: Record<string, unknown>) => {
+    if (!message) return
+    if (message.method && message.id !== undefined) {
+      const params = message.params as { items?: { section?: string }[] } | undefined
+      const result = message.method === 'workspace/configuration'
+        ? (params?.items ?? []).map(item => item.section === 'python.analysis'
+          ? { typeshedPaths: ['/typeshed'], typeCheckingMode: 'basic', diagnosticMode: 'openFilesOnly', autoImportCompletions: false }
+          : {})
+        : null
+      session.worker.postMessage({ jsonrpc: '2.0', id: message.id, result })
+      return
+    }
+    if (message.method === 'textDocument/publishDiagnostics') {
+      const params = message.params as { uri?: string; diagnostics?: LspDiagnostic[] } | undefined
+      if (params?.uri === uri) {
+        session.diagnostics = params.diagnostics ?? []
+        for (const wake of session.waiters.splice(0)) wake()
+      }
+      return
+    }
+    if (typeof message.id === 'number') {
+      const entry = session.pending.get(message.id)
+      if (!entry) return
+      clearTimeout(entry.timer); session.pending.delete(message.id)
+      const error = message.error as { message?: string } | undefined
+      if (error) entry.reject(new Error(error.message ?? 'LSP 错误'))
+      else entry.resolve(message.result)
+    }
+  }
+  const rpc = (method: string, params: unknown, timeout = 30000) => new Promise<unknown>((resolve, reject) => {
+    const n = session.nextId++
+    const timer = setTimeout(() => { if (session.pending.delete(n)) reject(new Error(`${id} ${method} 超时`)) }, timeout)
+    session.pending.set(n, { resolve, reject, timer })
+    session.worker.postMessage({ jsonrpc: '2.0', id: n, method, params })
+  })
+  if (id === 'pyright') {
+    const entry = await lspAssetUrl('pyright', 'pyright.worker.js')
+    if (!entry) throw new Error('缺少 pyright 运行时')
+    session.worker = new Worker(entry, { type: 'classic' })
+    session.worker.postMessage({ type: 'browser/boot', mode: 'foreground' })
+    session.worker.onmessage = event => receive(event.data as Record<string, unknown>)
+  } else {
+    // clangd 必须走打包好的入口：它内部用 SharedWorker + new URL(import.meta.url)
+    // 定位 wasm，裸 Worker 拿不到资产，会一直停在 initialize。
+    const { openSession } = await import(/* @vite-ignore */ new URL('/engine/clangd.js', location.origin).href) as {
+      openSession: (o: { uri: string; compilerArguments?: string }) => Promise<{ port: MessagePort; dispose(): void }>
+    }
+    let opened
+    try {
+      opened = await openSession({ uri, compilerArguments: environment === 'c' ? '-std=c11' : '-std=c++17' })
+    } catch (error) {
+      // clangd 依赖 SharedWorker + JSPI，某些环境会静默失败；这里给出可读原因，
+      // 让界面显示「不可用」而不是一直转圈。
+      throw new Error(`clangd 启动失败：${error instanceof Error ? error.message : String(error)}`)
+    }
+    clangdSessions.set(id, opened)
+    opened.port.onmessage = event => receive(event.data as Record<string, unknown>)
+    // 用 port 代替 worker 收发；下面的 rpc 会检查这个分支。
+    session.worker = { postMessage: (m: unknown) => opened.port.postMessage(m), terminate: () => opened.dispose() } as unknown as Worker
+  }
+  lspSessions.set(id, session)
+
+  let initializationOptions: unknown
+  // 只有 pyright 需要 typeshed；clangd 启动时不能去查 pyright 的资产。
+  if (id === 'pyright') {
+    const stdlib = await lspAssetUrl('pyright', 'stdlib.json')
+    if (stdlib) {
+      const files = JSON.parse(await (await fetch(stdlib)).text()) as Record<string, string>
+      files['/workspace/pyrightconfig.json'] = JSON.stringify({ pythonVersion: '3.11', pythonPlatform: 'Linux', typeCheckingMode: 'basic', typeshedPath: '/typeshed' })
+      initializationOptions = { files }
+    }
+  }
+  await rpc('initialize', {
+    processId: null, rootUri: 'file:///workspace',
+    capabilities: {
+      workspace: { configuration: true },
+      textDocument: {
+        completion: { completionItem: { snippetSupport: false } },
+        publishDiagnostics: { versionSupport: true },
+      },
+    },
+    ...(initializationOptions ? { initializationOptions } : {}),
+  }, 120000)
+  session.worker.postMessage({ jsonrpc: '2.0', method: 'initialized', params: {} })
+  session.worker.postMessage({ jsonrpc: '2.0', method: 'textDocument/didOpen', params: {
+    textDocument: { uri, languageId: id === 'pyright' ? 'python' : environment === 'c' ? 'c' : 'cpp', version: 1, text: code },
+  } })
+}
+
+function lspStop(id: LspId): void {
+  const session = lspSessions.get(id)
+  if (!session) return
+  for (const entry of session.pending.values()) { clearTimeout(entry.timer); entry.reject(new Error('语言服务已关闭')) }
+  session.pending.clear()
+  session.worker.terminate()
+  clangdSessions.get(id)?.dispose()
+  clangdSessions.delete(id)
+  lspSessions.delete(id)
+}
+
+async function lspComplete(id: LspId, code: string, line: number, character: number) {
+  const session = lspSessions.get(id)
+  if (!session) throw new Error('语言服务未启动')
+  session.version += 1
+  session.worker.postMessage({ jsonrpc: '2.0', method: 'textDocument/didChange', params: {
+    textDocument: { uri: session.file, version: session.version }, contentChanges: [{ text: code }],
+  } })
+  const result = await new Promise<unknown>((resolve, reject) => {
+    const n = session.nextId++
+    const timer = setTimeout(() => { if (session.pending.delete(n)) reject(new Error('补全超时')) }, 15000)
+    session.pending.set(n, { resolve, reject, timer })
+    session.worker.postMessage({ jsonrpc: '2.0', id: n, method: 'textDocument/completion', params: {
+      textDocument: { uri: session.file }, position: { line, character }, context: { triggerKind: 1 },
+    } })
+  }) as { items?: unknown[] } | unknown[] | null
+  if (!result) return []
+  return Array.isArray(result) ? result : result.items ?? []
+}
+
+async function lspDiagnostics(id: LspId): Promise<LspDiagnostic[]> {
+  const session = lspSessions.get(id)
+  if (!session) throw new Error('语言服务未启动')
+  await new Promise<void>(resolve => {
+    const timer = setTimeout(resolve, 5000)
+    session.waiters.push(() => { clearTimeout(timer); resolve() })
+  })
+  return session.diagnostics
+}
+
 async function locked<T>(id: RuntimeId, signal: AbortSignal, action: () => Promise<T>, mode: 'shared' | 'exclusive' = 'exclusive'): Promise<T> {
   if (!navigator.locks) throw new Error('当前浏览器不支持安全的运行包安装锁，请使用较新的浏览器')
   return navigator.locks.request(`learning-${id}`, { mode, signal }, action)
@@ -213,6 +416,13 @@ window.addEventListener('message', event => {
       case 'install': return install(payload?.runtime, controller.signal, progress)
       case 'remove': return remove(payload?.runtime, controller.signal)
       case 'run': return judge(payload, controller.signal, progress)
+      case 'lspStatus': return { clangd: await lspReady('clangd'), pyright: await lspReady('pyright') }
+      case 'lspInstall': return installLsp(payload?.service, controller.signal, progress)
+      case 'lspRemove': return removeLsp(payload?.service)
+      case 'lspStart': return lspStart(payload?.service, payload?.environment, payload?.code)
+      case 'lspStop': return lspStop(payload?.service)
+      case 'lspComplete': return lspComplete(payload?.service, payload?.code, payload?.line, payload?.character)
+      case 'lspDiagnostics': return lspDiagnostics(payload?.service)
       default: throw new Error('未知运行器操作')
     }
   }

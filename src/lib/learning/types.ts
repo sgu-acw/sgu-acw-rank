@@ -21,7 +21,10 @@ export interface Runtime {
   id: RuntimeId; label: string; version: string; available: boolean; reason?: string
   assets: RuntimeAsset[]; provenance: string
 }
-export interface Manifest { schema: 1; runtimes: Runtime[] }
+export type LspId = 'clangd' | 'pyright'
+/** 可选语言服务：clangd 给 C/C++，pyright 给 Python。按需下载，不绑在主评测包里。 */
+export interface LspService { runtime: RuntimeId; assets: RuntimeAsset[] }
+export interface Manifest { schema: 1; runtimes: Runtime[]; services?: Partial<Record<LspId, LspService>> }
 export interface PackageState { id: RuntimeId; version: string | null; ready: boolean }
 export interface Execution { verdict: 'OK' | Verdict; stdout: string; stderr: string; error?: string; elapsedMs?: number }
 export interface PointResult extends Execution { name: string; verdict: Verdict; expected?: string }
