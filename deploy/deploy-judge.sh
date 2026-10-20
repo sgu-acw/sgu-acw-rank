@@ -36,7 +36,15 @@ file_list="$(mktemp)"
   cd "$work"
   find engine -type f ! -name '*.map'
   find packages -maxdepth 1 -type f \( -name 'manifest.json' -o -name 'THIRD_PARTY_NOTICES.md' \)
-  find packages/objects -type f ! -name '*.br' ! -name '.*'
+  # 只传 manifest 引用的对象：objects/ 里可能残留旧版本的大文件。
+  node -e '
+    const m = require("./packages/manifest.json")
+    const seen = new Set()
+    for (const r of m.runtimes) for (const a of r.assets) {
+      const p = a.path.replace(/^\//, "")
+      if (!seen.has(p)) { seen.add(p); console.log(p) }
+    }
+  '
 ) > "$file_list"
 # 大流量下 SSH 会被中途掐断，加保活；再按批切分，单次连接失败不影响整体。
 SSH_OPTS="-o ServerAliveInterval=15 -o ServerAliveCountMax=8 -o TCPKeepAlive=yes"

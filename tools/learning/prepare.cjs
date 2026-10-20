@@ -4,7 +4,8 @@ const fs = require('node:fs')
 const path = require('node:path')
 const crypto = require('node:crypto')
 const { createRequire } = require('node:module')
-const { spawnSync } = require('node:child_process')
+const { spawnSync, spawn } = require('node:child_process')
+const os = require('node:os')
 const zlib = require('node:zlib')
 const root = path.resolve(__dirname, '../..')
 const work = path.join(root, '.local/learning')
@@ -41,6 +42,43 @@ async function buildEngine() {
   fs.writeFileSync(path.join(work, 'engine/index.html'),
     `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="robots" content="noindex"><title>评测运行器</title></head><body><script type="module" src="/engine/host.js"></script></body></html>\n`)
 }
+/**
+ * Brotli 压缩是这里唯一的耗时大头（-q 11 压缩 137 MiB 的 jar 要好几分钟），
+ * 原来串行跑，多核机器基本闲着。改成按 CPU 数并行，压缩阶段放进任务队列，
+ * 各资产先登记再统一 wait 全部完成。
+ */
+const brotliJobs = []
+// brotli -q 11 的内存占用约为输入的 5-6 倍（137 MiB 的 jar 约 700 MiB），
+// 按核数取一半并封顶 6，避免把机器压到换页。
+const brotliConcurrency = Math.max(1, Math.min(Math.floor(os.cpus().length / 2), 6))
+let brotliActive = 0
+function queueBrotli(raw, packed) {
+  brotliJobs.push({ raw, packed })
+}
+function runBrotliQueue() {
+  return new Promise((resolve, reject) => {
+    let failed = null
+    const next = () => {
+      if (failed) return finish(failed)
+      if (!brotliJobs.length && brotliActive === 0) return finish(null)
+      while (brotliActive < brotliConcurrency && brotliJobs.length) {
+        const { raw, packed } = brotliJobs.shift()
+        brotliActive += 1
+        const tmp = packed + '.tmp'
+        const child = spawn('brotli', ['-q', '11', '-f', raw, '-o', tmp], { stdio: 'inherit' })
+        child.on('error', error => { failed = error; brotliActive -= 1; next() })
+        child.on('exit', code => {
+          brotliActive -= 1
+          if (code === 0) { fs.renameSync(tmp, packed); next() }
+          else { failed = new Error(`brotli 失败：${packed}`); next() }
+        })
+      }
+    }
+    const finish = error => error ? reject(error) : resolve()
+    next()
+  })
+}
+
 async function asset(name, bytes, type) {
   const hash = crypto.createHash('sha256').update(bytes).digest('hex')
   const dir = path.join(packages, 'objects', hash)
@@ -52,14 +90,14 @@ async function asset(name, bytes, type) {
   if (!fs.existsSync(packed)) {
     console.log(`Brotli 11: ${name} (${(bytes.length / 1048576).toFixed(1)} MiB decoded)`)
     // 先写临时文件再改名；上次被中断的半成品 .br 会解压不全，必须重建。
-    const tmp = packed + '.tmp'
-    command(['brotli', '-q', '11', '-f', raw, '-o', tmp])
-    fs.renameSync(tmp, packed)
+    queueBrotli(raw, packed)
   }
   // path 不带 .br：浏览器按 Content-Encoding 原生解压（Chrome 的
   // DecompressionStream 并不支持 brotli）。CDN 的二次压缩由 no-transform 阻止。
-  return { path: `/packages/objects/${hash}/${name}`, bytes: bytes.length,
-    transferBytes: fs.statSync(packed).size, sha256: hash, type }
+  // transferBytes 在压缩完成后回填。
+  const record = { path: `/packages/objects/${hash}/${name}`, bytes: bytes.length,
+    transferBytes: 0, sha256: hash, type, packed }
+  return record
 }
 async function main() {
   fs.mkdirSync(packages, { recursive: true })
@@ -167,9 +205,36 @@ async function main() {
     clangd: lspAssets.clangd ? { runtime: 'c-cpp', assets: lspAssets.clangd } : null,
     pyright: lspAssets.pyright ? { runtime: 'python', assets: lspAssets.pyright } : null,
   }
+  // 等所有 .br 落盘，再回填 transferBytes 写 manifest。
+  await runBrotliQueue()
+  // 同一对象可能被多个运行包引用（Java 8 复用 Java 21 的资产），按 path 去重。
+  const records = new Map()
+  for (const record of [...runtimes.flatMap(r => r.assets), ...Object.values(services).flatMap(s => s?.assets ?? [])]) {
+    records.set(record.path, record)
+  }
+  for (const record of records.values()) {
+    if (record.packed) { record.transferBytes = fs.statSync(record.packed).size; delete record.packed }
+  }
   const temporary = path.join(packages, 'manifest.next.json')
   fs.writeFileSync(temporary, JSON.stringify({ schema: 1, runtimes, services }, null, 2) + '\n')
   fs.renameSync(temporary, path.join(packages, 'manifest.json'))
+  // 清理孤儿对象：重跑 prepare 后旧版本的 jar 会留在 objects/ 里，
+  // 发布脚本按目录上传时会把这些几百 MiB 的废件一起传上去。
+  // asset.path 形如 /packages/objects/<hash>/<name>，而 objects/ 是 packages 下的
+  // 子目录，所以只取 objects/ 之后的部分来拼绝对路径。
+  const work_root = path.dirname(packages)
+  const referenced = new Set([...runtimes.flatMap(r => r.assets)].map(a => path.join(work_root, a.path.replace(/^\//, ''))))
+  let orphans = 0, orphanBytes = 0
+  for (const dir of fs.readdirSync(path.join(packages, 'objects'))) {
+    const dirPath = path.join(packages, 'objects', dir)
+    if (!fs.statSync(dirPath).isDirectory()) continue
+    const files = fs.readdirSync(dirPath)
+    if (files.some(f => referenced.has(path.join(dirPath, f)))) continue
+    for (const f of files) orphanBytes += fs.statSync(path.join(dirPath, f)).size
+    fs.rmSync(dirPath, { recursive: true, force: true })
+    orphans += 1
+  }
+  if (orphans) console.log(`清理孤儿对象 ${orphans} 个（${(orphanBytes / 1048576).toFixed(0)} MiB）`)
   const notices = path.join(root, 'THIRD_PARTY_NOTICES.md')
   if (fs.existsSync(notices)) fs.copyFileSync(notices, path.join(packages, 'THIRD_PARTY_NOTICES.md'))
   console.log('Local packages prepared. No production files or services were accessed.')
