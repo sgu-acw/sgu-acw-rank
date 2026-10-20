@@ -6,8 +6,9 @@ name: Deploy judge runner
 # 主站 Cookie。产物是约 750 MB 未压缩原件（语言包），由 Cloudflare 压缩，
 # 所以发布走自己的 release 目录 + 软链，可回滚。
 #
-# 运行包来自公开的 OJ++ 仓库：CI 里 checkout 并 pnpm build:extension 重建，
-# 不依赖任何本地产物。只在 tools/learning/ 或本工作流变化时触发。
+# 运行包（Python WASI、YoWASP Clang）由 fetch-runtimes.cjs 从公开来源直接
+# 下载并按 sha256 校验，不依赖任何其他仓库的构建产物。只在 tools/learning/
+# 或本工作流变化时触发。
 on:
   push:
     branches: [main]
@@ -33,49 +34,27 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Checkout OJ++ (运行包来源)
-        uses: actions/checkout@v4
-        with:
-          repository: hsn8086/OJ-Plus-Plus
-          ref: main
-          path: OJ-Plus-Plus
-
       - uses: pnpm/action-setup@v4
         with:
           version: 10.30.1
 
-      # OJ++ 的 build:extension 依赖 --experimental-strip-types，node 22 的
-      # 小版本不一定支持；用 24 更稳。
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: pnpm
-          cache-dependency-path: |
-            pnpm-lock.yaml
-            OJ-Plus-Plus/pnpm-lock.yaml
 
-      # brotli/zstd 是 prepare.cjs 的硬依赖：前者生成 .br 传输量统计，
-      # 后者解压 YoWASP 的 .wasm.zst。
-      - name: Install brotli and zstd
-        run: sudo apt-get update && sudo apt-get install -y brotli zstd
+      # brotli 用来统计 .br 传输量（压缩由 Cloudflare 做，源站存原件）。
+      - name: Install brotli
+        run: sudo apt-get update && sudo apt-get install -y brotli
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Install OJ++ dependencies
-        working-directory: OJ-Plus-Plus
-        run: pnpm install --no-frozen-lockfile
-
-      - name: Build OJ++ extension
-        working-directory: OJ-Plus-Plus
-        run: pnpm build:extension
-
-      # Java 运行时由 prepare-java-probe.py 生成（B-JVM + JDK 类库 + ECJ）。
-      # 它需要 JDK 与若干本地构建产物，CI 里没有——没有就跳过，Java 环境会
-      # 标记为不可用，其他语言照常发布。
+      # Java 运行时由 prepare-java-probe.py 生成（B-JVM + JDK 类库 + ECJ），
+      # 需要 JDK 与本地构建产物。CI 里没有就跳过，Java 会标记为不可用，
+      # 其他语言照常发布。
       - name: Prepare runner packages
         env:
-          LEARN_OJPP_DIST: ${{ github.workspace }}/OJ-Plus-Plus/dist-extension
           LEARN_PARENT_ORIGIN: https://sgu-acw.zh314.xyz
         run: pnpm learning:prepare
 

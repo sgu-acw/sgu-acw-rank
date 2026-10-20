@@ -175,7 +175,6 @@ async function saveRecord() {
             <Columns2 v-if="!split" class="h-4 w-4" /><Rows2 v-else class="h-4 w-4" />
             <span class="ml-2 hidden sm:inline">{{ split ? '单列' : '双栏' }}</span>
           </Button>
-          <Button :disabled="!!busy || !ready" @click="run('all')"><Play class="mr-2 h-4 w-4" />提交</Button>
         </div>
       </div>
       <div class="flex gap-2 lg:hidden"><button type="button" class="choice-button" :aria-pressed="mobilePanel === 'statement'" @click="mobilePanel = 'statement'">题面</button><button type="button" class="choice-button" :aria-pressed="mobilePanel === 'editor'" @click="mobilePanel = 'editor'">代码与结果</button></div>
@@ -195,9 +194,9 @@ async function saveRecord() {
             <div class="flex flex-wrap items-center gap-2">
               <span class="text-sm font-medium">源码</span>
               <span v-if="environment.startsWith('java')" class="text-sm text-muted-foreground">Main.java</span>
-              <span class="mr-auto" />
               <span v-if="lspInstalled && !lspUnavailable" class="text-xs text-emerald-600 dark:text-emerald-400">补全与诊断已开启</span>
               <span v-else-if="lspUnavailable" class="text-xs text-muted-foreground">该语言服务在当前浏览器不可用</span>
+              <Button class="ml-auto" :disabled="!!busy || !ready" @click="run('all')"><Play class="mr-2 h-4 w-4" />提交</Button>
             </div>
             <div id="learning-code" role="group" aria-label="源码">
               <CodeEditor v-model="source" :environment="environment" :readonly="!!busy" :completion="lspInstalled ? completionSource : undefined" :diagnostics="lspInstalled ? diagnosticsExtension : undefined" />

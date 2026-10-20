@@ -8,7 +8,10 @@ const { spawnSync } = require('node:child_process')
 const zlib = require('node:zlib')
 const root = path.resolve(__dirname, '../..')
 const work = path.join(root, '.local/learning')
-const source = path.resolve(process.env.LEARN_OJPP_DIST || path.join(root, '../OJ-Plus-Plus/dist-extension'))
+// 运行时二进制来自公开来源（Runno 的 Python、npm 上的 YoWASP Clang），
+// 由 fetch-runtimes.cjs 下载校验后摊平到 .local/learning/source/。
+// 以前依赖 OJ++ 的 dist-extension，但那份产物只是把这些件重新压了一遍。
+const { prepareSource } = require('./fetch-runtimes.cjs')
 const packages = path.join(work, 'packages')
 
 function command(args) {
@@ -61,28 +64,24 @@ async function asset(name, bytes, type) {
 async function main() {
   fs.mkdirSync(packages, { recursive: true })
   await buildEngine()
-  const stage = path.join(work, 'source')
-  fs.mkdirSync(stage, { recursive: true })
-  const yowasp = path.join(source, 'runtimes/yowasp')
-  if (!fs.existsSync(yowasp)) throw new Error('Set LEARN_OJPP_DIST to the locally built OJ++ extension directory')
+  const stage = prepareSource()
+  const yowasp = path.join(stage, 'yowasp')
   const clangAssets = []
   for (const name of ['bundle.js', 'llvm.core.wasm', 'llvm.core2.wasm', 'llvm.core3.wasm', 'llvm.core4.wasm', 'llvm-resources.tar']) {
-    const local = path.join(stage, name)
-    if (name.endsWith('.js')) fs.copyFileSync(path.join(yowasp, name), local)
-    else command(['zstd', '-dq', '-f', path.join(yowasp, name + '.zst'), '-o', local])
-    clangAssets.push(await asset(name, fs.readFileSync(local), name.endsWith('.js') ? 'text/javascript' : name.endsWith('.wasm') ? 'application/wasm' : 'application/x-tar'))
+    clangAssets.push(await asset(name, fs.readFileSync(path.join(yowasp, name)),
+      name.endsWith('.js') ? 'text/javascript' : name.endsWith('.wasm') ? 'application/wasm' : 'application/x-tar'))
   }
   // The loader resolves its sibling resources relative to bundle.js. Rewrite these paths
   // to immutable object URLs rather than introducing a decompression fetch shim.
-  let glue = fs.readFileSync(path.join(stage, 'bundle.js'), 'utf8')
+  let glue = fs.readFileSync(path.join(yowasp, 'bundle.js'), 'utf8')
   for (const a of clangAssets.filter(a => !a.path.endsWith('bundle.js'))) {
     glue = glue.replaceAll(path.basename(a.path), a.path)
   }
   glue = glue.replaceAll('".//packages/', '"/packages/')
   clangAssets[0] = await asset('bundle.js', Buffer.from(glue), 'text/javascript')
   const pythonAssets = [
-    await asset('python.wasm', fs.readFileSync(path.join(source, 'runtimes/python-3.11.3.wasm')), 'application/wasm'),
-    await asset('python.tar', zlib.gunzipSync(fs.readFileSync(path.join(source, 'runtimes/python-3.11.3.tar.gz'))), 'application/x-tar'),
+    await asset('python.wasm', fs.readFileSync(path.join(stage, 'python-3.11.3.wasm')), 'application/wasm'),
+    await asset('python.tar', zlib.gunzipSync(fs.readFileSync(path.join(stage, 'python-3.11.3.tar.gz'))), 'application/x-tar'),
   ]
   const version = assets => crypto.createHash('sha256').update(assets.map(a => a.sha256).join('\n')).digest('hex').slice(0, 16)
 
@@ -171,7 +170,7 @@ async function main() {
   const temporary = path.join(packages, 'manifest.next.json')
   fs.writeFileSync(temporary, JSON.stringify({ schema: 1, runtimes, services }, null, 2) + '\n')
   fs.renameSync(temporary, path.join(packages, 'manifest.json'))
-  const notices = path.resolve(source, '../THIRD_PARTY_NOTICES.md')
+  const notices = path.join(root, 'THIRD_PARTY_NOTICES.md')
   if (fs.existsSync(notices)) fs.copyFileSync(notices, path.join(packages, 'THIRD_PARTY_NOTICES.md'))
   console.log('Local packages prepared. No production files or services were accessed.')
 }
