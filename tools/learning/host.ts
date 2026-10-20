@@ -49,9 +49,12 @@ async function states(): Promise<PackageState[]> {
   // 必须拿当前 manifest 的 runtime 定义去查资产，不能用安装时存下的快照：
   // 快照的 assets 是旧的，新加进包里的文件（比如语言服务）会被漏掉，
   // 于是「已安装」为真但那些文件其实没下载。
+  // downloaded 是上次中断留下的断点字节数，让界面能提示「继续下载」。
+  const partial = await partials()
   return Promise.all((await manifest()).runtimes.map(async r => {
     const ready = await installed(r)
-    return { id: r.id, version: ready ? r.version : null, ready }
+    const downloaded = r.assets.reduce((n, a) => n + (partial[a.path] ?? 0), 0)
+    return { id: r.id, version: ready ? r.version : null, ready, downloaded }
   }))
 }
 /**
@@ -237,6 +240,109 @@ async function runtime(id: RuntimeId): Promise<Runtime> {
   if (!r.available) throw new Error(r.reason || '该环境尚未完成验证')
   return r
 }
+/**
+ * 断点续传用的缓存。大资产（java21.jar 137 MiB、headers.data 43 MiB）在网络
+ * 抖动时很容易断，断一次就整包重来是最糟的体验。这里把已收到的字节按 1 MiB
+ * 落一次盘，下次用 Range 从断点继续；服务端已开 accept-ranges。
+ */
+const partialName = 'learning-partial-v1'
+const partialKey = (path: string) => `${location.origin}/__partial/${path.split('/').pop()}`
+const bytesToText = (bytes: Uint8Array) => {
+  let binary = ''
+  for (let i = 0; i < bytes.length; i += 8192) binary += String.fromCharCode(...bytes.subarray(i, i + 8192))
+  return btoa(binary)
+}
+const textToBytes = (text: string) => {
+  const raw = atob(text), bytes = new Uint8Array(raw.length)
+  for (let i = 0; i < raw.length; i += 1) bytes[i] = raw.charCodeAt(i)
+  return bytes
+}
+async function readPartial(path: string): Promise<Uint8Array | null> {
+  const hit = await (await caches.open(partialName)).match(partialKey(path))
+  if (!hit) return null
+  const data = await hit.json() as { path: string; chunk: string }
+  return data.path === path ? textToBytes(data.chunk) : null
+}
+async function writePartial(path: string, bytes: Uint8Array): Promise<void> {
+  const cache = await caches.open(partialName)
+  if (!bytes.length) { await cache.delete(partialKey(path)); return }
+  await cache.put(partialKey(path), Response.json({ path, chunk: bytesToText(bytes) }))
+}
+const clearPartial = async (path: string) => (await caches.open(partialName)).delete(partialKey(path))
+
+/** 上次中断留下的断点：资产路径 → 已下载字节数，供界面提示「继续下载」。 */
+async function partials(): Promise<Record<string, number>> {
+  const cache = await caches.open(partialName), out: Record<string, number> = {}
+  for (const request of await cache.keys()) {
+    const hit = await cache.match(request)
+    if (!hit) continue
+    const data = await hit.json() as { path: string; chunk: string }
+    if (data.path && data.chunk) out[data.path] = Math.floor(data.chunk.length * 3 / 4)
+  }
+  return out
+}
+
+const pause = (ms: number, signal: AbortSignal) => new Promise<void>((resolve, reject) => {
+  const timer = setTimeout(resolve, ms)
+  signal.addEventListener('abort', () => { clearTimeout(timer); reject(new DOMException('已取消', 'AbortError')) }, { once: true })
+})
+
+/**
+ * 把一个资产下载到内存，支持 Range 续传与指数退避重试。
+ * 校验交给调用方——这里只负责把完整字节拿回来。
+ */
+async function fetchAsset(asset: { path: string; bytes: number }, signal: AbortSignal, onProgress: (n: number) => void): Promise<Uint8Array> {
+  let buffer = await readPartial(asset.path) ?? new Uint8Array(0)
+  if (buffer.length > asset.bytes) { buffer = new Uint8Array(0); await clearPartial(asset.path) }
+  onProgress(buffer.length)
+
+  for (let attempt = 0; ; attempt += 1) {
+    signal.throwIfAborted()
+    try {
+      const headers: Record<string, string> = {}
+      if (buffer.length) headers.Range = `bytes=${buffer.length}-`
+      const response = await fetch(asset.path, { credentials: 'omit', signal, cache: 'no-cache', headers })
+      // 206 是续传；200 说明服务端忽略了 Range，只能从头收。
+      if (response.status === 200 && buffer.length) { buffer = new Uint8Array(0); onProgress(0) }
+      if (!response.ok || !response.body) throw new Error(`资源下载失败：${asset.path}`)
+      const reader = response.body.getReader()
+      const pieces: Uint8Array[] = buffer.length ? [buffer] : []
+      let received = buffer.length, checkpoint = buffer.length
+      while (true) {
+        const { value, done } = await reader.read()
+        if (done) break
+        pieces.push(value)
+        received += value.length
+        if (received > asset.bytes) { await reader.cancel(); throw new Error('资源大小不匹配') }
+        onProgress(received)
+        // 每 1 MiB 落一次断点，中断最多损失 1 MiB 进度。
+        if (received - checkpoint >= 1 << 20) {
+          const snapshot = new Uint8Array(received)
+          let at = 0
+          for (const piece of pieces) { snapshot.set(piece, at); at += piece.length }
+          buffer = snapshot
+          pieces.length = 1
+          pieces[0] = snapshot
+          checkpoint = received
+          await writePartial(asset.path, snapshot)
+        }
+      }
+      if (received !== asset.bytes) throw new Error('资源下载不完整')
+      const complete = new Uint8Array(received)
+      let at = 0
+      for (const piece of pieces) { complete.set(piece, at); at += piece.length }
+      await clearPartial(asset.path)
+      return complete
+    } catch (error) {
+      if (signal.aborted) throw new DOMException('已取消', 'AbortError')
+      if (buffer.length) await writePartial(asset.path, buffer)
+      if (attempt >= 4) throw error
+      // 指数退避：0.5s / 1s / 2s / 4s，网络切换后通常能自己恢复。
+      await pause(Math.min(8000, 500 * 2 ** attempt), signal)
+    }
+  }
+}
+
 async function install(id: RuntimeId, signal: AbortSignal, progress: (p: Progress) => void) {
   const r = await runtime(id)
   await locked(id, signal, async () => {
@@ -245,40 +351,31 @@ async function install(id: RuntimeId, signal: AbortSignal, progress: (p: Progres
     const total = r.assets.reduce((n, a) => n + a.bytes, 0)
     if (space.quota && space.quota - (space.usage ?? 0) < total * 1.2) throw new Error('浏览器存储空间不足，请删除不用的运行包')
     const cache = await caches.open(objectsName)
+    // 已被其他语言包装好的资产先计入进度，避免进度条从 0 跳。
     let done = 0
-    {
-      for (const asset of r.assets) {
-        signal.throwIfAborted()
-        if (await cache.match(asset.path)) { done += asset.bytes; continue }  // 已被其他环境装好
-        const response = await fetch(asset.path, { credentials: 'omit', signal, cache: 'no-cache' })
-        if (!response.ok || !response.body) throw new Error(`资源下载失败：${asset.path}`)
-        // 服务器存的是 Brotli 包并声明 Content-Encoding: br，浏览器原生解压。
-        // 不用 DecompressionStream：Chrome 不支持 brotli 这个格式名。
-        const reader = response.body.getReader(), chunks: Uint8Array[] = []
-        let count = 0
-        while (true) {
-          const { value, done: ended } = await reader.read()
-          if (ended) break
-          count += value.length
-          if (count > asset.bytes) { await reader.cancel(); throw new Error('资源大小不匹配') }
-          chunks.push(value)
-          progress({ phase: '下载并安装资源', done: done + count, total })
-        }
-        if (count !== asset.bytes) throw new Error('资源下载不完整')
-        const bytes = new Uint8Array(count)
-        let at = 0
-        for (const chunk of chunks) { bytes.set(chunk, at); at += chunk.length }
-        const hash = [...new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))].map(n => n.toString(16).padStart(2, '0')).join('')
-        if (hash !== asset.sha256) throw new Error('运行包校验失败，请重试')
-        await cache.put(asset.path, new Response(bytes, { headers: { 'Content-Type': asset.type } }))
-        done += count
-        progress({ phase: '校验通过', done, total })
-      }
+    for (const asset of r.assets) if (await cache.match(asset.path)) done += asset.bytes
+    progress({ phase: '准备下载', done, total })
+
+    for (const asset of r.assets) {
       signal.throwIfAborted()
-      // This marker is the commit point; an interrupted install never replaces the active version.
-      await (await caches.open(controlName)).put(activePath(id), Response.json({ mark: `${r.id}-${r.version}`, version: r.version, runtime: r }))
-      void navigator.storage.persist().catch(() => false)
+      if (await cache.match(asset.path)) continue
+      // 服务器存的是 Brotli 包并声明 Content-Encoding: br，浏览器原生解压。
+      // 不用 DecompressionStream：Chrome 不支持 brotli 这个格式名。
+      const bytes = await fetchAsset(asset, signal, n => progress({ phase: '下载运行包', done: done + n, total }))
+      const hash = [...new Uint8Array(await crypto.subtle.digest('SHA-256', bytes as unknown as BufferSource))]
+        .map(n => n.toString(16).padStart(2, '0')).join('')
+      if (hash !== asset.sha256) {
+        await clearPartial(asset.path)
+        throw new Error('运行包校验失败，请重试')
+      }
+      await cache.put(asset.path, new Response(bytes as unknown as BodyInit, { headers: { 'Content-Type': asset.type } }))
+      done += asset.bytes
+      progress({ phase: '校验通过', done, total })
     }
+    signal.throwIfAborted()
+    // This marker is the commit point; an interrupted install never replaces the active version.
+    await (await caches.open(controlName)).put(activePath(id), Response.json({ mark: `${r.id}-${r.version}`, version: r.version, runtime: r }))
+    void navigator.storage.persist().catch(() => false)
   })
 }
 async function remove(id: RuntimeId, signal: AbortSignal) {

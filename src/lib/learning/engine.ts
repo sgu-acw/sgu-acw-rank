@@ -7,6 +7,8 @@ export class LearningEngine {
   private frame: HTMLIFrameElement
   private origin: string
   private token = crypto.randomUUID()
+  /** iframe 完成导航前是 about:blank，用运行器 origin 发消息会被浏览器拒绝。 */
+  private navigated = false
   private pending = new Map<string, Pending>()
   private ready: Promise<void>
   private disposed = false
@@ -20,6 +22,7 @@ export class LearningEngine {
     this.frame.title = '本地代码评测环境'
     this.frame.hidden = true
     this.frame.sandbox.add('allow-scripts', 'allow-same-origin')
+    this.frame.addEventListener('load', () => { this.navigated = true }, { once: true })
     this.frame.src = `${this.origin}/engine/?parent=${encodeURIComponent(location.origin)}`
     window.addEventListener('message', this.receive)
     // 不能只等 iframe 的 load：它可能在 host.js 注册 message 监听之前就触发，
@@ -59,19 +62,28 @@ export class LearningEngine {
       if (this.disposed || signal?.aborted) { reject(new DOMException('已取消', 'AbortError')); return }
       const id = crypto.randomUUID()
       const abort = () => {
-        this.frame.contentWindow?.postMessage({ token: this.token, id, method: 'cancel' }, this.origin)
+        this.post({ token: this.token, id, method: 'cancel' })
         this.pending.delete(id); signal?.removeEventListener('abort', abort)
         reject(new DOMException('已取消', 'AbortError'))
       }
       this.pending.set(id, { resolve: data => resolve(data as T), reject, progress, cleanup: () => signal?.removeEventListener('abort', abort) })
       signal?.addEventListener('abort', abort, { once: true })
       try {
-        this.frame.contentWindow?.postMessage({ token: this.token, id, method, payload: JSON.parse(JSON.stringify(payload)) }, this.origin)
+        this.post({ token: this.token, id, method, payload: JSON.parse(JSON.stringify(payload)) })
       } catch (error) {
         this.pending.get(id)?.cleanup(); this.pending.delete(id); reject(error)
       }
     })
   }
+  /**
+   * 往运行器发消息。iframe 还没导航完时 targetOrigin 会不匹配，直接跳过——
+   * 握手阶段本来就会轮询重试，跳过不会丢请求。
+   */
+  private post(message: Record<string, unknown>) {
+    if (this.disposed || !this.navigated) return
+    this.frame.contentWindow?.postMessage(message, this.origin)
+  }
+
   private async call<T>(method: string, payload: unknown = {}, signal?: AbortSignal, progress?: (p: Progress) => void) {
     await this.ready
     return this.callRaw<T>(method, payload, signal, progress)

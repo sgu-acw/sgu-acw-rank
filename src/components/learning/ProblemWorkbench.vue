@@ -58,7 +58,7 @@ async function startLsp() {
     notice.value = `语言服务启动失败：${String(e)}`
   }
 }
-const busy = ref<'run' | 'install' | null>(null), progress = ref<Progress | null>(null), result = ref<JudgeResult | null>(null)
+const busy = ref<'run' | null>(null), progress = ref<Progress | null>(null), result = ref<JudgeResult | null>(null)
 const resultSource = ref(''), resultMode = ref(''), saving = ref(false), saved = ref(false), mobilePanel = ref('statement')
 // 默认单列（题面在上、编辑器在下），切到双栏后记住选择。
 const LAYOUT_KEY = 'learning-layout:split'
@@ -124,19 +124,6 @@ onUnmounted(() => {
   if (lastService) void engine?.lspStop(lastService).catch(() => undefined)
   engine?.dispose(); document.removeEventListener('visibilitychange', interruptBackground)
 })
-async function install() {
-  if (busy.value || !engine || !runtime.value?.available) return
-  busy.value = 'install'; error.value = ''; controller = new AbortController()
-  try {
-    await engine.install(selected.value.runtime, controller.signal, p => { progress.value = p })
-    await refreshPackages()
-    // 语言包装好后补全与诊断自动生效，不用再点一次。
-    await refreshLsp(); await startLsp()
-    notice.value = '环境已安装，可以运行代码。'
-  }
-  catch (e) { if ((e as Error).name !== 'AbortError') error.value = String(e); else notice.value = '下载已取消，草稿已保留。' }
-  finally { busy.value = null; progress.value = null; controller = undefined }
-}
 async function run(mode: 'samples' | 'all' | 'custom') {
   if (busy.value || !engine || !problem.value || !ready.value) return
   persist(); busy.value = 'run'; error.value = ''; notice.value = ''; saved.value = false; pendingRecord = undefined
@@ -194,7 +181,10 @@ async function saveRecord() {
           <div class="space-y-4 rounded-xl border p-4 sm:p-5">
             <div class="flex flex-wrap items-center gap-3"><label for="learning-language" class="text-sm font-medium">语言</label><select id="learning-language" class="form-select min-w-0 flex-1" :value="environment" :disabled="!!busy" @change="changeEnvironment"><option v-for="e in allowed" :key="e.id" :value="e.id">{{ e.label }}</option></select><a href="/learn/runtimes" class="inline-flex min-h-11 items-center text-sm text-primary hover:underline">管理语言包</a></div>
             <div v-if="!runtime?.available" class="rounded-lg bg-muted p-3 text-sm text-muted-foreground">{{ runtime?.reason || '正在读取运行包信息…' }}</div>
-            <div v-else-if="!ready" class="flex flex-wrap items-center gap-3 rounded-lg bg-muted p-3"><p class="min-w-0 flex-1 text-sm">首次使用需下载约 {{ size(runtime.assets.reduce((n, a) => n + a.transferBytes, 0)) }}。</p><Button :disabled="!!busy" @click="install"><Download class="mr-2 h-4 w-4" />下载此环境</Button></div>
+            <div v-else-if="!ready" class="flex flex-wrap items-center gap-3 rounded-lg bg-muted p-3">
+              <p class="min-w-0 flex-1 text-sm">{{ runtime.label }} 还没装好。</p>
+              <a href="/learn/runtimes" class="inline-flex min-h-11 items-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-90"><Download class="h-4 w-4" />去语言包页面安装</a>
+            </div>
             <div class="flex flex-wrap items-center gap-2">
               <span class="text-sm font-medium">源码</span>
               <span v-if="environment.startsWith('java')" class="text-sm text-muted-foreground">Main.java</span>
