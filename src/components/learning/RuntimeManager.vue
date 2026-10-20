@@ -49,7 +49,13 @@ async function remove(id: RuntimeId) {
 </script>
 <template>
   <div class="space-y-6">
-    <h1 class="text-2xl font-semibold">语言包</h1>
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <h1 class="text-2xl font-semibold">语言包</h1>
+      <div class="flex items-center gap-3 text-sm text-muted-foreground">
+        <a href="/learn" class="hover:text-foreground">题库</a>
+        <a href="/learn/ide" class="hover:text-foreground">云端 IDE</a>
+      </div>
+    </div>
     <ActionNotice :message="error" variant="error" /><ActionNotice :message="notice" variant="info" />
     <div v-if="busy" class="space-y-3 rounded-lg border p-4" role="status" aria-live="polite">
       <div class="flex flex-wrap items-baseline justify-between gap-2">

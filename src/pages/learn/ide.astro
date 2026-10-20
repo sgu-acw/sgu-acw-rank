@@ -1,0 +1,6 @@
+---
+import LearningLayout from '../../layouts/LearningLayout.astro'
+import CloudIde from '../../components/learning/CloudIde.vue'
+if (import.meta.env.PUBLIC_LEARN_ENABLED === 'false') return Astro.redirect('/404')
+---
+<LearningLayout title="云端 IDE"><CloudIde client:load /></LearningLayout>

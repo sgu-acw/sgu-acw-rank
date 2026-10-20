@@ -103,4 +103,7 @@ log "验证源站"
 ssh "$HOST" "for p in /engine/ /engine/host.js /engine/worker.js /engine/sw.js /packages/manifest.json /nope; do
   printf '%s ' \"\$p\"
   curl -s -o /dev/null -w '%{http_code}\n' -H 'Host: $SITE' http://127.0.0.1\$p
-done"
+done
+# clangd 的运行时是 .mjs，MIME 不对浏览器会直接拒绝执行（nosniff）。
+printf 'mjs content-type: '
+curl -s -o /dev/null -w '%{content_type}\n' -H 'Host: $SITE' http://127.0.0.1/engine/clangd/assets/clangd-runtime.mjs"

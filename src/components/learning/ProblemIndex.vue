@@ -59,7 +59,11 @@ onMounted(load); onUnmounted(() => { serial++ })
   <div class="space-y-4">
     <div class="flex flex-wrap items-center justify-between gap-3">
       <div><h1 class="text-2xl font-semibold">题库</h1></div>
-      <div class="flex items-center gap-2"><a href="/learn/runtimes" class="text-sm text-muted-foreground hover:text-foreground">语言包</a><RefreshButton :busy="loading" @click="load" /></div>
+      <div class="flex items-center gap-2">
+        <a href="/learn/ide" class="text-sm text-muted-foreground hover:text-foreground">云端 IDE</a>
+        <a href="/learn/runtimes" class="text-sm text-muted-foreground hover:text-foreground">语言包</a>
+        <RefreshButton :busy="loading" @click="load" />
+      </div>
     </div>
     <ActionNotice :message="error" variant="error" />
 

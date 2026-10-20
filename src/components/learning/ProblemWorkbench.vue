@@ -3,14 +3,12 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { ArrowLeft, Play, Square, Download, Plus, Trash2, Columns2, Rows2 } from 'lucide-vue-next'
 import { useAuth } from '../../lib/auth'
 import { learningApi } from '../../lib/learning/api'
-import { LearningEngine } from '../../lib/learning/engine'
-import { environments, size, starter, verdictLabels, type Environment, type JudgeResult, type Manifest, type PackageState, type Problem, type Progress } from '../../lib/learning/types'
+import { environments, size, starter, verdictLabels, type Environment, type JudgeResult, type Problem, type Progress } from '../../lib/learning/types'
 import Button from '../ui/button/Button.vue'
 import IconButton from '../ui/IconButton.vue'
 import VerdictDots from './VerdictDots.vue'
 import CodeEditor from './CodeEditor.vue'
-import { lspExtension, serviceFor } from '../../lib/learning/lsp'
-import type { LspId } from '../../lib/learning/types'
+import { useLearningRuntime } from '../../lib/learning/runtime'
 import ActionNotice from '../ui/ActionNotice.vue'
 const { user, ensureLoaded } = useAuth()
 const problem = ref<Problem | null>(null), environment = ref<Environment>('cpp'), source = ref('')
@@ -19,45 +17,15 @@ let customSeq = 0
 const customCases = ref<CustomCase[]>([{ id: ++customSeq, input: '20 22\n', expected: '' }])
 const addCase = () => { if (customCases.value.length < 20) customCases.value.push({ id: ++customSeq, input: '', expected: '' }) }
 const removeCase = (id: number) => { if (customCases.value.length > 1) customCases.value = customCases.value.filter(c => c.id !== id) }
-const catalog = ref<Manifest | null>(null), packages = ref<PackageState[]>([]), error = ref(''), notice = ref('')
-// 补全与诊断随语言包安装，装好后自动可用；没装时编辑器照常能写能跑。
-const lsp = ref<{ clangd: string | null, pyright: string | null }>({ clangd: null, pyright: null })
-let lastService: LspId | null = null
-const lspUnavailable = ref('')
-const activeService = computed(() => serviceFor(environment.value))
-const lspInstalled = computed(() => !!activeService.value && !!lsp.value[activeService.value])
-// 语言服务器跑在运行器 origin，页面侧只持有 RPC 句柄。
-const lspBinding = computed(() => lspExtension(() =>
-  lspClientActive.value && engine && activeService.value ? { engine, service: activeService.value } : null))
-const lspClientActive = ref(false)
-// 用 computed 包一层：引用必须随 lspInstalled 变化，否则 CodeEditor 的
-// watch 看不到更新，Compartment 不会重配，补全就永远挂不上。
-const completionSource = computed(() => lspInstalled.value
-  ? (context: import('@codemirror/autocomplete').CompletionContext) => lspBinding.value.completionSource(context)
-  : undefined)
-const diagnosticsExtension = computed(() => lspBinding.value.extension)
+const error = ref(''), notice = ref('')
+// 运行器与语言服务统一走 useLearningRuntime，和云端 IDE 共用同一套逻辑。
+const shared = useLearningRuntime({ environment, code: source })
+const { engine, catalog, ready, lspPhase, lspReason, completion, diagnostics } = shared
+const completionSource = completion
+const diagnosticsExtension = diagnostics
+const lspUnavailable = lspReason
+const lspInstalled = computed(() => lspPhase.value === 'ready' || lspPhase.value === 'starting')
 
-async function refreshLsp() {
-  if (!engine) return
-  try { lsp.value = await engine.lspStatus() } catch { /* 忽略 */ }
-}
-/** 启动语言服务器；切语言时先关旧的。 */
-async function startLsp() {
-  lspClientActive.value = false
-  const service = activeService.value
-  if (!service || !engine || !lsp.value[service]) return
-  try {
-    if (lastService && lastService !== service) await engine.lspStop(lastService).catch(() => undefined)
-    await engine.lspStart(service, environment.value, source.value)
-    if (!alive) return
-    lastService = service
-    lspClientActive.value = true
-  } catch (e) {
-    // 装好了但起不来（例如 clangd 需要 JSPI）——明确告诉用户不可用。
-    lspUnavailable.value = String(e)
-    notice.value = `语言服务启动失败：${String(e)}`
-  }
-}
 const busy = ref<'run' | null>(null), progress = ref<Progress | null>(null), result = ref<JudgeResult | null>(null)
 const resultSource = ref(''), resultMode = ref(''), saving = ref(false), saved = ref(false), mobilePanel = ref('statement')
 // 默认单列（题面在上、编辑器在下），切到双栏后记住选择。
@@ -67,14 +35,13 @@ function toggleSplit() {
   split.value = !split.value
   try { localStorage.setItem(LAYOUT_KEY, split.value ? '1' : '0') } catch { /* 隐私模式忽略 */ }
 }
-let engine: LearningEngine | undefined, controller: AbortController | undefined, alive = true, persistTimer: ReturnType<typeof setTimeout> | undefined
+let controller: AbortController | undefined, alive = true, persistTimer: ReturnType<typeof setTimeout> | undefined
 let pendingRecord: Parameters<typeof learningApi.record>[0] | undefined
 const selected = computed(() => environments.find(e => e.id === environment.value)!)
 // 通过之后只显示“通过”，不回退成运行完成之类的措辞。
 // 自定义测试的结果就地显示在对应测试点里（输入/期望/实际在一起）。
 const customPoint = (index: number) => resultMode.value === 'custom' ? result.value?.points[index] : undefined
-const runtime = computed(() => catalog.value?.runtimes.find(r => r.id === selected.value.runtime))
-const ready = computed(() => !!packages.value.find(p => p.id === selected.value.runtime)?.ready)
+const runtimePackage = computed(() => catalog.value?.runtimes.find(r => r.id === selected.value.runtime))
 const allowed = computed(() => environments.filter(e => problem.value?.content.environments.includes(e.id)))
 const key = (env: Environment) => `learning-draft:${problem.value?.id}:${env}`
 function persist(env = environment.value, code = source.value) {
@@ -95,12 +62,7 @@ function changeEnvironment(event: Event) {
   environment.value = (event.target as HTMLSelectElement).value as Environment
   source.value = readDraft(environment.value)
   // 换语言要换语言服务器；同类语言（C/C++）沿用同一个。
-  void startLsp()
-}
-async function refreshPackages() {
-  if (!engine) return
-  const [m, s] = await Promise.all([engine.manifest(), engine.status()])
-  if (alive) { catalog.value = m; packages.value = s }
+  void shared.switchEnvironment()
 }
 function interruptBackground() { if (document.hidden && busy.value === 'run') { controller?.abort(); notice.value = '页面进入后台，评测已中断；源码已保留。' } }
 onMounted(async () => {
@@ -115,14 +77,13 @@ onMounted(async () => {
     environment.value = p.content.environments.includes('cpp') ? 'cpp' : p.content.environments[0]!
     source.value = readDraft(environment.value)
     customCases.value = [{ id: ++customSeq, input: p.content.tests.find(t => t.sample)?.input || '', expected: '' }]
-    engine = new LearningEngine(); await refreshPackages(); await refreshLsp(); await startLsp()
+    await shared.connect()
     await ensureLoaded()
   } catch (e) { if (alive) error.value = String(e) }
 })
 onUnmounted(() => {
   persist(); alive = false; clearTimeout(persistTimer); controller?.abort()
-  if (lastService) void engine?.lspStop(lastService).catch(() => undefined)
-  engine?.dispose(); document.removeEventListener('visibilitychange', interruptBackground)
+  document.removeEventListener('visibilitychange', interruptBackground)
 })
 async function run(mode: 'samples' | 'all' | 'custom') {
   if (busy.value || !engine || !problem.value || !ready.value) return
@@ -180,16 +141,20 @@ async function saveRecord() {
         <section class="min-w-0 space-y-4" :class="mobilePanel !== 'editor' && 'hidden lg:block'">
           <div class="space-y-4 rounded-xl border p-4 sm:p-5">
             <div class="flex flex-wrap items-center gap-3"><label for="learning-language" class="text-sm font-medium">语言</label><select id="learning-language" class="form-select min-w-0 flex-1" :value="environment" :disabled="!!busy" @change="changeEnvironment"><option v-for="e in allowed" :key="e.id" :value="e.id">{{ e.label }}</option></select><a href="/learn/runtimes" class="inline-flex min-h-11 items-center text-sm text-primary hover:underline">管理语言包</a></div>
-            <div v-if="!runtime?.available" class="rounded-lg bg-muted p-3 text-sm text-muted-foreground">{{ runtime?.reason || '正在读取运行包信息…' }}</div>
+            <div v-if="!runtimePackage?.available" class="rounded-lg bg-muted p-3 text-sm text-muted-foreground">{{ runtimePackage?.reason || '正在读取运行包信息…' }}</div>
             <div v-else-if="!ready" class="flex flex-wrap items-center gap-3 rounded-lg bg-muted p-3">
-              <p class="min-w-0 flex-1 text-sm">{{ runtime.label }} 还没装好。</p>
+              <p class="min-w-0 flex-1 text-sm">{{ runtimePackage.label }} 还没装好。</p>
               <a href="/learn/runtimes" class="inline-flex min-h-11 items-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-90"><Download class="h-4 w-4" />去语言包页面安装</a>
             </div>
             <div class="flex flex-wrap items-center gap-2">
               <span class="text-sm font-medium">源码</span>
               <span v-if="environment.startsWith('java')" class="text-sm text-muted-foreground">Main.java</span>
-              <span v-if="lspInstalled && !lspUnavailable" class="text-xs text-emerald-600 dark:text-emerald-400">补全与诊断已开启</span>
-              <span v-else-if="lspUnavailable" class="text-xs text-muted-foreground">该语言服务在当前浏览器不可用</span>
+              <span v-if="lspPhase === 'starting'" class="inline-flex items-center gap-1.5 text-xs text-muted-foreground" role="status">
+                <span class="h-2 w-2 animate-pulse rounded-full bg-amber-500" aria-hidden="true"></span>语言服务启动中…
+              </span>
+              <span v-else-if="lspPhase === 'ready'" class="text-xs text-emerald-600 dark:text-emerald-400">补全与诊断已开启</span>
+              <span v-else-if="lspPhase === 'failed'" class="text-xs text-amber-600 dark:text-amber-400" :title="lspUnavailable">该语言服务在当前浏览器不可用</span>
+              <span v-else-if="lspInstalled" class="text-xs text-muted-foreground">语言服务待启动</span>
               <Button class="ml-auto" :disabled="!!busy || !ready" @click="run('all')"><Play class="mr-2 h-4 w-4" />提交</Button>
             </div>
             <div id="learning-code" role="group" aria-label="源码">
