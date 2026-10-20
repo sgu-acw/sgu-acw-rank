@@ -224,13 +224,17 @@ async function main() {
   // 子目录，所以只取 objects/ 之后的部分来拼绝对路径。
   const work_root = path.dirname(packages)
   const referenced = new Set([...runtimes.flatMap(r => r.assets)].map(a => path.join(work_root, a.path.replace(/^\//, ''))))
+  // 一个对象目录里可能还有子目录（bundle-classes/、ecj-res/ 这类资产的名字
+  // 自带路径），所以必须递归判断，否则含子目录的在用对象会被整目录删掉。
+  const walkFiles = dir => fs.readdirSync(dir, { withFileTypes: true })
+    .flatMap(e => e.isDirectory() ? walkFiles(path.join(dir, e.name)) : [path.join(dir, e.name)])
   let orphans = 0, orphanBytes = 0
   for (const dir of fs.readdirSync(path.join(packages, 'objects'))) {
     const dirPath = path.join(packages, 'objects', dir)
     if (!fs.statSync(dirPath).isDirectory()) continue
-    const files = fs.readdirSync(dirPath)
-    if (files.some(f => referenced.has(path.join(dirPath, f)))) continue
-    for (const f of files) orphanBytes += fs.statSync(path.join(dirPath, f)).size
+    const files = walkFiles(dirPath)
+    if (files.some(f => referenced.has(f))) continue
+    for (const f of files) orphanBytes += fs.statSync(f).size
     fs.rmSync(dirPath, { recursive: true, force: true })
     orphans += 1
   }
