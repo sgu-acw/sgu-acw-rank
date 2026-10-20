@@ -112,6 +112,26 @@ function updateUrl() {
   history.replaceState(history.state, '', url)
 }
 async function loadList() { camps.value = await campAdminApi.list() }
+/**
+ * 导入的题名由后端后台任务逐题抓取，接口返回时通常还没写完。
+ * 轮询到标题补齐为止，避免用户以为导入丢了标题、或者列表一直是空名。
+ */
+const namesLoading = ref(false)
+async function refreshNames(id: number) {
+  namesLoading.value = true
+  try {
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+      await new Promise(resolve => setTimeout(resolve, 1500))
+      if (disposed || activeId.value !== id) return
+      if (!detail.value?.problems.some(p => !p.name)) return
+      const data = await campAdminApi.detail(id).catch(() => null)
+      if (!data || disposed || activeId.value !== id) return
+      detail.value = data
+      if (!data.problems.some(p => !p.name)) return
+    }
+  } finally { namesLoading.value = false }
+}
+
 async function loadDetail(id: number, resetForm = true) {
   const token = ++requestId
   detailLoading.value = !detail.value || detail.value.id !== id
@@ -332,6 +352,8 @@ async function runImport(source: 'list' | 'text') {
     if (source === 'text') importText.value = rejected.join('\n')
     await loadList()
     await loadDetail(id, false)
+    // 题名是后端导入后异步抓的，此刻多半还没回填，轮询补齐。
+    void refreshNames(id)
   } catch (err) {
     error.value = message(err)
   } finally {
@@ -569,7 +591,13 @@ onUnmounted(() => { disposed = true; ++requestId; sortable?.destroy(); window.re
               </CardContent>
             </Card>
             <Card>
-              <CardHeader><CardTitle class="text-sm">题目 <span class="text-muted-foreground">{{ detail.problems.length }}</span></CardTitle></CardHeader>
+              <CardHeader>
+                <div class="flex flex-wrap items-baseline gap-2">
+                  <CardTitle class="text-sm">题目 <span class="text-muted-foreground">{{ detail.problems.length }}</span></CardTitle>
+                  <!-- 题名是异步抓的，明说在取，免得看成导入失败。 -->
+                  <span v-if="namesLoading" class="text-xs text-muted-foreground" role="status">正在获取题名…</span>
+                </div>
+              </CardHeader>
               <CardContent class="space-y-4">
                 <div v-if="detail.problems.length" ref="problemsEl" class="divide-y divide-border/40">
                   <div v-for="(p, index) in detail.problems" :key="p.id" class="flex items-center gap-2 py-2">
