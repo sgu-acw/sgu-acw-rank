@@ -35,10 +35,10 @@ async function remove(id: RuntimeId) {
 </script>
 <template>
   <div class="space-y-6">
-    <div><h1 class="text-2xl font-semibold">语言包</h1><p class="mt-2 text-sm text-muted-foreground">需要哪个版本就下载哪个。Java 8 与 Java 21 分别安装；C 和 C++ 共用一个包。</p></div>
+    <h1 class="text-2xl font-semibold">语言包</h1>
     <ActionNotice :message="error" variant="error" /><ActionNotice :message="notice" variant="info" />
     <div v-if="busy" class="space-y-3 rounded-lg border p-4" role="status">
-      <p class="text-sm">{{ progress?.phase || '处理中…' }}<span v-if="progress?.total"> · {{ size(progress.done || 0) }} / {{ size(progress.total) }}（解码后资源）</span></p>
+      <p class="text-sm">{{ progress?.phase || '处理中…' }}<span v-if="progress?.total"> · {{ size(progress.done || 0) }} / {{ size(progress.total) }}</span></p>
       <progress v-if="progress?.total" class="h-2 w-full" :value="progress.done" :max="progress.total" aria-label="运行包安装进度" />
       <Button v-if="controller" variant="outline" @click="controller?.abort()">取消下载</Button>
     </div>
@@ -53,9 +53,8 @@ async function remove(id: RuntimeId) {
             <Button v-if="state(runtime.id)?.ready" variant="outline" :disabled="!!busy" @click="remove(runtime.id)"><Trash2 class="mr-2 h-4 w-4" />移除运行包</Button>
           </div>
         </template>
-        <p v-else class="text-sm text-muted-foreground">{{ runtime.reason }}此项不会自动下载其他 Java 版本。</p>
+        <p v-else class="text-sm text-muted-foreground">{{ runtime.reason }}</p>
       </section>
     </div>
-    <p class="text-xs leading-relaxed text-muted-foreground">浏览器可能回收缓存，资源缺失后需重新安装。显示的资源大小不含程序运行内存，实际缓存占用可能更高。首次编译可能比后续执行慢。</p>
   </div>
 </template>

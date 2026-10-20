@@ -188,17 +188,17 @@ async function main() {
   const withLsp = (assets, kind) => lspAssets[kind] ? [...assets, ...lspAssets[kind]] : assets
   const runtimes = [
     { id: 'c-cpp', label: 'C / C++ · Clang 22', version: `clang22-${version(withLsp(clangAssets, 'clangd'))}`, available: true,
-      assets: withLsp(clangAssets, 'clangd'), provenance: 'YoWASP Clang 22.0.0-git20542-10; local OJ++ build' },
+      assets: withLsp(clangAssets, 'clangd'), provenance: 'YoWASP Clang 22.0.0' },
     { id: 'python', label: 'Python 3.11.3', version: `cpython311-${version(withLsp(pythonAssets, 'pyright'))}`, available: true,
-      assets: withLsp(pythonAssets, 'pyright'), provenance: 'CPython 3.11.3 WASI from Runno, local OJ++ build' },
+      assets: withLsp(pythonAssets, 'pyright'), provenance: 'CPython 3.11.3 (WASI)' },
     { id: 'java21', label: 'Java 21', version: javaReady ? `bjvm-jdk21-${version(javaShared)}` : 'pending-validation',
       available: javaReady, assets: javaShared,
-      reason: javaReady ? undefined : '运行 pnpm learning:java 构建 B-JVM 与 JDK 21 类库后可用。',
-      provenance: 'B-JVM + real JDK 21 classlib + ECJ, browser-compiled' },
+      reason: javaReady ? undefined : '此环境暂未开放。',
+      provenance: 'OpenJDK 21 + ECJ，在浏览器内编译运行' },
     { id: 'java8', label: 'Java 8', version: java8Assets ? `bjvm-jdk8api-${version(java8Assets)}` : 'pending-validation',
       available: !!java8Assets, assets: java8Assets || [],
-      reason: java8Assets ? '编译期为真实 JDK 8 rt.jar，运行期复用 JDK 21 运行时。' : '运行 pnpm learning:java 构建后可用。',
-      provenance: 'ECJ -1.8 vs real JDK 8 rt.jar, executed on the validated JDK 21 runtime' },
+      reason: java8Assets ? undefined : '此环境暂未开放。',
+      provenance: 'ECJ 按 JDK 8 API 编译，运行在 Java 21 运行时上' },
   ]
   // 语言服务随语言包安装，这里只记录归属与入口，供运行器启动时查找。
   const services = {
