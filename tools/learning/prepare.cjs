@@ -25,6 +25,9 @@ async function buildEngine() {
   // 父域白名单构建期写死：运行器只接受这个站点嵌它。
   const parent = process.env.LEARN_PARENT_ORIGIN || 'http://127.0.0.1:4324'
   await build({ configFile: false, root, publicDir: false, logLevel: 'warn',
+    // base 必须是 /engine/：产物挂在 /engine/ 下，而 Vite 默认把 worker 与
+    // wasm 写成根相对路径 /assets/...，运行时会 404，clangd 直接起不来。
+    base: '/engine/',
     define: { 'import.meta.env.VITE_LEARN_PARENT': JSON.stringify(parent) }, build: {
     outDir: path.join(work, 'engine'), emptyOutDir: true, minify: false, sourcemap: true,
     rollupOptions: {
@@ -37,6 +40,23 @@ async function buildEngine() {
       output: { entryFileNames: '[name].js', chunkFileNames: 'chunks/[name]-[hash].js', assetFileNames: 'assets/[name]-[hash][extname]' },
     },
   } })
+  // clangd 整棵目录原样复制到 /engine/clangd/：包内 worker 用相对路径找
+  // ../assets/clangd.wasm，文件名必须保持原名，不能让 Vite 加 hash。
+  // 放在 build 之后，因为 emptyOutDir 会清空 engine/；dev.cjs 也会调本函数，
+  // 所以复制必须在这里而不是只在 prepare 里做一次。
+  const clangdSource = path.join(work, 'lsp/clangd')
+  if (fs.existsSync(clangdSource)) {
+    const clangdOut = path.join(work, 'engine/clangd')
+    fs.mkdirSync(clangdOut, { recursive: true })
+    const copyTree = (from, to) => {
+      for (const e of fs.readdirSync(from, { withFileTypes: true })) {
+        const src = path.join(from, e.name), dst = path.join(to, e.name)
+        if (e.isDirectory()) { fs.mkdirSync(dst, { recursive: true }); copyTree(src, dst) }
+        else fs.copyFileSync(src, dst)
+      }
+    }
+    copyTree(clangdSource, clangdOut)
+  }
   fs.copyFileSync(path.join(__dirname, 'sw.js'), path.join(work, 'engine/sw.js'))
   // 沙箱 iframe 入口页：data-parent 只是给本地调试看的，真正的白名单在 host.js 里。
   fs.writeFileSync(path.join(work, 'engine/index.html'),

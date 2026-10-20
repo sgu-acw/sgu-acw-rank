@@ -83,6 +83,15 @@ const emit = defineEmits<{ 'update:modelValue': [string] }>()
 const host = ref<HTMLElement | null>(null)
 const languageFacet = new Compartment()
 const themeFacet = new Compartment()
+// 补全源要能后配：语言包是进页面之后才装好的，编辑器创建时还没有 LSP。
+const completionFacet = new Compartment()
+const lintFacet = new Compartment()
+/** 稳定的补全源：始终注册，内部按当前 props 决定是否走 LSP。 */
+const stableSource = (context: import('@codemirror/autocomplete').CompletionContext) =>
+  props.completion ? props.completion(context) : null
+const completionExtension = () =>
+  autocompletion({ override: [stableSource as never], activateOnTyping: true, defaultKeymap: true })
+const lintExtension = () => props.diagnostics ?? []
 let view: EditorView | undefined
 let dark = false
 
@@ -102,14 +111,14 @@ function buildState(value: string, env: Environment, readOnly: boolean) {
       indentOnInput(),
       indentUnit.of('    '),
       highlightSelectionMatches(),
-      autocompletion(props.completion ? { override: [props.completion as never] } : {}),
+      completionFacet.of(completionExtension()),
       keymap.of([...closeBracketsKeymap, ...defaultKeymap, ...searchKeymap, ...historyKeymap, ...completionKeymap, ...lintKeymap, indentWithTab]),
       EditorView.lineWrapping,
       placeholder('在此编写代码…'),
       EditorState.readOnly.of(readOnly),
       languageFacet.of(languageOf(env)),
       themeFacet.of([dark ? darkTheme : lightTheme, syntaxHighlighting(dark ? darkHighlight : lightHighlight)]),
-      props.diagnostics ?? [],
+      lintFacet.of(lintExtension()),
       EditorView.updateListener.of(update => {
         if (update.docChanged) emit('update:modelValue', update.state.doc.toString())
       }),
@@ -142,6 +151,13 @@ watch(() => props.modelValue, value => {
 })
 watch(() => props.environment, env => view?.dispatch({ effects: languageFacet.reconfigure(languageOf(env)) }))
 watch(() => props.readonly, ro => view?.dispatch({ effects: EditorState.readOnly.reconfigure(!!ro) }))
+watch(() => props.completion, v => {
+  const g = globalThis as Record<string, unknown>
+  g.__reconf = ((g.__reconf as number) || 0) + 1
+  g.__hasCompletion = !!v
+  view?.dispatch({ effects: completionFacet.reconfigure(completionExtension()) })
+}, { immediate: false })
+watch(() => props.diagnostics, () => view?.dispatch({ effects: lintFacet.reconfigure(lintExtension()) }))
 
 onUnmounted(() => { observer?.disconnect(); view?.destroy(); view = undefined })
 
@@ -149,7 +165,8 @@ defineExpose({ focus: () => view?.focus() })
 </script>
 
 <template>
-  <div ref="host" class="learning-cm min-h-[320px] overflow-hidden rounded-md border border-border/60 bg-background/40 text-sm" />
+  <!-- 不能加 overflow-hidden：补全提示渲染在编辑器内部，裁剪会把 tooltip 整个切掉。 -->
+  <div ref="host" class="learning-cm min-h-[320px] overflow-visible rounded-md border border-border/60 bg-background/40 text-sm" />
 </template>
 
 <style>

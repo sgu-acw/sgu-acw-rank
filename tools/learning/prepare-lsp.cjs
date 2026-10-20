@@ -26,6 +26,19 @@ function copy(from, to) {
   fs.copyFileSync(from, to)
 }
 
+/**
+ * 把 clangd 的 SharedWorker 打成自包含文件。
+ * 包内源码用裸模块名 import，浏览器无法解析；esbuild 会把依赖内联进来。
+ */
+function bundleWorker(source, target) {
+  const esbuild = path.join(work, '../../node_modules/.bin/esbuild')
+  const bin = fs.existsSync(esbuild) ? esbuild : 'esbuild'
+  const result = require('node:child_process').spawnSync(bin, [
+    source, '--bundle', '--format=esm', '--minify', `--outfile=${target}`,
+  ], { stdio: 'inherit' })
+  if (result.status !== 0) throw new Error('clangd worker 打包失败')
+}
+
 /** clangd：把 @algoproclub/clangd-wasm 的运行时摊平成一个目录。 */
 function packClangd() {
   const pkgRoot = packageDir('@algoproclub/clangd-wasm')
@@ -36,11 +49,21 @@ function packClangd() {
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
       const rel = prefix ? `${prefix}/${entry.name}` : entry.name
       if (entry.isDirectory()) walk(path.join(dir, entry.name), rel)
-      else if (!/\.(md|map)$/i.test(entry.name)) copy(path.join(dir, entry.name), path.join(out, rel))
+      // 跳过文档、sourcemap 和 .gitkeep：它们会被算进 manifest 的资产列表，
+      // 白白让「语言服务是否就绪」的检查失败。
+      else if (!/\.(md|map)$/i.test(entry.name) && entry.name !== '.gitkeep') copy(path.join(dir, entry.name), path.join(out, rel))
     }
   }
-  walk(path.join(pkgRoot, 'lib'))
-  walk(path.join(pkgRoot, 'assets'))
+  // 必须保留 assets/ 这一层：worker 用 ../assets/clangd.wasm 相对定位，
+  // 摊平到根目录会让它 404。
+  // 保持包内的 lib/ + assets/ 两级：worker 在 lib/ 下用 ../assets/ 相对定位，
+  // 摊平会让它去 /engine/assets/ 找文件而 404。
+  walk(path.join(pkgRoot, 'lib'), 'lib')
+  walk(path.join(pkgRoot, 'assets'), 'assets')
+  // 包里的 lib/clangd.shared-worker.js 是未打包的源码，直接 import 了
+  // "vscode-jsonrpc/..." 这种裸模块说明符，浏览器解析不了（worker 会静默
+  // 启动失败）。用 esbuild 打成自包含文件再覆盖。
+  bundleWorker(path.join(pkgRoot, 'lib/clangd.shared-worker.js'), path.join(out, 'lib/clangd.shared-worker.js'))
   for (const name of ['LICENSES', 'package.json']) {
     const from = path.join(pkgRoot, name)
     if (!fs.existsSync(from)) continue

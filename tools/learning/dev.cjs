@@ -37,7 +37,9 @@ async function main() {
     const useBrotli = String(request.headers['accept-encoding']).split(',').some(v => /^\s*br(?:\s*;|\s*$)/.test(v)) && fs.existsSync(packed)
     const actual = useBrotli ? packed : file
     if (!fs.existsSync(actual) || !fs.statSync(actual).isFile()) { response.writeHead(404).end(); return }
-    const type = file.endsWith('.js') ? 'text/javascript' : file.endsWith('.wasm') ? 'application/wasm' : file.endsWith('.json') ? 'application/json' : file.endsWith('.tar') ? 'application/x-tar' : 'text/plain'
+    // .mjs 也要给 JavaScript 的 MIME：clangd 用动态 import 加载它，
+    // 类型不对会被浏览器直接拒绝（nosniff 下 text/plain 不执行）。
+    const type = /\.(m?js)$/.test(file) ? 'text/javascript' : file.endsWith('.wasm') ? 'application/wasm' : file.endsWith('.json') ? 'application/json' : file.endsWith('.tar') ? 'application/x-tar' : 'text/plain'
     response.setHeader('Content-Type', type)
     response.setHeader('Vary', 'Accept-Encoding')
     response.setHeader('Content-Length', fs.statSync(actual).size)

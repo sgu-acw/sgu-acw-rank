@@ -36,6 +36,7 @@ async function pointer(id: RuntimeId): Promise<string | null> {
 async function installed(r: Runtime): Promise<boolean> {
   const mark = await pointer(r.id)
   if (mark !== `${r.id}-${r.version}`) return false
+  // mark 只证明「装过」，资产清单以当前 manifest 为准。
   const cache = await caches.open(objectsName)
   for (const a of r.assets) if (!await cache.match(a.path)) return false
   return r.available && r.assets.length > 0
@@ -45,18 +46,25 @@ async function activeRuntime(id: RuntimeId): Promise<Runtime | null> {
   return response ? (await response.json()).runtime ?? null : null
 }
 async function states(): Promise<PackageState[]> {
+  // 必须拿当前 manifest 的 runtime 定义去查资产，不能用安装时存下的快照：
+  // 快照的 assets 是旧的，新加进包里的文件（比如语言服务）会被漏掉，
+  // 于是「已安装」为真但那些文件其实没下载。
   return Promise.all((await manifest()).runtimes.map(async r => {
-    const active = await activeRuntime(r.id), ready = !!active && await installed(active)
-    return { id: r.id, version: ready ? active!.version : null, ready }
+    const ready = await installed(r)
+    return { id: r.id, version: ready ? r.version : null, ready }
   }))
 }
-/** 语言服务的资产并进了对应语言包，装语言包时就一起装好。 */
+/**
+ * 语言服务的资产并进了对应语言包，装语言包时就一起装好。
+ * 这里只查资产是否真的在缓存里——不要跟着运行包版本走：重新打包会换版本号，
+ * 但资产内容可能一模一样，跟着版本判断会让已装好的补全莫名失效。
+ */
 async function lspReady(id: LspId): Promise<string | null> {
   const service = (await manifest()).services?.[id]
-  if (!service) return null
-  const runtime = (await manifest()).runtimes.find(r => r.id === service.runtime)
-  if (!runtime || !await installed(runtime)) return null
-  return `${id}-${runtime.version}`
+  if (!service || !service.assets.length) return null
+  const cache = await caches.open(objectsName)
+  for (const a of service.assets) if (!await cache.match(a.path)) return null
+  return `${id}-${service.assets.length}`
 }
 
 /**

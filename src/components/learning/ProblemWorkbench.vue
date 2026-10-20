@@ -30,7 +30,11 @@ const lspInstalled = computed(() => !!activeService.value && !!lsp.value[activeS
 const lspBinding = computed(() => lspExtension(() =>
   lspClientActive.value && engine && activeService.value ? { engine, service: activeService.value } : null))
 const lspClientActive = ref(false)
-const completionSource = (context: import('@codemirror/autocomplete').CompletionContext) => lspBinding.value.completionSource(context)
+// 用 computed 包一层：引用必须随 lspInstalled 变化，否则 CodeEditor 的
+// watch 看不到更新，Compartment 不会重配，补全就永远挂不上。
+const completionSource = computed(() => lspInstalled.value
+  ? (context: import('@codemirror/autocomplete').CompletionContext) => lspBinding.value.completionSource(context)
+  : undefined)
 const diagnosticsExtension = computed(() => lspBinding.value.extension)
 
 async function refreshLsp() {
@@ -199,7 +203,7 @@ async function saveRecord() {
               <Button class="ml-auto" :disabled="!!busy || !ready" @click="run('all')"><Play class="mr-2 h-4 w-4" />提交</Button>
             </div>
             <div id="learning-code" role="group" aria-label="源码">
-              <CodeEditor v-model="source" :environment="environment" :readonly="!!busy" :completion="lspInstalled ? completionSource : undefined" :diagnostics="lspInstalled ? diagnosticsExtension : undefined" />
+              <CodeEditor v-model="source" :environment="environment" :readonly="!!busy" :completion="completionSource" :diagnostics="diagnosticsExtension" />
             </div>
             <div class="flex flex-wrap gap-2"><Button variant="outline" :disabled="!!busy || !ready" @click="run('samples')">运行样例</Button><Button v-if="busy && !saving" variant="outline" @click="controller?.abort()"><Square class="mr-2 h-4 w-4" />取消{{ busy === 'run' ? '评测' : '下载' }}</Button></div>
             <p v-if="progress" class="text-sm text-muted-foreground" role="status">{{ progress.phase }}<span v-if="progress.points"> · {{ progress.point }}/{{ progress.points }}</span><span v-if="progress.total"> · {{ size(progress.done || 0) }}/{{ size(progress.total) }}（解码后）</span></p>
