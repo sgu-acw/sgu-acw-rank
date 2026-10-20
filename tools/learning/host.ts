@@ -466,6 +466,72 @@ async function judge(request: JudgeRequest, signal: AbortSignal, progress: (p: P
   } finally { running = false }
 }
 
+// ------------------------------------------------------------------ 交互终端
+// 同一时刻只允许一个终端会话。worker 在 wasm 挂起等输入时事件循环仍然活着，
+// 所以 ttyInput/ttyEof 消息直接 postMessage 进 worker 就能被消费。
+let ttyWorker: Worker | null = null
+const ttyInput = (data: string) => ttyWorker?.postMessage({ stdin: data })
+const ttyEof = () => ttyWorker?.postMessage({ stdinClose: true })
+
+async function ttyOpen(payload: { environment?: string; source?: string }, signal: AbortSignal,
+  emit: (event: Record<string, unknown>) => void): Promise<{ ended: true }> {
+  if (running) throw new Error('已有评测正在进行')
+  if (ttyWorker) throw new Error('已有终端会话')
+  const environment = String(payload?.environment ?? '')
+  const source = String(payload?.source ?? '')
+  // Java 的 stdin 是 B-JVM 的同步 FFI，挂起不了；先只支持 WASI 系语言。
+  if (!['c', 'cpp', 'python'].includes(environment)) throw new Error('交互终端暂不支持该语言')
+  if (new TextEncoder().encode(source).length > 256000) throw new Error('源码过大')
+  const r = await activeRuntime(environment === 'python' ? 'python' : 'c-cpp')
+  if (!r || !r.available) throw new Error('请先安装已验证的运行环境')
+  running = true
+  try {
+    return await locked(r.id, signal, async () => {
+      if (!await installed(r)) throw new Error('请先下载所选语言的运行包')
+      const cache = await caches.open(objectsName)
+      const assets: Record<string, Uint8Array> = {}
+      emit({ event: 'status', data: '载入已安装的环境' })
+      for (const a of r.assets) {
+        const response = await cache.match(a.path)
+        if (!response) throw new Error('安装资源已被浏览器清理，请重新安装')
+        if (a.bytes > 4 * 1048576) continue
+        assets[a.path] = new Uint8Array(await response.arrayBuffer())
+      }
+      return await new Promise<{ ended: true }>(resolve => {
+        const worker = new Worker('/engine/worker.js', { type: 'module' })
+        ttyWorker = worker
+        let done = false
+        const finish = () => {
+          if (done) return
+          done = true; ttyWorker = null; clearTimeout(cap)
+          signal.removeEventListener('abort', onAbort); worker.terminate(); resolve({ ended: true })
+        }
+        const onAbort = () => { emit({ event: 'exit', verdict: 'CANCELLED' }); finish() }
+        signal.addEventListener('abort', onAbort, { once: true })
+        // 终端是长会话，但得有个上限防止忘关窗口。
+        const cap = setTimeout(() => {
+          emit({ event: 'error', data: '终端会话超过 120 秒，已结束' })
+          emit({ event: 'exit', verdict: 'TLE' }); finish()
+        }, 120000)
+        worker.onmessage = event => {
+          const d = event.data
+          if (d?.phase) emit({ event: 'status', data: String(d.phase) })
+          if (d?.tty) emit(d.tty)
+          if (d?.result) {
+            emit({ event: 'exit', verdict: d.result.verdict, error: d.result.error, elapsedMs: d.result.elapsedMs })
+            finish()
+          }
+        }
+        worker.onerror = event => {
+          emit({ event: 'error', data: event.message })
+          emit({ event: 'exit', verdict: 'ENVIRONMENT_ERROR' }); finish()
+        }
+        worker.postMessage({ tty: true, environment, source, input: '', runtime: r, assets })
+      })
+    }, 'shared')
+  } finally { running = false }
+}
+
 if ('serviceWorker' in navigator) {
   void navigator.serviceWorker.register('/engine/sw.js', { scope: '/' }).catch(() => undefined)
 }
@@ -492,6 +558,9 @@ window.addEventListener('message', event => {
       case 'lspStop': return lspStop(payload?.service)
       case 'lspComplete': return lspComplete(payload?.service, payload?.code, payload?.line, payload?.character)
       case 'lspDiagnostics': return lspDiagnostics(payload?.service)
+      case 'tty': return ttyOpen(payload, controller.signal, e => send({ tty: e }))
+      case 'ttyInput': ttyInput(String(payload?.data ?? '')); return true
+      case 'ttyEof': ttyEof(); return true
       default: throw new Error('未知运行器操作')
     }
   }

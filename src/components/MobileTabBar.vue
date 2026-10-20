@@ -18,6 +18,7 @@ import {
   Trophy,
   User,
   Terminal,
+  SquareTerminal,
 } from 'lucide-vue-next'
 import { useAuth } from '../lib/auth'
 import { LEARN_LOCAL } from '../lib/api'
@@ -34,7 +35,10 @@ const tabs = [
 ]
 
 const extraLinks = [
-  ...(LEARN_LOCAL ? [{ title: '题库', route: '/learn', icon: Terminal }] : []),
+  ...(LEARN_LOCAL ? [
+    { title: '题库', route: '/learn', icon: Terminal },
+    { title: '云端 IDE', route: '/learn/ide', icon: SquareTerminal },
+  ] : []),
   { title: '集训', route: '/camps', icon: Trophy },
   { title: '工作坊状态', route: '/status', icon: Activity },
   { title: '线下赛报名', route: '/signups', icon: ClipboardList },

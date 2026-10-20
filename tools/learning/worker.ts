@@ -5,7 +5,7 @@ import { policy } from './policy'
 import type { Environment, Execution, Runtime } from '../../src/lib/learning/types'
 
 const scope = globalThis as unknown as { onmessage: (e: MessageEvent<Work>) => void; postMessage: (data: unknown) => void }
-interface Work { environment: Environment; source: string; input: string; runtime: Runtime; assets: Record<string, Uint8Array>; artifact?: Uint8Array }
+interface Work { environment: Environment; source: string; input: string; runtime: Runtime; assets: Record<string, Uint8Array>; artifact?: Uint8Array; tty?: boolean }
 type Tree = { [name: string]: string | Uint8Array | Tree }
 const encoder = new TextEncoder()
 const outputLimit = policy.outputBytes
@@ -28,26 +28,85 @@ function unpack(bytes: Uint8Array): WASIFS {
   return fs
 }
 
-async function execute(binary: Uint8Array, args: string[], fs: WASIFS, input: string): Promise<Execution> {
+// ------------------------------------------------------------------ 交互终端 stdin
+// 终端会话里 fd_read 是异步的：输入缓冲空了就 await 下一段，JSPI（WebAssembly.Suspending
+// /promising）会把 wasm 挂起，worker 的事件循环仍然活着，host 转发来的 stdin
+// 消息照常被消费——这是真交互，不是把输入攒够再跑一遍。
+const ttyQueue: Uint8Array[] = []
+const ttyWaiters: (() => void)[] = []
+let ttyEof = false
+let ttyChunk: Uint8Array | null = null
+let ttyAt = 0
+const ttyWake = () => { for (const wake of ttyWaiters.splice(0)) wake() }
+const ttyFeed = (data: Uint8Array) => { if (data.length) { ttyQueue.push(data); ttyWake() } }
+const ttyClose = () => { ttyEof = true; ttyWake() }
+/** 等待下一段输入或 EOF。 */
+async function ttyNext(): Promise<boolean> {
+  if (ttyChunk) return true
+  while (!ttyQueue.length && !ttyEof) await new Promise<void>(resolve => ttyWaiters.push(resolve))
+  const next = ttyQueue.shift() ?? null
+  if (!next) return false
+  ttyChunk = next; ttyAt = 0
+  return true
+}
+/** 已有缓冲时同步取；缓冲空了不等待。 */
+function ttyBuffered(): boolean {
+  if (ttyChunk) return true
+  const next = ttyQueue.shift() ?? null
+  if (!next) return false
+  ttyChunk = next; ttyAt = 0
+  return true
+}
+
+async function execute(binary: Uint8Array, args: string[], fs: WASIFS, input: string, tty = false): Promise<Execution> {
+  // 交互终端依赖 JSPI 才能挂起等输入；不支持的浏览器明确报错，不静默降级。
+  const jspi = typeof (WebAssembly as { Suspending?: unknown }).Suspending === 'function'
+    && typeof (WebAssembly as { promising?: unknown }).promising === 'function'
+  if (tty && !jspi) return { verdict: 'ENVIRONMENT_ERROR', stdout: '', stderr: '', error: '此浏览器不支持交互终端（需要支持 JSPI 的新版 Chrome 或 Edge）' }
   const wasi = new WASI({ args, fs, env: { LANG: 'C.UTF-8', PYTHONHASHSEED: '0' }, isTTY: false })
   const imports = wasi.getImportObject(), stdin = encoder.encode(input)
+  if (tty) ttyFeed(stdin)
   let offset = 0, count = 0, stdout = '', stderr = ''
   const out = new TextDecoder(), err = new TextDecoder()
   for (const bindings of Object.values(imports)) {
     const originalRead = bindings.fd_read!, originalWrite = bindings.fd_write!
-    bindings.fd_read = (fd, iovs, length, read) => {
-      if (fd !== 0) return originalRead(fd!, iovs!, length!, read!)
+    const readStdin = async (iovs: number, length: number, read: number) => {
       const memory = new DataView(wasi.memory.buffer)
       let total = 0
-      for (let i = 0; i < length!; i++) {
-        const ptr = memory.getUint32(iovs! + i * 8, true)
-        const size = Math.min(memory.getUint32(iovs! + i * 8 + 4, true), stdin.length - offset)
-        new Uint8Array(wasi.memory.buffer, ptr, size).set(stdin.subarray(offset, offset + size))
-        offset += size; total += size
+      for (let i = 0; i < length; i++) {
+        const ptr = memory.getUint32(iovs + i * 8, true)
+        const size = memory.getUint32(iovs + i * 8 + 4, true)
+        // 第一块可以挂起等输入；已经读到数据就不再等，按 POSIX 返回已有的。
+        const have = total === 0 ? await ttyNext() : ttyBuffered()
+        if (!have) break
+        const data = ttyChunk!.subarray(ttyAt, ttyAt + size)
+        ttyAt += data.length
+        if (ttyAt >= ttyChunk!.length) ttyChunk = null
+        new Uint8Array(wasi.memory.buffer, ptr, data.length).set(data)
+        total += data.length
+        if (data.length < size) break
       }
-      memory.setUint32(read!, total, true)
+      memory.setUint32(read, total, true)
       return 0
     }
+    // 交互模式把 fd_read 包进 Suspending：返回 Promise 时 wasm 挂起而不是读到 NaN。
+    const Suspending = (WebAssembly as { Suspending?: new (f: (fd: number, iovs: number, length: number, read: number) => Promise<number>) => unknown }).Suspending
+    bindings.fd_read = tty && Suspending
+      ? new Suspending((fd: number, iovs: number, length: number, read: number) =>
+          fd === 0 ? readStdin(iovs, length, read) : Promise.resolve(originalRead(fd, iovs, length, read))) as typeof bindings.fd_read
+      : (fd, iovs, length, read) => {
+        if (fd !== 0) return originalRead(fd!, iovs!, length!, read!)
+        const memory = new DataView(wasi.memory.buffer)
+        let total = 0
+        for (let i = 0; i < length!; i++) {
+          const ptr = memory.getUint32(iovs! + i * 8, true)
+          const size = Math.min(memory.getUint32(iovs! + i * 8 + 4, true), stdin.length - offset)
+          new Uint8Array(wasi.memory.buffer, ptr, size).set(stdin.subarray(offset, offset + size))
+          offset += size; total += size
+        }
+        memory.setUint32(read!, total, true)
+        return 0
+      }
     bindings.fd_write = (fd, iovs, length, written) => {
       if (fd !== 1 && fd !== 2) return originalWrite(fd!, iovs!, length!, written!)
       const memory = new DataView(wasi.memory.buffer)
@@ -57,7 +116,10 @@ async function execute(binary: Uint8Array, args: string[], fs: WASIFS, input: st
         count += size
         if (count > outputLimit) throw new Error('OUTPUT_LIMIT_EXCEEDED')
         const bytes = new Uint8Array(wasi.memory.buffer, ptr, size)
-        if (fd === 1) stdout += out.decode(bytes, { stream: true }); else stderr += err.decode(bytes, { stream: true })
+        const text = (fd === 1 ? out : err).decode(bytes, { stream: true })
+        if (fd === 1) stdout += text; else stderr += text
+        // 终端会话里输出实时流出去，用户能看着程序边跑边打印。
+        if (tty && text) scope.postMessage({ tty: { event: fd === 1 ? 'out' : 'err', data: text } })
         total += size
       }
       memory.setUint32(written!, total, true)
@@ -66,6 +128,29 @@ async function execute(binary: Uint8Array, args: string[], fs: WASIFS, input: st
   }
   const module = await WebAssembly.compile(new Uint8Array(limitMemory(binary, policy.memoryPages)))
   const instance = await WebAssembly.instantiate(module, imports)
+  if (tty) {
+    // JSPI：promising 包住 _start，让 Suspending 的 fd_read 能把 wasm 挂起等输入。
+    // wasi.start() 不会 await Promise，所以这里手动复现它做的事（proc_exit 抛
+    // 出的对象带 code 字段）。
+    const fields = wasi as unknown as Record<string, unknown>
+    fields.hasBeenInitialized = true; fields.instance = instance; fields.module = module
+    fields.memory = instance.exports.memory
+    scope.postMessage({ tty: { event: 'ready' } })
+    const started = performance.now()
+    try {
+      const promising = (WebAssembly as unknown as { promising: (f: () => void) => () => Promise<void> }).promising
+      await promising(instance.exports._start as () => void)()
+      return { verdict: 'OK', stdout: stdout + out.decode(), stderr: stderr + err.decode(), elapsedMs: performance.now() - started }
+    } catch (error) {
+      const code = (error as { code?: unknown })?.code
+      if (typeof code === 'number') return { verdict: code ? 'RE' : 'OK', stdout: stdout + out.decode(), stderr: stderr + err.decode(),
+        elapsedMs: performance.now() - started, ...(code ? { error: `退出码 ${code}` } : {}) }
+      if (String(error).includes('OUTPUT_LIMIT_EXCEEDED')) return { verdict: 'OLE', stdout: stdout + out.decode(), stderr: stderr + err.decode(),
+        elapsedMs: performance.now() - started, error: '输出超限' }
+      return { verdict: 'RE', stdout: stdout + out.decode(), stderr: stderr + err.decode(),
+        elapsedMs: performance.now() - started, error: error instanceof WebAssembly.RuntimeError ? '运行异常' : String(error) }
+    }
+  }
   scope.postMessage({ phase: '执行程序' })
   const started = performance.now()
   try {
@@ -102,8 +187,9 @@ async function run(work: Work): Promise<Execution> {
   if (work.environment === 'python') {
     const fs = unpack(await get('python.tar'))
     fs['/main.py'] = file('/main.py', encoder.encode(work.source))
-    return execute(await get('python.wasm'), ['python', '/main.py'], fs, work.input)
+    return execute(await get('python.wasm'), ['python', '/main.py'], fs, work.input, work.tty)
   }
+  // Java 的 stdin 是 B-JVM 同步 FFI，没法挂起等输入，host 会在请求前就拒掉。
   if (work.environment === 'java8' || work.environment === 'java21') return runJava(work)
   let binary = work.artifact
   if (!binary) {
@@ -118,7 +204,10 @@ async function run(work: Work): Promise<Execution> {
       if (!bytes) return
       count += bytes.length
       if (count > outputLimit) throw new Error('编译诊断超过 1 MiB')
-      if (target === 'stdout') stdout += diagnostics.decode(bytes); else stderr += diagnostics.decode(bytes)
+      const text = diagnostics.decode(bytes)
+      if (target === 'stdout') stdout += text; else stderr += text
+      // 终端里编译失败必须能看见诊断，不然只有一个「编译失败」状态。
+      if (work.tty && text) scope.postMessage({ tty: { event: 'err', data: text } })
     }
     const filename = work.environment === 'c' ? 'main.c' : 'main.cpp'
     const headers = 'algorithm array bitset cassert cctype cerrno cfloat climits cmath complex cstdio cstdlib cstring deque exception functional iomanip ios iostream iterator limits list map memory numeric queue random regex set sstream stack stdexcept string tuple type_traits unordered_map unordered_set utility vector'.split(' ')
@@ -130,14 +219,19 @@ async function run(work: Work): Promise<Execution> {
       const produced = files['program.wasm']
       if (!(produced instanceof Uint8Array)) return { verdict: 'CE', stdout, stderr, error: '编译器未生成程序' }
       binary = produced
-      scope.postMessage({ artifact: binary })
+      // 终端会话不缓存编译产物：源码每次都可能改。
+      if (!work.tty) scope.postMessage({ artifact: binary })
     } catch (error) { return { verdict: stderr ? 'CE' : 'ENVIRONMENT_ERROR', stdout, stderr, error: stderr ? '编译失败' : String(error) } }
   }
-  return execute(binary, ['program'], {}, work.input)
+  return execute(binary, ['program'], {}, work.input, work.tty)
 }
 
 scope.onmessage = event => {
-  void run(event.data).then(result => scope.postMessage({ result })).catch(error => scope.postMessage({ result: {
+  const data = event.data as Work & { stdin?: string; stdinClose?: boolean }
+  // 终端会话的输入消息不设 id，直接进队列；正在挂起的 fd_read 会被唤醒。
+  if (typeof data?.stdin === 'string') { ttyFeed(encoder.encode(data.stdin)); return }
+  if (data?.stdinClose) { ttyClose(); return }
+  void run(data).then(result => scope.postMessage({ result })).catch(error => scope.postMessage({ result: {
     verdict: 'ENVIRONMENT_ERROR', stdout: '', stderr: '', error: String(error),
   } }))
 }

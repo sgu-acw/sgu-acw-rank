@@ -1,6 +1,10 @@
 import type { Environment, JudgeRequest, JudgeResult, LspId, Manifest, PackageState, Progress, RuntimeId } from './types'
 
-type Pending = { resolve: (data: unknown) => void; reject: (error: Error) => void; progress?: (p: Progress) => void; cleanup: () => void }
+type Pending = { resolve: (data: unknown) => void; reject: (error: Error) => void; progress?: (p: Progress) => void; tty?: (e: TtyEvent) => void; cleanup: () => void }
+
+/** 终端会话事件：status 阶段提示，ready 程序开始等输入，out/err 输出块，exit 程序结束。 */
+export interface TtyEvent { event: 'status' | 'ready' | 'out' | 'err' | 'exit' | 'error'; data?: string; verdict?: string; error?: string; elapsedMs?: number }
+export interface TtySession { send(data: string): void; eof(): void; close(): void; done: Promise<void> }
 
 /** The untrusted runner has its own origin, cookies and storage. */
 export class LearningEngine {
@@ -53,11 +57,12 @@ export class LearningEngine {
     const entry = this.pending.get(event.data.id)
     if (!entry) return
     if (event.data.progress) { entry.progress?.(event.data.progress); return }
+    if (event.data.tty) { entry.tty?.(event.data.tty); return }
     this.pending.delete(event.data.id); entry.cleanup()
     if (event.data.error) entry.reject(new Error(String(event.data.error)))
     else entry.resolve(event.data.result)
   }
-  private callRaw<T>(method: string, payload: unknown, signal?: AbortSignal, progress?: (p: Progress) => void): Promise<T> {
+  private callRaw<T>(method: string, payload: unknown, signal?: AbortSignal, progress?: (p: Progress) => void, tty?: (e: TtyEvent) => void): Promise<T> {
     return new Promise((resolve, reject) => {
       if (this.disposed || signal?.aborted) { reject(new DOMException('已取消', 'AbortError')); return }
       const id = crypto.randomUUID()
@@ -66,7 +71,7 @@ export class LearningEngine {
         this.pending.delete(id); signal?.removeEventListener('abort', abort)
         reject(new DOMException('已取消', 'AbortError'))
       }
-      this.pending.set(id, { resolve: data => resolve(data as T), reject, progress, cleanup: () => signal?.removeEventListener('abort', abort) })
+      this.pending.set(id, { resolve: data => resolve(data as T), reject, progress, tty, cleanup: () => signal?.removeEventListener('abort', abort) })
       signal?.addEventListener('abort', abort, { once: true })
       try {
         this.post({ token: this.token, id, method, payload: JSON.parse(JSON.stringify(payload)) })
@@ -84,9 +89,9 @@ export class LearningEngine {
     this.frame.contentWindow?.postMessage(message, this.origin)
   }
 
-  private async call<T>(method: string, payload: unknown = {}, signal?: AbortSignal, progress?: (p: Progress) => void) {
+  private async call<T>(method: string, payload: unknown = {}, signal?: AbortSignal, progress?: (p: Progress) => void, tty?: (e: TtyEvent) => void) {
     await this.ready
-    return this.callRaw<T>(method, payload, signal, progress)
+    return this.callRaw<T>(method, payload, signal, progress, tty)
   }
   manifest() { return this.call<Manifest>('manifest') }
   status() { return this.call<PackageState[]>('status') }
@@ -102,6 +107,42 @@ export class LearningEngine {
     return this.call<unknown[]>('lspComplete', { service, code, line, character })
   }
   lspDiagnostics(service: LspId) { return this.call<unknown[]>('lspDiagnostics', { service }) }
+  /**
+   * 开一个交互终端会话。返回的对象可以 send 一行输入、发 EOF、或直接 close 杀掉。
+   * 会话生命周期跟着 'tty' 调用走：程序退出或会话被掐掉时 done 落定。
+   */
+  terminal(environment: Environment, source: string, onEvent: (e: TtyEvent) => void): TtySession {
+    const controller = new AbortController()
+    let ended = false, started = false
+    const queued: string[] = []
+    const fire = (e: TtyEvent) => {
+      if (e.event === 'ready') {
+        started = true
+        for (const data of queued.splice(0)) void this.callRaw('ttyInput', { data }).catch(() => undefined)
+      }
+      if (e.event === 'exit') ended = true
+      onEvent(e)
+    }
+    const done = this.call<unknown>('tty', { environment, source }, controller.signal, undefined, fire)
+      .then(() => { ended = true }, error => {
+        ended = true
+        if (!controller.signal.aborted) {
+          fire({ event: 'error', data: String(error instanceof Error ? error.message : error) })
+          fire({ event: 'exit', verdict: 'ENVIRONMENT_ERROR' })
+        }
+      })
+    return {
+      send: (data: string) => {
+        if (ended) return
+        // ready 之前输入先本地排队，免得 postMessage 次序把输入丢到还没起好的会话上。
+        if (!started) { queued.push(data); return }
+        void this.callRaw('ttyInput', { data }).catch(() => undefined)
+      },
+      eof: () => { if (!ended) void this.callRaw('ttyEof', {}).catch(() => undefined) },
+      close: () => { controller.abort() },
+      done,
+    }
+  }
   dispose() {
     this.disposed = true
     // 就绪轮询在 ready 的 finish 里停；这里只需标记 disposed，attempt 会自行跳过。

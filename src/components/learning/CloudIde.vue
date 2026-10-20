@@ -6,11 +6,13 @@
  * 所以补全、诊断、语言包管理的行为和做题页完全一致，不会出现两套逻辑。
  */
 import { computed, onMounted, ref, watch } from 'vue'
-import { Download, Play, Square } from 'lucide-vue-next'
+import { Download, Play, Square, SquareTerminal } from 'lucide-vue-next'
 import { environments, starter, type Environment, type JudgeResult, type Progress } from '../../lib/learning/types'
+import type { TtyEvent } from '../../lib/learning/engine'
 import { useLearningRuntime, runtimeIdOf } from '../../lib/learning/runtime'
 import Button from '../ui/button/Button.vue'
-import VerdictDots from './VerdictDots.vue'
+import RunResult from './RunResult.vue'
+import TerminalPane from './TerminalPane.vue'
 import CodeEditor from './CodeEditor.vue'
 import ActionNotice from '../ui/ActionNotice.vue'
 
@@ -23,6 +25,27 @@ const error = ref(''), notice = ref('')
 const stdin = ref('')
 let controller: AbortController | undefined
 
+// ---------- 交互终端 ----------
+// 真交互：wasm 在等输入时挂起（JSPI），输入逐行喂进去，输出流式回来。
+// Java 的 stdin 是 B-JVM 的同步 FFI，挂起不了，先不支持。
+// eslint 不认识 WebAssembly.promising（TS DOM 类型里有但 lint env 没声明全局）。
+const wasmGlobal = globalThis.WebAssembly as { promising?: unknown } | undefined
+const jspi = typeof wasmGlobal?.promising === 'function'
+const ttyOpen = ref(false)
+const ttySupported = computed(() => ['c', 'cpp', 'python'].includes(environment.value))
+const ttyHint = computed(() => !jspi
+  ? '此浏览器不支持交互终端（需要较新的 Chrome 或 Edge）'
+  : !ttySupported.value ? 'Java 暂不支持交互终端' : '')
+function launchTerminal(onEvent: (e: TtyEvent) => void) {
+  return engine.value!.terminal(environment.value, source.value, onEvent)
+}
+function openTerminal() {
+  if (!canTty.value) return
+  result.value = null; error.value = ''; notice.value = ''
+  ttyOpen.value = true
+}
+const canTty = computed(() => ready.value && !busy.value && ttySupported.value && jspi && !!engine.value)
+
 const runtime = useLearningRuntime({ environment, code: source })
 const { engine, catalog, packages, ready, lspPhase, lspReason, completion, diagnostics } = runtime
 const current = computed(() => catalog.value?.runtimes.find(r => r.id === runtimeIdOf(environment.value)) || null)
@@ -33,6 +56,7 @@ function changeEnvironment(event: Event) {
   environment.value = (event.target as HTMLSelectElement).value as Environment
   source.value = starter[environment.value]
   result.value = null
+  ttyOpen.value = false
   void runtime.switchEnvironment()
 }
 
@@ -107,15 +131,20 @@ const failed = computed(() => result.value?.points[0]?.error || '')
             </span>
             <span v-else-if="lspPhase === 'ready'" class="text-xs text-emerald-600 dark:text-emerald-400">补全与诊断已开启</span>
             <span v-else-if="lspPhase === 'failed'" class="text-xs text-amber-600 dark:text-amber-400" :title="lspReason">语言服务不可用</span>
-            <Button class="ml-auto" :disabled="!!busy || !ready" @click="run">
+            <Button class="ml-auto" :disabled="!!busy || !ready || ttyOpen" @click="run">
               <Play v-if="!busy" class="mr-2 h-4 w-4" /><Square v-else class="mr-2 h-4 w-4" />{{ busy ? '运行中' : '运行' }}
             </Button>
             <Button v-if="busy" variant="outline" @click="controller?.abort()">取消</Button>
+            <Button variant="outline" :disabled="!canTty" :title="ttyHint || '逐行输入、实时输出的终端'" @click="openTerminal">
+              <SquareTerminal class="mr-2 h-4 w-4" />交互终端
+            </Button>
           </div>
           <div id="ide-code" role="group" aria-label="源码">
             <CodeEditor v-model="source" :environment="environment" :readonly="!!busy" :completion="completion" :diagnostics="diagnostics" />
           </div>
           <p v-if="progress" class="text-xs text-muted-foreground" role="status">{{ progress.phase }}<span v-if="progress.points"> · {{ progress.point }}/{{ progress.points }}</span></p>
+          <TerminalPane v-if="ttyOpen" :launch="launchTerminal" @close="ttyOpen = false" />
+          <p v-else-if="!canTty && ttyHint" class="text-xs text-muted-foreground">{{ ttyHint }}</p>
         </div>
 
         <div class="space-y-3 rounded-xl border p-4 sm:p-5">
@@ -131,13 +160,13 @@ const failed = computed(() => result.value?.points[0]?.error || '')
             <span v-if="result" class="text-xs text-muted-foreground">{{ Math.round(result.points[0]?.elapsedMs || 0) }} ms</span>
           </div>
           <template v-if="result">
-            <div class="mt-3"><VerdictDots :points="result.points" label="运行结果" /></div>
+            <div class="mt-3"><RunResult :point="result.points[0]" /></div>
             <pre v-if="stdout" class="mt-3 max-h-64 overflow-auto rounded-md bg-muted p-3 text-xs">{{ stdout }}</pre>
             <pre v-if="stderr" class="mt-2 max-h-40 overflow-auto rounded-md bg-destructive/10 p-3 text-xs text-destructive">{{ stderr }}</pre>
             <p v-if="failed" class="mt-2 break-words text-xs text-destructive">{{ failed }}</p>
             <p v-if="!stdout && !stderr && !failed" class="mt-3 text-xs text-muted-foreground">程序没有输出。</p>
           </template>
-          <p v-else class="mt-3 text-sm text-muted-foreground">点「运行」看输出。</p>
+          <p v-else-if="!busy" class="mt-3 text-sm text-muted-foreground">点「运行」看输出。</p>
         </div>
       </section>
     </div>
