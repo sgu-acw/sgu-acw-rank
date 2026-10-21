@@ -35,7 +35,7 @@ const add = () => {
   }
 }
 const remove = (id: number) => {
-  if (props.modelValue.length > 1) emit('update:modelValue', props.modelValue.filter(c => c.id !== id))
+  emit('update:modelValue', props.modelValue.filter(c => c.id !== id))
 }
 </script>
 
@@ -46,7 +46,7 @@ const remove = (id: number) => {
         <span class="text-sm font-medium">自定义样例 {{ i + 1 }}</span>
         <span v-if="statusOf(i)" class="text-xs font-medium" :class="statusOf(i)!.cls">{{ statusOf(i)!.text }}</span>
         <span v-if="point?.(i)?.elapsedMs !== undefined" class="text-xs text-muted-foreground">{{ Math.round(point(i)!.elapsedMs!) }} ms</span>
-        <IconButton :label="`删除自定义样例 ${i + 1}`" destructive :disabled="busy || modelValue.length <= 1" @click="remove(c.id)" class="ml-auto"><Trash2 class="h-4 w-4" /></IconButton>
+        <IconButton :label="`删除自定义样例 ${i + 1}`" destructive :disabled="busy" @click="remove(c.id)" class="ml-auto"><Trash2 class="h-4 w-4" /></IconButton>
       </div>
       <div class="grid gap-3 sm:grid-cols-2">
         <div>
@@ -58,13 +58,14 @@ const remove = (id: number) => {
           <textarea :id="`case-expected-${c.id}`" v-model="c.expected" class="form-textarea mt-1 w-full font-mono text-xs" :disabled="busy" />
         </div>
       </div>
-      <!-- 输出就在用例下面，不再框一层。 -->
-      <div v-if="point?.(i)" class="space-y-1">
+      <!-- 输出就在用例下面；WA 只给判定不给详情，防止反向推断测试数据。 -->
+      <div v-if="point?.(i) && point(i)!.verdict !== 'WA'" class="space-y-1">
         <pre class="max-h-40 overflow-auto whitespace-pre rounded bg-muted/60 p-2 text-xs">{{ point(i)!.stdout || '（空）' }}</pre>
         <pre v-if="point(i)!.stderr" class="max-h-40 overflow-auto whitespace-pre-wrap break-words rounded bg-muted/60 p-2 text-xs text-destructive">{{ point(i)!.stderr }}</pre>
         <p v-if="point(i)!.error" class="break-words text-xs text-destructive">{{ point(i)!.error }}</p>
       </div>
     </section>
+    <p v-if="!modelValue.length" class="text-xs text-muted-foreground">还没有自定义样例。</p>
     <div><Button variant="outline" :disabled="busy || modelValue.length >= 20" @click="add"><Plus class="mr-2 h-4 w-4" />添加样例</Button></div>
   </div>
 </template>

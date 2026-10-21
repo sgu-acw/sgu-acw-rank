@@ -22,7 +22,7 @@ const busy = ref<'run' | null>(null)
 const progress = ref<Progress | null>(null)
 const result = ref<JudgeResult | null>(null)
 const error = ref(''), notice = ref('')
-const customCases = ref<CustomCase[]>([{ id: 1, input: '20 22\n', expected: '' }])
+const customCases = ref<CustomCase[]>([])
 let controller: AbortController | undefined
 
 // ---------- 交互终端 ----------

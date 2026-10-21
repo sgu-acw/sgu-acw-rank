@@ -16,8 +16,7 @@ import ActionNotice from '../ui/ActionNotice.vue'
 const { user, ensureLoaded } = useAuth()
 const problem = ref<Problem | null>(null), environment = ref<Environment>('cpp'), source = ref('')
 interface CustomCase { id: number; input: string; expected: string }
-let customSeq = 0
-const customCases = ref<CustomCase[]>([{ id: ++customSeq, input: '20 22\n', expected: '' }])
+const customCases = ref<CustomCase[]>([])
 const error = ref(''), notice = ref('')
 // 运行器与语言服务统一走 useLearningRuntime，和云端 IDE 共用同一套逻辑。
 const shared = useLearningRuntime({ environment, code: source })
@@ -110,7 +109,7 @@ onMounted(async () => {
     problem.value = p
     environment.value = p.content.environments.includes('cpp') ? 'cpp' : p.content.environments[0]!
     source.value = readDraft(environment.value)
-    customCases.value = [{ id: ++customSeq, input: p.content.tests.find(t => t.sample)?.input || '', expected: '' }]
+    customCases.value = []
     await shared.connect()
     await ensureLoaded()
   } catch (e) { if (alive) error.value = String(e) }

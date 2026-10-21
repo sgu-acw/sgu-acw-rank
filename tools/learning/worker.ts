@@ -190,7 +190,9 @@ async function run(work: Work): Promise<Execution> {
   if (work.environment === 'python') {
     const fs = unpack(await get('python.tar'))
     fs['/main.py'] = file('/main.py', encoder.encode(work.source))
-    return execute(await get('python.wasm'), ['python', '/main.py'], fs, work.input, work.tty)
+    const main = await execute(await get('python.wasm'), ['python', '/main.py'], fs, work.input, work.tty)
+    // Python 主程序同样要过 SPJ——之前这里直接 return，判定程序根本没跑。
+    return work.checker === 'spj' ? spjJudge(work, main) : main
   }
   // Java 的 stdin 是 B-JVM 同步 FFI，没法挂起等输入，host 会在请求前就拒掉。
   if (work.environment === 'java8' || work.environment === 'java21') return runJava(work)
