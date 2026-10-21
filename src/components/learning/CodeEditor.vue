@@ -203,6 +203,8 @@ defineExpose({ focus: () => view?.focus() })
 .learning-cm .cm-completionIcon {
   display: inline-flex; align-items: center; justify-content: center;
   align-self: center;
+  /* flex 项默认 shrink:1，签名一长徽标就被挤成窄条——固定不缩。 */
+  flex: 0 0 18px;
   width: 18px; height: 18px; padding: 0;
   font-size: 12.5px; font-weight: 800; font-style: normal;
   font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
