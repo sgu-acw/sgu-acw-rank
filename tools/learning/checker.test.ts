@@ -34,3 +34,17 @@ test('custom run compares when an expected output is given', () => {
   const mismatch = checkPoint(execution, { name: 'c', input: '', output: '43', sample: false }, 'tokens', true)
   assert.equal(mismatch.verdict, 'WA')
 })
+
+test('spj 退出码为 0 判 AC，非 0 判 WA，缺 spj 结果判环境错误', () => {
+  const test = { name: 't', input: '', output: '1', sample: false }
+  const ac = checkPoint({ verdict: 'OK', stdout: '1', stderr: '', spj: { verdict: 'OK', stderr: '' } }, test, 'spj')
+  if (ac.verdict !== 'AC') throw new Error(`spj exit 0 should be AC, got ${ac.verdict}`)
+  const wa = checkPoint({ verdict: 'OK', stdout: '2', stderr: '', spj: { verdict: 'WA', stderr: 'diff at 1' } }, test, 'spj')
+  if (wa.verdict !== 'WA') throw new Error(`spj nonzero should be WA, got ${wa.verdict}`)
+  // Java 语言此前漏接 spjJudge，execution.spj 为 undefined 时误落 ENVIRONMENT_ERROR；
+  // 修好后所有语言都该带 spj 字段，这里锁定无字段时的行为。
+  const missing = checkPoint({ verdict: 'OK', stdout: '1', stderr: '' }, test, 'spj')
+  if (missing.verdict !== 'ENVIRONMENT_ERROR') throw new Error(`missing spj should be ENVIRONMENT_ERROR, got ${missing.verdict}`)
+  const re = checkPoint({ verdict: 'RE', stdout: '', stderr: 'crash', spj: { verdict: 'OK', stderr: '' } }, test, 'spj')
+  if (re.verdict !== 'RE') throw new Error(`RE should pass through, got ${re.verdict}`)
+})

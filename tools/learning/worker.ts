@@ -195,7 +195,12 @@ async function run(work: Work): Promise<Execution> {
     return work.checker === 'spj' ? spjJudge(work, main) : main
   }
   // Java 的 stdin 是 B-JVM 同步 FFI，没法挂起等输入，host 会在请求前就拒掉。
-  if (work.environment === 'java8' || work.environment === 'java21') return runJava(work)
+  // SPJ 判定与主语言无关：runJava 的 Execution 同样交给 spjJudge 二次判定，
+  // CE/RE 会原样透传，不会被误判成环境错误。
+  if (work.environment === 'java8' || work.environment === 'java21') {
+    const main = await runJava(work)
+    return work.checker === 'spj' ? spjJudge(work, main) : main
+  }
   let binary = work.artifact
   if (!binary) {
     scope.postMessage({ phase: '编译源码' })
