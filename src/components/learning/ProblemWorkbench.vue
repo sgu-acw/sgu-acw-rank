@@ -166,6 +166,8 @@ async function saveRecord() {
       <div class="grid min-w-0 gap-5" :class="split ? 'lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]' : ''">
         <section class="min-w-0 space-y-5 rounded-xl border p-5" :class="[mobilePanel !== 'statement' && 'hidden lg:block', split && 'lg:max-h-[70vh] lg:overflow-auto']">
           <h2 class="font-semibold">题目描述</h2><p class="whitespace-pre-wrap break-words text-sm leading-7">{{ problem.content.statement }}</p>
+          <template v-if="problem.content.input_format"><h2 class="font-semibold">输入格式</h2><p class="whitespace-pre-wrap break-words text-sm leading-7">{{ problem.content.input_format }}</p></template>
+          <template v-if="problem.content.output_format"><h2 class="font-semibold">输出格式</h2><p class="whitespace-pre-wrap break-words text-sm leading-7">{{ problem.content.output_format }}</p></template>
           <p class="text-xs text-muted-foreground">每点时限 {{ problem.content.time_ms }} ms · {{ problem.content.checker === 'tokens' ? '忽略空白比较' : '逐字比较' }}</p>
           <div v-for="(test, index) in problem.content.tests.filter(t => t.sample)" :key="index" class="min-w-0 space-y-2">
             <h3 class="text-sm font-medium">样例 {{ index + 1 }}</h3><p class="text-xs text-muted-foreground">输入</p><pre class="max-w-full overflow-x-auto rounded-md bg-muted p-3 text-sm">{{ test.input }}</pre><p class="text-xs text-muted-foreground">输出</p><pre class="max-w-full overflow-x-auto rounded-md bg-muted p-3 text-sm">{{ test.output }}</pre>

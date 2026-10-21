@@ -28,7 +28,7 @@ const refSources = ref<Partial<Record<Environment, string>>>({ cpp: starter.cpp 
 const validation = ref<{ key: string; results: Partial<Record<Environment, string>>; points: Partial<Record<Environment, PointResult[]>> } | null>(null)
 const validationPoints = (env: Environment) => validation.value?.points[env] ?? []
 
-const signature = () => form.value ? JSON.stringify([form.value.title, form.value.chapter, form.value.difficulty, form.value.tags, form.value.statement, form.value.environments,
+const signature = () => form.value ? JSON.stringify([form.value.title, form.value.chapter, form.value.difficulty, form.value.tags, form.value.statement, form.value.input_format, form.value.output_format, form.value.environments,
   form.value.checker, form.value.time_ms, form.value.tests.map(t => [t.name, t.input, t.output, t.sample])]) : ''
 const dirty = computed(() => !!form.value && signature() !== baseline.value)
 const validationKey = () => signature() + refLanguages.value.map(e => `${e}:${refSources.value[e] ?? ''}`).join('|')
@@ -38,7 +38,7 @@ const canPublish = computed(() => allPassed.value)
 
 function setForm(draft: Draft | null) {
   selected.value = draft; creating.value = !draft; showing.value = true; creationRequest = window.crypto.randomUUID()
-  form.value = draft ? JSON.parse(JSON.stringify(draft.content)) : { title: '', chapter: '输入输出', difficulty: '入门', tags: [], statement: '', environments: ['c', 'cpp', 'python'],
+  form.value = draft ? JSON.parse(JSON.stringify(draft.content)) : { title: '', chapter: '输入输出', difficulty: '入门', tags: [], statement: '', input_format: '', output_format: '', environments: ['c', 'cpp', 'python'],
     checker: 'tokens', time_ms: 3000, tests: [{ name: '样例 1', input: '', output: '', sample: true }] }
   form.value.difficulty ??= '入门'; form.value.tags ??= []
   tagsText.value = form.value.tags.join('、')
@@ -174,6 +174,10 @@ onUnmounted(() => { alive = false; serial++; controller?.abort(); engine?.dispos
             <div class="grid gap-4 sm:grid-cols-2"><div><label for="learn-title" class="text-sm">标题</label><Input id="learn-title" v-model="form.title" class="mt-2" required :disabled="!!busy" /></div><div><label for="learn-chapter" class="text-sm">章节</label><Input id="learn-chapter" v-model="form.chapter" class="mt-2" required :disabled="!!busy" /></div></div>
             <div class="grid gap-4 sm:grid-cols-2"><div><label for="learn-difficulty" class="text-sm">难度</label><select id="learn-difficulty" v-model="form.difficulty" class="form-select mt-2 w-full" :disabled="!!busy"><option v-for="d in difficulties" :key="d" :value="d">{{ d }}</option></select></div><div><label for="learn-tags" class="text-sm">标签（顿号或逗号分隔，最多 8 个）</label><Input id="learn-tags" v-model="tagsText" class="mt-2" :disabled="!!busy" placeholder="如：循环、数组" @blur="applyTags()" /></div></div>
             <div><label for="learn-statement" class="text-sm">题面</label><textarea id="learn-statement" v-model="form.statement" class="form-textarea mt-2 min-h-36 w-full" required :disabled="!!busy" /></div>
+            <div class="grid gap-3 sm:grid-cols-2">
+              <div><label for="learn-input-format" class="text-sm">输入格式<span class="ml-1 text-muted-foreground">（可选）</span></label><textarea id="learn-input-format" v-model="form.input_format" class="form-textarea mt-2 min-h-24 w-full" :disabled="!!busy" /></div>
+              <div><label for="learn-output-format" class="text-sm">输出格式<span class="ml-1 text-muted-foreground">（可选）</span></label><textarea id="learn-output-format" v-model="form.output_format" class="form-textarea mt-2 min-h-24 w-full" :disabled="!!busy" /></div>
+            </div>
             <fieldset><legend class="text-sm">可选语言</legend><div class="mt-2 flex flex-wrap gap-2"><button v-for="e in environments" :key="e.id" type="button" class="choice-button" :aria-pressed="form.environments.includes(e.id)" :disabled="!!busy" @click="toggle(e.id)">{{ e.label }}</button></div></fieldset>
             <div class="grid gap-4 sm:grid-cols-2"><div><label for="learn-checker" class="text-sm">答案比较</label><select id="learn-checker" v-model="form.checker" class="form-select mt-2 w-full" :disabled="!!busy"><option value="tokens">忽略空白</option><option value="exact">逐字比较</option></select></div><div><label for="learn-time" class="text-sm">单点时限（ms）</label><Input id="learn-time" v-model.number="form.time_ms" type="number" min="100" max="30000" class="mt-2" :disabled="!!busy" /></div></div>
             <div class="flex flex-wrap items-center justify-between gap-3">

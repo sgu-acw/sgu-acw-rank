@@ -11,6 +11,8 @@ export const difficulties: Difficulty[] = ['入门', '基础', '进阶']
 export interface TestCase { name: string; input: string; output: string; sample: boolean }
 export interface ProblemContent {
   title: string; chapter: string; difficulty: Difficulty; tags: string[]; statement: string; environments: Environment[]
+  /** 可选：输入/输出格式说明，留空则不显示。 */
+  input_format?: string; output_format?: string
   checker: 'exact' | 'tokens'; time_ms: number; tests: TestCase[]
 }
 export interface Problem { id: number; version_id: string; revision: number; content: ProblemContent }
