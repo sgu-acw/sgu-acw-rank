@@ -16,7 +16,12 @@ import AdminWorkspaceNav from '../AdminWorkspaceNav.vue'
 
 const { isAdmin, ready: authReady, ensureLoaded } = useAuth()
 const rows = ref<Draft[]>([]), selected = ref<Draft | null>(null), showing = ref(false), creating = ref(false)
-const form = ref<ProblemContent | null>(null), baseline = ref('')
+const form = ref<ProblemContent | null>(null)
+// 表单拆四页签：基本信息、题面、测试点、验证发布。
+const adminTab = ref<'basic' | 'statement' | 'tests' | 'publish'>('basic')
+/** 超长测试数据只显示开头。 */
+const showText = (text: string, limit = 4096) =>
+  text.length > limit ? `${text.slice(0, limit)}\n…（共 ${text.length} 字符，已截断显示）` : text, baseline = ref('')
 const busy = ref(''), loading = ref(false), error = ref(''), notice = ref(''), progress = ref<Progress | null>(null)
 let engine: LearningEngine | undefined, controller: AbortController | undefined, serial = 0, alive = true, creationRequest = ''
 const tagsText = ref('')
@@ -28,8 +33,8 @@ const refSources = ref<Partial<Record<Environment, string>>>({ cpp: starter.cpp 
 const validation = ref<{ key: string; results: Partial<Record<Environment, string>>; points: Partial<Record<Environment, PointResult[]>> } | null>(null)
 const validationPoints = (env: Environment) => validation.value?.points[env] ?? []
 
-const signature = () => form.value ? JSON.stringify([form.value.title, form.value.chapter, form.value.difficulty, form.value.tags, form.value.statement, form.value.input_format, form.value.output_format, form.value.environments,
-  form.value.checker, form.value.time_ms, form.value.tests.map(t => [t.name, t.input, t.output, t.sample])]) : ''
+const signature = () => form.value ? JSON.stringify([form.value.title, form.value.chapter, form.value.difficulty, form.value.tags, form.value.statement, form.value.input_format, form.value.output_format, form.value.note, form.value.environments, form.value.checker, form.value.checker_source,
+  form.value.time_ms, form.value.tests.map(t => [t.name, t.input, t.output, t.sample])]) : ''
 const dirty = computed(() => !!form.value && signature() !== baseline.value)
 const validationKey = () => signature() + refLanguages.value.map(e => `${e}:${refSources.value[e] ?? ''}`).join('|')
 const validationFresh = computed(() => !!validation.value && validation.value.key === validationKey())
@@ -39,7 +44,7 @@ const canPublish = computed(() => allPassed.value)
 function setForm(draft: Draft | null) {
   selected.value = draft; creating.value = !draft; showing.value = true; creationRequest = window.crypto.randomUUID()
   form.value = draft ? JSON.parse(JSON.stringify(draft.content)) : { title: '', chapter: '输入输出', difficulty: '入门', tags: [], statement: '', input_format: '', output_format: '', environments: ['c', 'cpp', 'python'],
-    checker: 'tokens', time_ms: 3000, tests: [{ name: '样例 1', input: '', output: '', sample: true }] }
+    checker: 'tokens', checker_source: '', note: '', time_ms: 3000, tests: [{ name: '样例 1', input: '', output: '', sample: true }] }
   form.value.difficulty ??= '入门'; form.value.tags ??= []
   tagsText.value = form.value.tags.join('、')
   const first = form.value.environments.includes('cpp') ? 'cpp' : form.value.environments[0] ?? 'cpp'
@@ -119,7 +124,7 @@ async function validate() {
   try {
     for (const env of refLanguages.value) {
       const result = await engine.run({ environment: env, source: refSources.value[env] ?? starter[env],
-        cases: JSON.parse(JSON.stringify(form.value.tests)), checker: form.value.checker, timeMs: form.value.time_ms },
+        cases: JSON.parse(JSON.stringify(form.value.tests)), checker: form.value.checker, checkerSource: form.value.checker_source, timeMs: form.value.time_ms },
         controller.signal, p => { progress.value = p })
       results[env] = result.verdict
       points[env] = result.points
@@ -169,17 +174,30 @@ onUnmounted(() => { alive = false; serial++; controller?.abort(); engine?.dispos
         <aside class="min-w-0" :class="showing && 'hidden lg:block'"><div class="divide-y rounded-lg border"><button v-for="draft in rows" :key="draft.id" type="button" class="block min-h-11 w-full px-4 py-3 text-left hover:bg-muted/50" :class="selected?.id === draft.id && 'bg-muted'" :disabled="!!busy" @click="choose(draft)"><span class="block break-words text-sm font-medium">{{ draft.content.title }}</span><span class="text-xs text-muted-foreground">草稿 {{ draft.revision }} · {{ draft.published_revision ? `已发布 ${draft.published_revision}` : '未发布' }}</span></button></div></aside>
         <section v-if="showing && form" class="min-w-0 space-y-4">
           <Button variant="outline" :disabled="!!busy" @click="back"><ArrowLeft class="mr-2 h-4 w-4" />返回题目列表</Button>
-          <form class="space-y-5 rounded-xl border p-4 sm:p-6" @submit.prevent="save">
+          <div class="overflow-hidden rounded-xl border">
+            <div class="flex border-b" role="tablist" aria-label="编辑区块">
+              <button v-for="t in ([{ id: 'basic', label: '基本信息' }, { id: 'statement', label: '题面' }, { id: 'tests', label: `测试点（${form.tests.length}）` }, { id: 'publish', label: '验证与发布' }] as const)" :key="t.id" type="button" role="tab" :aria-selected="adminTab === t.id" class="min-h-11 flex-1 px-3 text-sm transition-colors" :class="adminTab === t.id ? 'border-b-2 border-primary font-medium text-foreground' : 'text-muted-foreground hover:text-foreground'" @click="adminTab = t.id">{{ t.label }}</button>
+            </div>
+            <form v-show="adminTab !== 'publish'" class="space-y-5 p-4 sm:p-6" @submit.prevent="save">
             <h2 class="font-semibold">{{ creating ? '新建题目' : '编辑草稿' }}</h2>
+            <div v-show="adminTab === 'basic'" class="space-y-4">
             <div class="grid gap-4 sm:grid-cols-2"><div><label for="learn-title" class="text-sm">标题</label><Input id="learn-title" v-model="form.title" class="mt-2" required :disabled="!!busy" /></div><div><label for="learn-chapter" class="text-sm">章节</label><Input id="learn-chapter" v-model="form.chapter" class="mt-2" required :disabled="!!busy" /></div></div>
             <div class="grid gap-4 sm:grid-cols-2"><div><label for="learn-difficulty" class="text-sm">难度</label><select id="learn-difficulty" v-model="form.difficulty" class="form-select mt-2 w-full" :disabled="!!busy"><option v-for="d in difficulties" :key="d" :value="d">{{ d }}</option></select></div><div><label for="learn-tags" class="text-sm">标签（顿号或逗号分隔，最多 8 个）</label><Input id="learn-tags" v-model="tagsText" class="mt-2" :disabled="!!busy" placeholder="如：循环、数组" @blur="applyTags()" /></div></div>
+            </div>
+            <div v-show="adminTab === 'statement'" class="space-y-4">
             <div><label for="learn-statement" class="text-sm">题面</label><textarea id="learn-statement" v-model="form.statement" class="form-textarea mt-2 min-h-36 w-full" required :disabled="!!busy" /></div>
             <div class="grid gap-3 sm:grid-cols-2">
               <div><label for="learn-input-format" class="text-sm">输入格式<span class="ml-1 text-muted-foreground">（可选）</span></label><textarea id="learn-input-format" v-model="form.input_format" class="form-textarea mt-2 min-h-24 w-full" :disabled="!!busy" /></div>
               <div><label for="learn-output-format" class="text-sm">输出格式<span class="ml-1 text-muted-foreground">（可选）</span></label><textarea id="learn-output-format" v-model="form.output_format" class="form-textarea mt-2 min-h-24 w-full" :disabled="!!busy" /></div>
             </div>
+            <div><label for="learn-note" class="text-sm">说明<span class="ml-1 text-muted-foreground">（可选：样例解释、注意事项）</span></label><textarea id="learn-note" v-model="form.note" class="form-textarea mt-2 min-h-24 w-full" :disabled="!!busy" /></div>
+            </div>
+            <div v-show="adminTab === 'basic'" class="space-y-4">
             <fieldset><legend class="text-sm">可选语言</legend><div class="mt-2 flex flex-wrap gap-2"><button v-for="e in environments" :key="e.id" type="button" class="choice-button" :aria-pressed="form.environments.includes(e.id)" :disabled="!!busy" @click="toggle(e.id)">{{ e.label }}</button></div></fieldset>
-            <div class="grid gap-4 sm:grid-cols-2"><div><label for="learn-checker" class="text-sm">答案比较</label><select id="learn-checker" v-model="form.checker" class="form-select mt-2 w-full" :disabled="!!busy"><option value="tokens">忽略空白</option><option value="exact">逐字比较</option></select></div><div><label for="learn-time" class="text-sm">单点时限（ms）</label><Input id="learn-time" v-model.number="form.time_ms" type="number" min="100" max="30000" class="mt-2" :disabled="!!busy" /></div></div>
+            <div class="grid gap-4 sm:grid-cols-2"><div><label for="learn-checker" class="text-sm">答案比较</label><select id="learn-checker" v-model="form.checker" class="form-select mt-2 w-full" :disabled="!!busy"><option value="tokens">忽略空白</option><option value="exact">逐字比较</option><option value="spj">Special Judge（Python）</option></select></div><div><label for="learn-time" class="text-sm">单点时限（ms）</label><Input id="learn-time" v-model.number="form.time_ms" type="number" min="100" max="30000" class="mt-2" :disabled="!!busy" /></div></div>
+            <div v-if="form.checker === 'spj'"><label for="learn-spj" class="text-sm">判定程序（Python）</label><textarea id="learn-spj" v-model="form.checker_source" class="form-textarea mt-2 min-h-32 w-full font-mono text-xs" :disabled="!!busy" :placeholder="'# 读 /input、/expected、/actual；exit 0 = 通过'" /><p class="mt-1 text-xs text-muted-foreground">每个测试点跑完后执行，挂载 <code>/input</code>、<code>/expected</code>、<code>/actual</code> 三个文件。正常退出（exit 0）= 通过；其余 = 答案错误。<code>stderr</code> 内容作为判定说明回显。</p></div>
+            </div>
+            <div v-show="adminTab === 'tests'" class="space-y-4">
             <div class="flex flex-wrap items-center justify-between gap-3">
               <h3 class="font-medium">测试数据</h3>
               <div class="flex flex-wrap gap-2">
@@ -194,10 +212,11 @@ onUnmounted(() => { alive = false; serial++; controller?.abort(); engine?.dispos
               <div class="grid gap-3 sm:grid-cols-2"><div><label :for="`test-${i}-input`" class="text-sm">输入</label><textarea :id="`test-${i}-input`" v-model="test.input" class="form-textarea mt-2 w-full font-mono text-xs" :disabled="!!busy" /></div><div><label :for="`test-${i}-output`" class="text-sm">期望输出</label><textarea :id="`test-${i}-output`" v-model="test.output" class="form-textarea mt-2 w-full font-mono text-xs" :disabled="!!busy" /></div></div>
               <label class="flex min-h-11 items-center gap-2 text-sm"><input v-model="test.sample" type="checkbox" :disabled="!!busy" />公开样例</label>
             </div>
+            </div>
             <div class="flex flex-wrap gap-2"><Button type="submit" :disabled="!!busy">保存草稿</Button><Button variant="outline" :disabled="!!busy" @click="creating ? back() : restore()">取消{{ creating ? '新建' : '修改' }}</Button></div>
           </form>
 
-          <form class="space-y-4 rounded-xl border p-5" @submit.prevent="validate">
+          <form v-show="adminTab === 'publish'" class="space-y-4 p-4 sm:p-6" @submit.prevent="validate">
             <h2 class="font-semibold">发布前验证</h2>
             <p class="text-sm text-muted-foreground">验证会在浏览器里真实编译运行参考解，需要先在「语言包」安装对应环境。</p>
             <fieldset>
@@ -222,16 +241,17 @@ onUnmounted(() => { alive = false; serial++; controller?.abort(); engine?.dispos
                   <summary class="cursor-pointer text-sm">{{ point.name }} · {{ verdictLabels[point.verdict] }}<span v-if="point.elapsedMs !== undefined" class="ml-2 text-xs text-muted-foreground">{{ Math.round(point.elapsedMs) }} ms</span></summary>
                   <p v-if="point.error" class="mt-3 break-words text-sm text-destructive">{{ point.error }}</p>
                   <div class="mt-3 grid gap-3 sm:grid-cols-2">
-                    <div><p class="text-xs text-muted-foreground">输入</p><pre class="mt-1 max-h-48 overflow-auto whitespace-pre rounded-md bg-muted p-3 text-xs">{{ form.tests[i]?.input || '（空）' }}</pre></div>
-                    <div><p class="text-xs text-muted-foreground">期望输出</p><pre class="mt-1 max-h-48 overflow-auto whitespace-pre rounded-md bg-muted p-3 text-xs">{{ form.tests[i]?.output || '（空）' }}</pre></div>
+                    <div><p class="text-xs text-muted-foreground">输入</p><pre class="mt-1 max-h-48 overflow-auto whitespace-pre rounded-md bg-muted p-3 text-xs">{{ showText(form.tests[i]?.input || '（空）') }}</pre></div>
+                    <div><p class="text-xs text-muted-foreground">期望输出</p><pre class="mt-1 max-h-48 overflow-auto whitespace-pre rounded-md bg-muted p-3 text-xs">{{ showText(form.tests[i]?.output || '（空）') }}</pre></div>
                   </div>
-                  <p class="mt-3 text-xs text-muted-foreground">实际输出</p><pre class="mt-1 max-h-48 overflow-auto whitespace-pre rounded-md bg-muted p-3 text-xs">{{ point.stdout || '（空）' }}</pre>
-                  <pre v-if="point.stderr" class="mt-3 max-h-48 overflow-auto whitespace-pre-wrap break-words rounded-md bg-muted p-3 text-xs">{{ point.stderr }}</pre>
+                  <p class="mt-3 text-xs text-muted-foreground">实际输出</p><pre class="mt-1 max-h-48 overflow-auto whitespace-pre rounded-md bg-muted p-3 text-xs">{{ showText(point.stdout || '（空）') }}</pre>
+                  <pre v-if="point.stderr" class="mt-3 max-h-48 overflow-auto whitespace-pre-wrap break-words rounded-md bg-muted p-3 text-xs">{{ showText(point.stderr) }}</pre>
                 </details>
               </div>
             </div>
             <p class="text-xs text-muted-foreground">修改草稿或参考解后需要重新验证；配置多个参考解时全部通过才可发布。</p>
           </form>
+          </div>
         </section>
         <p v-else class="hidden text-sm text-muted-foreground lg:block">选择题目，或新建一道题。</p>
       </div>

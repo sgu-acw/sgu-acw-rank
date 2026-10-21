@@ -397,7 +397,8 @@ async function remove(id: RuntimeId, signal: AbortSignal) {
   })
 }
 
-function execute(r: Runtime, request: JudgeRequest, input: string, assets: Record<string, Uint8Array>, key: string,
+function execute(r: Runtime, request: JudgeRequest, test: { input: string; output: string }, assets: Record<string, Uint8Array>, key: string,
+  spj: { runtime: Runtime; assets: Record<string, Uint8Array> } | undefined,
   signal: AbortSignal, progress: (p: Progress) => void): Promise<Execution> {
   return new Promise(resolve => {
     const worker = new Worker('/engine/worker.js', { type: 'module' })
@@ -427,14 +428,16 @@ function execute(r: Runtime, request: JudgeRequest, input: string, assets: Recor
       if (event.data.result) finish(event.data.result)
     }
     worker.onerror = event => finish({ verdict: 'ENVIRONMENT_ERROR', stdout: '', stderr: '', error: event.message })
-    worker.postMessage({ environment: request.environment, source: request.source, input, runtime: r, assets, artifact: artifacts.get(key) })
+    worker.postMessage({ environment: request.environment, source: request.source, input: test.input, expected: test.output,
+      checker: request.checker, checkerSource: request.checkerSource, runtime: r, assets, spj, artifact: artifacts.get(key) })
   })
 }
 async function judge(request: JudgeRequest, signal: AbortSignal, progress: (p: Progress) => void): Promise<JudgeResult> {
   if (running) throw new Error('已有评测正在进行')
   if (!['c', 'cpp', 'python', 'java8', 'java21'].includes(request.environment) || typeof request.source !== 'string'
     || new TextEncoder().encode(request.source).length > 256000 || !request.cases?.length || request.cases.length > 100
-    || !['exact', 'tokens'].includes(request.checker) || !Number.isInteger(request.timeMs) || request.timeMs < 100 || request.timeMs > 30000
+    || !['exact', 'tokens', 'spj'].includes(request.checker) || !Number.isInteger(request.timeMs) || request.timeMs < 100 || request.timeMs > 30000
+    || (request.checker === 'spj' && (typeof request.checkerSource !== 'string' || !request.checkerSource.trim() || request.checkerSource.length > 100000))
     || request.cases.some(t => typeof t.input !== 'string' || typeof t.output !== 'string' || t.input.length > 1000000 || t.output.length > 1000000)) throw new Error('评测参数无效')
   running = true
   try {
@@ -451,12 +454,27 @@ async function judge(request: JudgeRequest, signal: AbortSignal, progress: (p: P
         if (a.bytes > 4 * 1048576) continue
         assets[a.path] = new Uint8Array(await response.arrayBuffer())
       }
+      // SPJ 走 Python 判定程序：运行包要和主语言包分开装载，装进 worker 消息里。
+      let spj: { runtime: Runtime; assets: Record<string, Uint8Array> } | undefined
+      if (request.checker === 'spj') {
+        const spjRt = await activeRuntime('python')
+        if (!spjRt || !spjRt.available || !await installed(spjRt)) throw new Error('Special Judge 需要安装 Python 语言包')
+        const spjAssets: Record<string, Uint8Array> = {}
+        progress({ phase: '载入判定程序环境' })
+        for (const a of spjRt.assets) {
+          const response = await cache.match(a.path)
+          if (!response) throw new Error('Python 语言包资源缺失，请重新安装')
+          if (a.bytes > 4 * 1048576) continue
+          spjAssets[a.path] = new Uint8Array(await response.arrayBuffer())
+        }
+        spj = { runtime: spjRt, assets: spjAssets }
+      }
       const key = [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`${r.version}\n${request.environment}\n${JSON.stringify(policy)}\n${request.source}`)))].map(n => n.toString(16).padStart(2, '0')).join('')
       const points: JudgeResult['points'] = []
       for (const [index, test] of request.cases.entries()) {
         if (signal.aborted) throw new DOMException('已取消', 'AbortError')
         progress({ phase: `测试点 ${index + 1}`, point: index + 1, points: request.cases.length })
-        const execution = await execute(r, request, test.input, assets, key, signal, p => progress({ ...p, point: index + 1, points: request.cases.length }))
+        const execution = await execute(r, request, test, assets, key, spj, signal, p => progress({ ...p, point: index + 1, points: request.cases.length }))
         points.push(checkPoint(execution, test, request.checker, request.custom))
         if (execution.verdict !== 'OK') break
       }

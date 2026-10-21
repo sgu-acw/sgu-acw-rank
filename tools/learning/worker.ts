@@ -5,7 +5,10 @@ import { policy } from './policy'
 import type { Environment, Execution, Runtime } from '../../src/lib/learning/types'
 
 const scope = globalThis as unknown as { onmessage: (e: MessageEvent<Work>) => void; postMessage: (data: unknown) => void }
-interface Work { environment: Environment; source: string; input: string; runtime: Runtime; assets: Record<string, Uint8Array>; artifact?: Uint8Array; tty?: boolean }
+interface Work { environment: Environment; source: string; input: string; expected?: string; checker?: string; checkerSource?: string;
+  runtime: Runtime; assets: Record<string, Uint8Array>; artifact?: Uint8Array; tty?: boolean
+  /** checker=spj 时判定程序的运行环境（Python 包），和主语言包分开传。 */
+  spj?: { runtime: Runtime; assets: Record<string, Uint8Array> } }
 type Tree = { [name: string]: string | Uint8Array | Tree }
 const encoder = new TextEncoder()
 const outputLimit = policy.outputBytes
@@ -223,7 +226,27 @@ async function run(work: Work): Promise<Execution> {
       if (!work.tty) scope.postMessage({ artifact: binary })
     } catch (error) { return { verdict: stderr ? 'CE' : 'ENVIRONMENT_ERROR', stdout, stderr, error: stderr ? '编译失败' : String(error) } }
   }
-  return execute(binary, ['program'], {}, work.input, work.tty)
+  const main = await execute(binary, ['program'], {}, work.input, work.tty)
+  return work.checker === 'spj' ? spjJudge(work, main) : main
+}
+
+/** Special Judge：判定程序是 Python，读 /input /expected /actual，退出码 0 判过。 */
+async function spjJudge(work: Work, main: Execution): Promise<Execution> {
+  if (main.verdict !== 'OK' || !work.spj || !work.checkerSource) return main
+  const spjGet = async (suffix: string): Promise<Uint8Array> => {
+    const path = work.spj!.runtime.assets.find(a => a.path.endsWith(suffix))?.path
+    if (!path) throw new Error(`判定程序运行包资源缺失：${suffix}，请安装 Python 语言包`)
+    const cached = await (await caches.open('learning-objects')).match(path)
+    if (!cached) throw new Error(`判定程序运行包资源缺失：${suffix}，请安装 Python 语言包`)
+    return new Uint8Array(await cached.arrayBuffer())
+  }
+  const fs = unpack(await spjGet('python.tar'))
+  fs['/main.py'] = file('/main.py', encoder.encode(work.checkerSource))
+  fs['/input'] = file('/input', encoder.encode(work.input))
+  fs['/expected'] = file('/expected', encoder.encode(work.expected ?? ''))
+  fs['/actual'] = file('/actual', encoder.encode(main.stdout))
+  const verdict = await execute(await spjGet('python.wasm'), ['python', '/main.py'], fs, '')
+  return { ...main, spj: { verdict: verdict.verdict === 'OK' ? 'OK' : 'WA', stderr: verdict.stderr, error: verdict.error } }
 }
 
 scope.onmessage = event => {

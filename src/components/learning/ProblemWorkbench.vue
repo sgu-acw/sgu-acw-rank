@@ -66,6 +66,10 @@ const selected = computed(() => environments.find(e => e.id === environment.valu
 // 自定义测试的结果就地显示在对应测试点里（输入/期望/实际在一起）。
 const customPoint = (index: number) => resultMode.value === 'custom' ? result.value?.points[index]
   : resultMode.value === 'test' ? result.value?.points[sampleCount.value + index] : undefined
+/** 超长测试数据只显示开头——整坨塞进 DOM 会把页面拖死。 */
+const showText = (text: string, limit = 4096) =>
+  text.length > limit ? `${text.slice(0, limit)}
+…（共 ${text.length} 字符，已截断显示）` : text
 const samplePoint = (index: number) => resultMode.value === 'test' ? result.value?.points[index] : undefined
 const sampleStatus = (index: number) => {
   const p = samplePoint(index)
@@ -130,7 +134,7 @@ async function run(mode: 'samples' | 'all' | 'custom' | 'test') {
   result.value = null; resultMode.value = mode; resultSource.value = snapshot.source; mobilePanel.value = 'editor'
   try {
     const judged = await engine.value.run({ environment: snapshot.environment, source: snapshot.source, cases,
-      checker: content.checker, timeMs: content.time_ms, custom: mode === 'custom' }, controller.signal, p => { if (alive) progress.value = p })
+      checker: content.checker, checkerSource: content.checker_source, timeMs: content.time_ms, custom: mode === 'custom' }, controller.signal, p => { if (alive) progress.value = p })
     if (!alive) return
     result.value = judged
     if (mode === 'all' && !['ENVIRONMENT_ERROR', 'CANCELLED'].includes(judged.verdict)) {
@@ -168,7 +172,8 @@ async function saveRecord() {
           <h2 class="font-semibold">题目描述</h2><p class="whitespace-pre-wrap break-words text-sm leading-7">{{ problem.content.statement }}</p>
           <template v-if="problem.content.input_format"><h2 class="font-semibold">输入格式</h2><p class="whitespace-pre-wrap break-words text-sm leading-7">{{ problem.content.input_format }}</p></template>
           <template v-if="problem.content.output_format"><h2 class="font-semibold">输出格式</h2><p class="whitespace-pre-wrap break-words text-sm leading-7">{{ problem.content.output_format }}</p></template>
-          <p class="text-xs text-muted-foreground">每点时限 {{ problem.content.time_ms }} ms · {{ problem.content.checker === 'tokens' ? '忽略空白比较' : '逐字比较' }}</p>
+          <template v-if="problem.content.note"><h2 class="font-semibold">说明</h2><p class="whitespace-pre-wrap break-words text-sm leading-7">{{ problem.content.note }}</p></template>
+          <p class="text-xs text-muted-foreground">每点时限 {{ problem.content.time_ms }} ms · {{ problem.content.checker === 'tokens' ? '忽略空白比较' : problem.content.checker === 'exact' ? '逐字比较' : 'Special Judge' }}</p>
           <div v-for="(test, index) in problem.content.tests.filter(t => t.sample)" :key="index" class="min-w-0 space-y-2">
             <h3 class="text-sm font-medium">样例 {{ index + 1 }}</h3><p class="text-xs text-muted-foreground">输入</p><pre class="max-w-full overflow-x-auto rounded-md bg-muted p-3 text-sm">{{ test.input }}</pre><p class="text-xs text-muted-foreground">输出</p><pre class="max-w-full overflow-x-auto rounded-md bg-muted p-3 text-sm">{{ test.output }}</pre>
           </div>
@@ -209,8 +214,8 @@ async function saveRecord() {
                     <span v-if="samplePoint(i)?.elapsedMs !== undefined" class="text-xs text-muted-foreground">{{ Math.round(samplePoint(i)!.elapsedMs!) }} ms</span>
                   </div>
                   <div class="grid gap-3 sm:grid-cols-2">
-                    <div><p class="text-xs text-muted-foreground">输入</p><pre class="mt-1 max-h-28 overflow-auto whitespace-pre-wrap break-all rounded bg-muted/60 p-2 font-mono text-xs">{{ t.input }}</pre></div>
-                    <div><p class="text-xs text-muted-foreground">期望输出</p><pre class="mt-1 max-h-28 overflow-auto whitespace-pre-wrap break-all rounded bg-muted/60 p-2 font-mono text-xs">{{ t.output }}</pre></div>
+                    <div><p class="text-xs text-muted-foreground">输入</p><pre class="mt-1 max-h-28 overflow-auto whitespace-pre-wrap break-all rounded bg-muted/60 p-2 font-mono text-xs">{{ showText(t.input) }}</pre></div>
+                    <div><p class="text-xs text-muted-foreground">期望输出</p><pre class="mt-1 max-h-28 overflow-auto whitespace-pre-wrap break-all rounded bg-muted/60 p-2 font-mono text-xs">{{ showText(t.output) }}</pre></div>
                   </div>
                   <div v-if="samplePoint(i)" class="space-y-1">
                     <p v-if="samplePoint(i)!.error" class="break-words text-xs text-destructive">{{ samplePoint(i)!.error }}</p>
