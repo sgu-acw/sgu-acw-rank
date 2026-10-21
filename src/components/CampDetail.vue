@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import ActionNotice from './ui/ActionNotice.vue'
 import CampLeaderboard from './CampLeaderboard.vue'
 import CampResultNotice from './CampResultNotice.vue'
-import { ApiError, campApi, LEARN_PLATFORM, PLATFORM_META, platformLabel, type CampDetail } from '../lib/api'
+import { ApiError, campApi, PLATFORM_META, platformLabel, type CampDetail } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { confirmAction } from '../lib/confirm'
 const { user, isAdmin, ensureLoaded } = useAuth()
@@ -120,7 +120,7 @@ onUnmounted(() => { disposed = true; clearInterval(timer); document.removeEventL
               <a v-for="p in camp.problems" :key="`${p.platform}:${p.key}`" :href="p.url" target="_blank" rel="noreferrer" class="row-action flex min-h-16 items-center gap-3 px-4 py-3" :class="p.done ? 'bg-emerald-500/5' : ''">
                 <CircleCheck v-if="camp.registered" class="h-5 w-5 shrink-0" :class="p.done ? 'text-emerald-600 dark:text-emerald-500' : 'text-muted-foreground/30'" :aria-label="p.done ? '已通过' : '未通过'" />
                 <BookOpen v-else class="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden="true" />
-                <div class="min-w-0 flex-1"><p class="break-words text-sm font-medium">{{ p.name || p.key }}</p><p class="mt-1 break-all text-xs text-muted-foreground">{{ platformLabel(p.platform) }}<template v-if="p.platform !== LEARN_PLATFORM"> · {{ p.key }}</template><template v-else> · 题库</template></p></div>
+                <div class="min-w-0 flex-1"><p class="break-words text-sm font-medium">{{ p.name || p.key }}</p><p class="mt-1 break-all text-xs text-muted-foreground">{{ platformLabel(p.platform) }} · {{ p.key }}</p></div>
                 <span class="shrink-0 text-xs text-muted-foreground">做题 ↗</span>
               </a>
             </div>
