@@ -3,7 +3,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { ArrowLeft, Play, Square, Download, Columns2, Rows2 } from 'lucide-vue-next'
 import { useAuth } from '../../lib/auth'
 import { learningApi } from '../../lib/learning/api'
-import { environments, starter, verdictLabels, type Environment, type JudgeResult, type Problem, type Progress } from '../../lib/learning/types'
+import { environments, starter, type Environment, type JudgeResult, type Problem, type Progress } from '../../lib/learning/types'
 import Button from '../ui/button/Button.vue'
 import VerdictDots from './VerdictDots.vue'
 import CodeEditor from './CodeEditor.vue'
@@ -240,18 +240,7 @@ async function saveRecord() {
           <section v-if="result && resultMode === 'all'" class="min-w-0 space-y-3 rounded-xl border p-5" aria-label="评测结果" aria-live="polite">
             <VerdictDots :points="result.points" :label="resultMode === 'all' ? '提交结果' : '运行结果'" />
             <p v-if="resultSource !== source" class="text-xs text-muted-foreground">源码已修改，以下结果对应本次评测开始时的代码。</p>
-            <!-- 提交只看判定；运行样例才展开输入输出。 -->
-            <details v-for="(point, index) in result.points" :key="index" :open="point.verdict !== 'AC'" class="min-w-0 rounded-lg border p-3">
-              <summary class="cursor-pointer text-sm">{{ point.name }} · {{ verdictLabels[point.verdict] }}<span v-if="point.elapsedMs !== undefined" class="ml-2 text-xs text-muted-foreground">{{ Math.round(point.elapsedMs) }} ms（本机）</span></summary>
-              <p v-if="point.error" class="mt-3 break-words text-sm text-destructive">{{ point.error }}</p>
-              <!-- 非样例（真实测试点）不回显标准输出和期望，防止泄露测试数据；样例照常全量。 -->
-              <template v-if="problem.content.tests[index]?.sample">
-                <p class="mt-3 text-xs text-muted-foreground">标准输出</p><pre class="mt-1 max-h-64 max-w-full overflow-auto whitespace-pre rounded-md bg-muted p-3 text-xs">{{ point.stdout || '（空）' }}</pre>
-                <template v-if="point.verdict === 'WA'"><p class="mt-3 text-xs text-muted-foreground">期望输出</p><pre class="mt-1 max-h-64 max-w-full overflow-auto rounded-md bg-muted p-3 text-xs">{{ point.expected }}</pre></template>
-                <pre v-if="point.stderr" class="mt-3 max-h-64 max-w-full overflow-auto whitespace-pre-wrap break-words rounded-md bg-muted p-3 text-xs">{{ point.stderr }}</pre>
-              </template>
-              <p v-else class="mt-3 text-xs text-muted-foreground">测试点详情不公开。</p>
-            </details>
+            <!-- 提交结果只看总判定：逐点详情（输出/期望）一概不回显。 -->
             <Button v-if="!saved && pendingRecord && user && !error" variant="outline" :disabled="saving" @click="saveRecord">{{ saving ? '同步中…' : '同步本次记录' }}</Button>
           </section>
         </section>
