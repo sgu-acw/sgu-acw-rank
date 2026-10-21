@@ -49,9 +49,11 @@ export const verdictLabels: Record<string, string> = {
 }
 export const size = (bytes: number) => `${(bytes / 1048576).toFixed(1)} MiB`
 export const starter: Record<Environment, string> = {
-  c: '#include <stdio.h>\nint main(void) {\n    long long a, b;\n    if (scanf("%lld%lld", &a, &b) == 2) printf("%lld\\n", a + b);\n    return 0;\n}\n',
-  cpp: '#include <bits/stdc++.h>\nusing namespace std;\nint main() {\n    ios::sync_with_stdio(false); cin.tie(nullptr);\n    long long a, b;\n    if (cin >> a >> b) cout << a + b << "\\n";\n}\n',
-  python: 'a, b = map(int, input().split())\nprint(a + b)\n',
-  java8: 'import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner in = new Scanner(System.in);\n        long a = in.nextLong(), b = in.nextLong();\n        System.out.println(a + b);\n    }\n}\n',
-  java21: 'import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner in = new Scanner(System.in);\n        long a = in.nextLong(), b = in.nextLong();\n        System.out.println(a + b);\n    }\n}\n',
+  // 中立骨架：能编译通过但不带任何题目逻辑，打开题面时给用户一个起手点，
+  // 不会像之前那样在每个题面塞一份 A+B 的答案。
+  c: '#include <stdio.h>\n\nint main(void) {\n    return 0;\n}\n',
+  cpp: '#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n\n    return 0;\n}\n',
+  python: 'import sys\ninput = sys.stdin.readline\n\n\n',
+  java8: 'import java.util.*;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner in = new Scanner(System.in);\n    }\n}\n',
+  java21: 'import java.util.*;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner in = new Scanner(System.in);\n    }\n}\n',
 }
