@@ -7,7 +7,7 @@
  */
 import { computed, onMounted, ref, watch } from 'vue'
 import { Download, Play, Square } from 'lucide-vue-next'
-import { environments, starter, type Environment, type JudgeResult, type Progress } from '../../lib/learning/types'
+import { environments, starter, loadLastEnv, saveLastEnv, type Environment, type JudgeResult, type Progress } from '../../lib/learning/types'
 import type { TtyEvent } from '../../lib/learning/engine'
 import { useLearningRuntime, runtimeIdOf } from '../../lib/learning/runtime'
 import Button from '../ui/button/Button.vue'
@@ -16,8 +16,8 @@ import CustomTestCases, { type CustomCase } from './CustomTestCases.vue'
 import CodeEditor from './CodeEditor.vue'
 import ActionNotice from '../ui/ActionNotice.vue'
 
-const environment = ref<Environment>('cpp')
-const source = ref(starter.cpp)
+const environment = ref<Environment>(loadLastEnv() ?? 'cpp')
+const source = ref(starter[environment.value])
 const busy = ref<'run' | null>(null)
 const progress = ref<Progress | null>(null)
 const result = ref<JudgeResult | null>(null)
@@ -61,6 +61,7 @@ const installed = computed(() => packages.value.find(p => p.id === runtimeIdOf(e
 function changeEnvironment(event: Event) {
   if (busy.value) return
   environment.value = (event.target as HTMLSelectElement).value as Environment
+  saveLastEnv(environment.value)
   source.value = starter[environment.value]
   result.value = null
   ttyStarted.value = false

@@ -3,7 +3,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { ArrowLeft, Play, Square, Download, Columns2, Rows2 } from 'lucide-vue-next'
 import { useAuth } from '../../lib/auth'
 import { learningApi } from '../../lib/learning/api'
-import { environments, starter, type Environment, type JudgeResult, type Problem, type Progress } from '../../lib/learning/types'
+import { environments, starter, loadLastEnv, saveLastEnv, type Environment, type JudgeResult, type Problem, type Progress } from '../../lib/learning/types'
 import Button from '../ui/button/Button.vue'
 import VerdictDots from './VerdictDots.vue'
 import CodeEditor from './CodeEditor.vue'
@@ -93,6 +93,7 @@ function changeEnvironment(event: Event) {
   if (busy.value) return
   persist(); clearTimeout(persistTimer)
   environment.value = (event.target as HTMLSelectElement).value as Environment
+  saveLastEnv(environment.value)
   source.value = readDraft(environment.value)
   // 换语言要换语言服务器；同类语言（C/C++）沿用同一个。
   void shared.switchEnvironment()
@@ -107,7 +108,8 @@ onMounted(async () => {
     const p = await learningApi.get(id)
     if (!alive) return
     problem.value = p
-    environment.value = p.content.environments.includes('cpp') ? 'cpp' : p.content.environments[0]!
+    const last = loadLastEnv()
+    environment.value = last && p.content.environments.includes(last) ? last : (p.content.environments.includes('cpp') ? 'cpp' : p.content.environments[0]!)
     source.value = readDraft(environment.value)
     customCases.value = []
     await shared.connect()

@@ -48,6 +48,18 @@ export const verdictLabels: Record<string, string> = {
   CANCELLED: '已取消', ENVIRONMENT_ERROR: '运行环境错误',
 }
 export const size = (bytes: number) => `${(bytes / 1048576).toFixed(1)} MiB`
+const LAST_ENV_KEY = 'learning:last-env'
+/** 上次选过的语言；换语言时记，开新题/进 IDE 时带过来。 */
+export function loadLastEnv(): Environment | null {
+  try {
+    const v = localStorage.getItem(LAST_ENV_KEY)
+    return v && environments.some(e => e.id === v) ? v as Environment : null
+  } catch { return null }
+}
+export function saveLastEnv(env: Environment) {
+  try { localStorage.setItem(LAST_ENV_KEY, env) } catch { /* 隐私模式忽略 */ }
+}
+
 export const starter: Record<Environment, string> = {
   // 中立骨架：能编译通过但不带任何题目逻辑，打开题面时给用户一个起手点，
   // 不会像之前那样在每个题面塞一份 A+B 的答案。
