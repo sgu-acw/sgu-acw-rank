@@ -60,6 +60,20 @@ function packClangd() {
   // 摊平会让它去 /engine/assets/ 找文件而 404。
   walk(path.join(pkgRoot, 'lib'), 'lib')
   walk(path.join(pkgRoot, 'assets'), 'assets')
+  // 上游用固定名字 "algopro-clangd" 的 SharedWorker 单例，而后端启动是 worker 级
+  // 共享 Promise——一次挂起，这个单例终生不可用，之后所有会话都等同一个死
+  // Promise，重试也没用。改成每会话随机名字：不再共享后端 Promise，出问题的
+  // 旧 worker 随引用消失自然回收，重试总是拿到全新实例。一个页面只开一个
+  // clangd 会话，单例本来也没共享收益。
+  const browserJs = path.join(out, 'lib/browser.js')
+  if (fs.existsSync(browserJs)) {
+    const code = fs.readFileSync(browserJs, 'utf8')
+    // 原文写法：{ name: "algopro-clangd", type: "module" }（键名不带引号）。
+    const patched = code.replace(
+      '{ name: "algopro-clangd", type: "module" }',
+      '{ name: `algopro-clangd-${crypto.randomUUID()}`, type: "module" }')
+    if (patched !== code) fs.writeFileSync(browserJs, patched)
+  }
   // 包里的 lib/clangd.shared-worker.js 是未打包的源码，直接 import 了
   // "vscode-jsonrpc/..." 这种裸模块说明符，浏览器解析不了（worker 会静默
   // 启动失败）。用 esbuild 打成自包含文件再覆盖。
