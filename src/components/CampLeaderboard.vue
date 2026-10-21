@@ -14,8 +14,8 @@ const college = ref('')
 const year = ref<number | null>(null)
 const search = ref('')
 
-// 本地练习题的 AC 是客户端自报的，不进成绩榜。
-const scoredProblems = computed(() => props.problems.filter(p => p.platform !== 'learn'))
+// 邀请制集训允许题库题进榜；learn 列的 AC 是客户端自报，列头标出来。
+const scoredProblems = computed(() => props.problems)
 
 const colleges = computed(() =>
   [...new Set(props.entries.map((e) => e.college_name).filter(Boolean))].sort() as string[],
@@ -102,8 +102,7 @@ function clearFilters() {
               <th class="px-3 py-3 font-medium">姓名</th>
               <th class="px-3 py-3 font-medium">年级</th>
               <th class="px-3 py-3 text-right font-medium">过题</th>
-              <!-- 本地练习题不进成绩榜，列里没有它。 -->
-              <th v-for="p in scoredProblems" :key="`${p.platform}:${p.key}`" class="px-3 py-3 text-center font-mono font-medium" :title="`${p.platform} ${p.name || p.key}`">{{ p.key }}</th>
+              <th v-for="p in scoredProblems" :key="`${p.platform}:${p.key}`" class="px-3 py-3 text-center font-mono font-medium" :title="p.platform === 'learn' ? `题库 ${p.name || p.key}（自报成绩）` : `${p.platform} ${p.name || p.key}`">{{ p.key }}<span v-if="p.platform === 'learn'" class="ml-0.5 align-super text-[9px] font-sans text-muted-foreground" title="题库成绩为客户端自报">※</span></th>
             </tr>
           </thead>
           <tbody class="divide-y divide-border/40">
