@@ -243,9 +243,14 @@ async function saveRecord() {
             <!-- 提交只看判定；运行样例才展开输入输出。 -->
             <details v-for="(point, index) in result.points" :key="index" :open="point.verdict !== 'AC'" class="min-w-0 rounded-lg border p-3">
               <summary class="cursor-pointer text-sm">{{ point.name }} · {{ verdictLabels[point.verdict] }}<span v-if="point.elapsedMs !== undefined" class="ml-2 text-xs text-muted-foreground">{{ Math.round(point.elapsedMs) }} ms（本机）</span></summary>
-              <p v-if="point.error" class="mt-3 break-words text-sm text-destructive">{{ point.error }}</p><p class="mt-3 text-xs text-muted-foreground">标准输出</p><pre class="mt-1 max-h-64 max-w-full overflow-auto whitespace-pre rounded-md bg-muted p-3 text-xs">{{ point.stdout || '（空）' }}</pre>
-              <template v-if="point.verdict === 'WA'"><p class="mt-3 text-xs text-muted-foreground">期望输出</p><pre class="mt-1 max-h-64 max-w-full overflow-auto rounded-md bg-muted p-3 text-xs">{{ point.expected }}</pre></template>
-              <pre v-if="point.stderr" class="mt-3 max-h-64 max-w-full overflow-auto whitespace-pre-wrap break-words rounded-md bg-muted p-3 text-xs">{{ point.stderr }}</pre>
+              <p v-if="point.error" class="mt-3 break-words text-sm text-destructive">{{ point.error }}</p>
+              <!-- 非样例（真实测试点）不回显标准输出和期望，防止泄露测试数据；样例照常全量。 -->
+              <template v-if="problem.content.tests[index]?.sample">
+                <p class="mt-3 text-xs text-muted-foreground">标准输出</p><pre class="mt-1 max-h-64 max-w-full overflow-auto whitespace-pre rounded-md bg-muted p-3 text-xs">{{ point.stdout || '（空）' }}</pre>
+                <template v-if="point.verdict === 'WA'"><p class="mt-3 text-xs text-muted-foreground">期望输出</p><pre class="mt-1 max-h-64 max-w-full overflow-auto rounded-md bg-muted p-3 text-xs">{{ point.expected }}</pre></template>
+                <pre v-if="point.stderr" class="mt-3 max-h-64 max-w-full overflow-auto whitespace-pre-wrap break-words rounded-md bg-muted p-3 text-xs">{{ point.stderr }}</pre>
+              </template>
+              <p v-else class="mt-3 text-xs text-muted-foreground">测试点详情不公开。</p>
             </details>
             <Button v-if="!saved && pendingRecord && user && !error" variant="outline" :disabled="saving" @click="saveRecord">{{ saving ? '同步中…' : '同步本次记录' }}</Button>
           </section>
