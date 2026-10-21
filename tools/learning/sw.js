@@ -21,7 +21,19 @@ async function clangdObject(path) {
     } catch { /* manifest 取不到就当没有映射，走原来的网络路径 */ }
   }
   const objectPath = clangdMap.get(`lsp-clangd-${m[1]}/${m[2]}`)
-  return objectPath ? (await caches.open('learning-objects')).match(objectPath) : null
+  if (!objectPath) return null
+  const hit = await (await caches.open('learning-objects')).match(objectPath)
+  if (!hit) return null
+  // 对象缓存里存的是 octet-stream（objects 路径没有后缀）。SharedWorker 的
+  // instantiateStreaming 严格要求 application/wasm，类型不对编译直接挂，
+  // 所以按扩展名重写 Content-Type 再出缓存。
+  const type = path.endsWith('.wasm') ? 'application/wasm'
+    : /\.m?js$/.test(path) ? 'text/javascript'
+    : path.endsWith('.json') ? 'application/json' : null
+  return type
+    ? new Response(hit.body, { status: hit.status, statusText: hit.statusText,
+        headers: { 'Content-Type': type, 'X-Content-Type-Options': 'nosniff' } })
+    : hit
 }
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url)
