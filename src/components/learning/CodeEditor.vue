@@ -183,4 +183,72 @@ defineExpose({ focus: () => view?.focus() })
 }
 .learning-cm .cm-editor.cm-focused { outline: none; }
 .learning-cm .cm-tooltip { border-radius: 8px; border: 1px solid var(--border); }
+
+/* —— 补全弹层（JetBrains 风：字母徽标 + 签名灰字 + 紧凑行高） —— */
+.learning-cm .cm-tooltip.cm-tooltip-autocomplete {
+  border-radius: 10px;
+  padding: 5px;
+  font-size: 13px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .18), 0 2px 8px rgba(0, 0, 0, .08);
+}
+.learning-cm .cm-tooltip-autocomplete ul { font-family: inherit; max-height: 330px; }
+.learning-cm .cm-tooltip-autocomplete li {
+  display: flex; align-items: baseline; gap: 7px;
+  padding: 3px 10px 3px 5px;
+  border-radius: 6px;
+  line-height: 1.5;
+}
+.learning-cm .cm-tooltip-autocomplete li[aria-selected] { background: var(--muted); color: var(--foreground); }
+/* 类型字母徽标：JB 的 m/f/c/v/k 那套，扁平色块不抢视线。 */
+.learning-cm .cm-completionIcon {
+  display: inline-flex; align-items: center; justify-content: center;
+  align-self: center;
+  width: 18px; height: 18px; padding: 0;
+  font-size: 11px; font-weight: 700; font-style: normal;
+  border-radius: 4px;
+  opacity: 1;
+}
+.learning-cm .cm-completionIcon::after { display: block; }
+.learning-cm .cm-completionIcon-method { background: rgba(168, 85, 247, .16); color: #a855f7; }
+.learning-cm .cm-completionIcon-method::after { content: 'm'; }
+.learning-cm .cm-completionIcon-function { background: rgba(217, 119, 6, .15); color: #d97706; }
+.learning-cm .cm-completionIcon-function::after { content: 'f'; }
+.learning-cm .cm-completionIcon-constructor { background: rgba(37, 99, 235, .14); color: #2563eb; }
+.learning-cm .cm-completionIcon-constructor::after { content: 'C'; }
+.learning-cm .cm-completionIcon-field, .learning-cm .cm-completionIcon-property { background: rgba(37, 99, 235, .13); color: #2563eb; }
+.learning-cm .cm-completionIcon-field::after { content: 'f'; }
+.learning-cm .cm-completionIcon-property::after { content: 'p'; }
+.learning-cm .cm-completionIcon-variable { background: rgba(14, 165, 233, .14); color: #0284c7; }
+.learning-cm .cm-completionIcon-variable::after { content: 'v'; }
+.learning-cm .cm-completionIcon-class { background: rgba(13, 148, 136, .14); color: #0d9488; }
+.learning-cm .cm-completionIcon-class::after { content: 'c'; }
+.learning-cm .cm-completionIcon-struct { background: rgba(13, 148, 136, .14); color: #0d9488; }
+.learning-cm .cm-completionIcon-struct::after { content: 's'; }
+.learning-cm .cm-completionIcon-interface { background: rgba(13, 148, 136, .14); color: #0d9488; }
+.learning-cm .cm-completionIcon-interface::after { content: 'i'; }
+.learning-cm .cm-completionIcon-enum { background: rgba(79, 70, 229, .13); color: #4f46e5; }
+.learning-cm .cm-completionIcon-enum::after { content: 'e'; }
+.learning-cm .cm-completionIcon-namespace { background: rgba(100, 116, 139, .16); color: #64748b; }
+.learning-cm .cm-completionIcon-namespace::after { content: 'n'; }
+.learning-cm .cm-completionIcon-keyword { background: rgba(225, 29, 72, .12); color: #e11d48; }
+.learning-cm .cm-completionIcon-keyword::after { content: 'k'; }
+.learning-cm .cm-completionIcon-constant { background: rgba(8, 145, 178, .14); color: #0891b2; }
+.learning-cm .cm-completionIcon-constant::after { content: 'C'; }
+.learning-cm .cm-completionIcon-operator { background: rgba(100, 116, 139, .16); color: #64748b; }
+.learning-cm .cm-completionIcon-operator::after { content: 'o'; }
+.learning-cm .cm-completionIcon-type { background: rgba(13, 148, 136, .14); color: #0d9488; }
+.learning-cm .cm-completionIcon-type::after { content: 'T'; }
+.learning-cm .cm-completionIcon-snippet { background: rgba(100, 116, 139, .16); color: #64748b; }
+.learning-cm .cm-completionIcon-snippet::after { content: 's'; }
+.learning-cm .cm-completionIcon-file { background: rgba(100, 116, 139, .16); color: #64748b; }
+.learning-cm .cm-completionIcon-file::after { content: 'F'; }
+/* 签名跟在名字后面，淡一点；JB 就是这么排的。 */
+.learning-cm .cm-completionLabel { font-family: inherit; }
+.learning-cm .cm-completionDetail { margin-left: 1.4em; color: var(--muted-foreground); opacity: .8; font-style: normal; }
+.learning-cm .cm-completionMatchedText { font-weight: 600; color: var(--foreground); text-decoration: none; }
+.learning-cm .cm-completionInfo {
+  border-radius: 10px; border: 1px solid var(--border);
+  padding: 10px 12px; font-size: 12px; max-width: 340px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .18);
+}
 </style>

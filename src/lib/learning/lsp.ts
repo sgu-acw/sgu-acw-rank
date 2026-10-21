@@ -27,10 +27,12 @@ interface LspDiagnostic { range: { start: { line: number; character: number }; e
 export const serviceFor = (env: Environment): LspId | null =>
   env === 'c' || env === 'cpp' ? 'clangd' : env === 'python' ? 'pyright' : null
 
-/** LSP CompletionItemKind → CodeMirror 的补全类型。 */
+/** LSP CompletionItemKind → CodeMirror 的补全类型。决定左侧字母徽标。 */
 const KIND: Record<number, string> = {
-  2: 'method', 3: 'function', 4: 'function', 5: 'property', 6: 'variable', 7: 'class',
-  8: 'interface', 9: 'namespace', 10: 'property', 13: 'variable', 14: 'keyword', 21: 'constant',
+  2: 'method', 3: 'function', 4: 'constructor', 5: 'field', 6: 'variable', 7: 'class',
+  8: 'interface', 9: 'namespace', 10: 'property', 11: 'enum', 12: 'enum', 13: 'variable',
+  14: 'keyword', 15: 'snippet', 17: 'file', 18: 'constant', 21: 'constant', 22: 'struct',
+  23: 'struct', 25: 'operator', 26: 'type',
 }
 
 /** LSP 位置 → 文档偏移。 */
