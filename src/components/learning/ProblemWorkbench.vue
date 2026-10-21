@@ -213,11 +213,11 @@ async function saveRecord() {
               </div>
             </div>
           </div>
-          <section v-if="result" class="min-w-0 space-y-3 rounded-xl border p-5" aria-label="评测结果" aria-live="polite">
+          <section v-if="result && runTab === 'test'" class="min-w-0 space-y-3 rounded-xl border p-5" aria-label="评测结果" aria-live="polite">
             <VerdictDots :points="result.points" :label="resultMode === 'all' ? '提交结果' : '运行结果'" />
             <p v-if="resultSource !== source" class="text-xs text-muted-foreground">源码已修改，以下结果对应本次评测开始时的代码。</p>
             <!-- 提交只看判定；运行样例才展开输入输出。 -->
-            <details v-for="(point, index) in resultMode === 'samples' ? result.points : []" :key="index" :open="point.verdict !== 'AC'" class="min-w-0 rounded-lg border p-3">
+            <details v-for="(point, index) in resultMode === 'samples' ? result.points : (resultMode === 'test' ? result.points.slice(0, sampleCount) : [])" :key="index" :open="point.verdict !== 'AC'" class="min-w-0 rounded-lg border p-3">
               <summary class="cursor-pointer text-sm">{{ point.name }} · {{ verdictLabels[point.verdict] }}<span v-if="point.elapsedMs !== undefined" class="ml-2 text-xs text-muted-foreground">{{ Math.round(point.elapsedMs) }} ms（本机）</span></summary>
               <p v-if="point.error" class="mt-3 break-words text-sm text-destructive">{{ point.error }}</p><p class="mt-3 text-xs text-muted-foreground">标准输出</p><pre class="mt-1 max-h-64 max-w-full overflow-auto whitespace-pre rounded-md bg-muted p-3 text-xs">{{ point.stdout || '（空）' }}</pre>
               <template v-if="point.verdict === 'WA'"><p class="mt-3 text-xs text-muted-foreground">期望输出</p><pre class="mt-1 max-h-64 max-w-full overflow-auto rounded-md bg-muted p-3 text-xs">{{ point.expected }}</pre></template>

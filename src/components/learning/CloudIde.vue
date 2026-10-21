@@ -13,7 +13,6 @@ import { useLearningRuntime, runtimeIdOf } from '../../lib/learning/runtime'
 import Button from '../ui/button/Button.vue'
 import TerminalPane from './TerminalPane.vue'
 import CustomTestCases, { type CustomCase } from './CustomTestCases.vue'
-import VerdictDots from './VerdictDots.vue'
 import CodeEditor from './CodeEditor.vue'
 import ActionNotice from '../ui/ActionNotice.vue'
 
@@ -123,7 +122,7 @@ onMounted(() => { restore(); void runtime.connect() })
       <a href="/learn/runtimes" class="inline-flex min-h-11 items-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-90"><Download class="h-4 w-4" />去语言包页面安装</a>
     </div>
 
-    <div class="grid min-w-0 gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)]">
+    <div class="min-w-0">
       <section class="min-w-0 space-y-4">
         <div class="space-y-3 rounded-xl border p-4 sm:p-5">
           <div class="flex flex-wrap items-center gap-3">
@@ -159,20 +158,6 @@ onMounted(() => { restore(); void runtime.connect() })
             <TerminalPane v-if="ttyStarted && ttyUsable" :key="ttyKey" :launch="launchTerminal" @close="ttyStarted = false" />
             <p v-else class="text-sm text-muted-foreground">{{ ttyStarted ? ttyHint : (ttyUsable ? '逐行输入、实时输出的终端。点「运行」启动会话。' : ttyHint || '语言包就绪后可用。') }}</p>
           </div>
-        </div>
-      </section>
-
-      <section class="min-w-0 space-y-4">
-        <div class="rounded-xl border p-4">
-          <div class="flex items-center justify-between gap-2">
-            <h2 class="text-sm font-medium">运行结果</h2>
-            <span v-if="result" class="text-xs text-muted-foreground">{{ Math.round(result.points[0]?.elapsedMs || 0) }} ms</span>
-          </div>
-          <template v-if="result">
-            <div class="mt-3"><VerdictDots :points="result.points" label="自定义样例" /></div>
-            <p class="mt-2 text-xs text-muted-foreground">每个样例的详细输出在它的卡片里。</p>
-          </template>
-          <p v-else-if="!busy" class="mt-3 text-sm text-muted-foreground">点「运行」看输出。</p>
         </div>
       </section>
     </div>
