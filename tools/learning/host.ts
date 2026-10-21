@@ -143,6 +143,16 @@ async function lspStart(id: LspId, environment: string, code: string): Promise<v
     session.worker.postMessage({ type: 'browser/boot', mode: 'foreground' })
     session.worker.onmessage = event => receive(event.data as Record<string, unknown>)
   } else {
+    // clangd 的每个会话都抢 algopro-clangd-session-<uuid> 独占锁，新会话要接管
+    // 就排队等旧锁释放。崩溃/没正常关掉的僵尸会话不释放锁，新会话永远卡在
+    // 启动。用 steal:true 把旧锁强抢掉——被抢的旧会话走它自己的 detach 逻辑，
+    // 本来就是设计成可被接管的。
+    try {
+      const { held } = await navigator.locks.query()
+      for (const lock of (held ?? []).filter(l => l.name?.startsWith('algopro-clangd-session-'))) {
+        if (lock.name) await navigator.locks.request(lock.name, { steal: true }, () => undefined).catch(() => undefined)
+      }
+    } catch { /* 锁查询失败不挡启动 */ }
     // clangd 必须走打包好的入口：它内部用 SharedWorker + new URL(import.meta.url)
     // 定位 wasm，裸 Worker 拿不到资产，会一直停在 initialize。
     const { openSession } = await import(/* @vite-ignore */ new URL('/engine/clangd.js', location.origin).href) as {
