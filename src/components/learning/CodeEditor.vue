@@ -204,11 +204,13 @@ defineExpose({ focus: () => view?.focus() })
   display: inline-flex; align-items: center; justify-content: center;
   align-self: center;
   width: 18px; height: 18px; padding: 0;
-  font-size: 11px; font-weight: 700; font-style: normal;
+  font-size: 12.5px; font-weight: 800; font-style: normal;
+  font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
   border-radius: 4px;
   opacity: 1;
 }
-.learning-cm .cm-completionIcon::after { display: block; }
+/* line-height 归一：字母在徽标正中，f/p/g 的下伸笔画不被压扁。 */
+.learning-cm .cm-completionIcon::after { display: block; line-height: 1; }
 .learning-cm .cm-completionIcon-method { background: rgba(168, 85, 247, .16); color: #a855f7; }
 .learning-cm .cm-completionIcon-method::after { content: 'm'; }
 .learning-cm .cm-completionIcon-function { background: rgba(217, 119, 6, .15); color: #d97706; }
