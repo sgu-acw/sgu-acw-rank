@@ -11,6 +11,7 @@ import TerminalPane from './TerminalPane.vue'
 import CustomTestCases from './CustomTestCases.vue'
 import type { TtyEvent } from '../../lib/learning/engine'
 import { useLearningRuntime } from '../../lib/learning/runtime'
+import { verdictStatus } from '../../lib/learning/verdictStyle'
 import ActionNotice from '../ui/ActionNotice.vue'
 const { user, ensureLoaded } = useAuth()
 const problem = ref<Problem | null>(null), environment = ref<Environment>('cpp'), source = ref('')
@@ -65,6 +66,11 @@ const selected = computed(() => environments.find(e => e.id === environment.valu
 // 自定义测试的结果就地显示在对应测试点里（输入/期望/实际在一起）。
 const customPoint = (index: number) => resultMode.value === 'custom' ? result.value?.points[index]
   : resultMode.value === 'test' ? result.value?.points[sampleCount.value + index] : undefined
+const samplePoint = (index: number) => resultMode.value === 'test' ? result.value?.points[index] : undefined
+const sampleStatus = (index: number) => {
+  const p = samplePoint(index)
+  return p ? verdictStatus(p.verdict) : null
+}
 const runtimePackage = computed(() => catalog.value?.runtimes.find(r => r.id === selected.value.runtime))
 const allowed = computed(() => environments.filter(e => problem.value?.content.environments.includes(e.id)))
 const key = (env: Environment) => `learning-draft:${problem.value?.id}:${env}`
@@ -191,15 +197,26 @@ async function saveRecord() {
               <div class="flex border-b" role="tablist" aria-label="测试方式">
                 <button v-for="t in ([{ id: 'test', label: '测试' }, { id: 'tty', label: '交互终端' }] as const)" :key="t.id" type="button" role="tab" :aria-selected="runTab === t.id" class="min-h-11 flex-1 px-3 text-sm transition-colors" :class="runTab === t.id ? 'border-b-2 border-primary font-medium text-foreground' : 'text-muted-foreground hover:text-foreground'" @click="runTab = t.id">{{ t.label }}</button>
               </div>
-              <div v-show="runTab === 'test'" class="space-y-3 p-3">
-                <!-- 样例只读展示；自定义样例可多写，「运行」一次全跑。 -->
-                <div v-for="(t, i) in sampleCases" :key="`sample-${i}`" class="space-y-2 rounded-lg border p-3">
-                  <span class="text-sm font-medium">{{ t.name }}</span>
+              <div v-show="runTab === 'test'" class="space-y-4 p-3">
+                <!-- 总判定放在所有测试点上面；各点的输出挂在各自下面。 -->
+                <VerdictDots v-if="result && resultMode === 'test'" :points="result.points" label="测试" />
+                <section v-for="(t, i) in sampleCases" :key="`sample-${i}`" class="space-y-2 border-t border-border/60 pt-3 first:border-t-0 first:pt-0">
+                  <div class="flex items-baseline gap-2">
+                    <span class="text-sm font-medium">{{ t.name }}</span>
+                    <span v-if="sampleStatus(i)" class="text-xs font-medium" :class="sampleStatus(i)!.cls">{{ sampleStatus(i)!.text }}</span>
+                    <span v-if="samplePoint(i)?.elapsedMs !== undefined" class="text-xs text-muted-foreground">{{ Math.round(samplePoint(i)!.elapsedMs!) }} ms</span>
+                  </div>
                   <div class="grid gap-3 sm:grid-cols-2">
                     <div><p class="text-xs text-muted-foreground">输入</p><pre class="mt-1 max-h-28 overflow-auto whitespace-pre-wrap break-all rounded bg-muted/60 p-2 font-mono text-xs">{{ t.input }}</pre></div>
                     <div><p class="text-xs text-muted-foreground">期望输出</p><pre class="mt-1 max-h-28 overflow-auto whitespace-pre-wrap break-all rounded bg-muted/60 p-2 font-mono text-xs">{{ t.output }}</pre></div>
                   </div>
-                </div>
+                  <div v-if="samplePoint(i)" class="space-y-1">
+                    <p v-if="samplePoint(i)!.error" class="break-words text-xs text-destructive">{{ samplePoint(i)!.error }}</p>
+                    <p class="text-xs text-muted-foreground">程序输出</p>
+                    <pre class="max-h-40 overflow-auto whitespace-pre rounded bg-muted/60 p-2 text-xs">{{ samplePoint(i)!.stdout || '（空）' }}</pre>
+                    <pre v-if="samplePoint(i)!.stderr" class="max-h-40 overflow-auto whitespace-pre-wrap break-words rounded bg-muted/60 p-2 text-xs text-destructive">{{ samplePoint(i)!.stderr }}</pre>
+                  </div>
+                </section>
                 <CustomTestCases v-model="customCases" :point="customPoint" :busy="!!busy" />
               </div>
               <div v-show="runTab === 'tty'" class="p-3">
@@ -213,11 +230,11 @@ async function saveRecord() {
               </div>
             </div>
           </div>
-          <section v-if="result && runTab === 'test'" class="min-w-0 space-y-3 rounded-xl border p-5" aria-label="评测结果" aria-live="polite">
+          <section v-if="result && resultMode === 'all'" class="min-w-0 space-y-3 rounded-xl border p-5" aria-label="评测结果" aria-live="polite">
             <VerdictDots :points="result.points" :label="resultMode === 'all' ? '提交结果' : '运行结果'" />
             <p v-if="resultSource !== source" class="text-xs text-muted-foreground">源码已修改，以下结果对应本次评测开始时的代码。</p>
             <!-- 提交只看判定；运行样例才展开输入输出。 -->
-            <details v-for="(point, index) in resultMode === 'samples' ? result.points : (resultMode === 'test' ? result.points.slice(0, sampleCount) : [])" :key="index" :open="point.verdict !== 'AC'" class="min-w-0 rounded-lg border p-3">
+            <details v-for="(point, index) in result.points" :key="index" :open="point.verdict !== 'AC'" class="min-w-0 rounded-lg border p-3">
               <summary class="cursor-pointer text-sm">{{ point.name }} · {{ verdictLabels[point.verdict] }}<span v-if="point.elapsedMs !== undefined" class="ml-2 text-xs text-muted-foreground">{{ Math.round(point.elapsedMs) }} ms（本机）</span></summary>
               <p v-if="point.error" class="mt-3 break-words text-sm text-destructive">{{ point.error }}</p><p class="mt-3 text-xs text-muted-foreground">标准输出</p><pre class="mt-1 max-h-64 max-w-full overflow-auto whitespace-pre rounded-md bg-muted p-3 text-xs">{{ point.stdout || '（空）' }}</pre>
               <template v-if="point.verdict === 'WA'"><p class="mt-3 text-xs text-muted-foreground">期望输出</p><pre class="mt-1 max-h-64 max-w-full overflow-auto rounded-md bg-muted p-3 text-xs">{{ point.expected }}</pre></template>

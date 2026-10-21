@@ -87,11 +87,6 @@ onUnmounted(() => session?.close())
 <template>
   <div class="overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950 text-zinc-100 shadow-inner">
     <div class="flex items-center gap-2 border-b border-zinc-800/80 px-3 py-1 text-[11px] text-zinc-500">
-      <span class="flex gap-1.5" aria-hidden="true">
-        <span class="h-2.5 w-2.5 rounded-full bg-zinc-700"></span>
-        <span class="h-2.5 w-2.5 rounded-full bg-zinc-700"></span>
-        <span class="h-2.5 w-2.5 rounded-full bg-zinc-700"></span>
-      </span>
       <span class="min-w-0 flex-1 truncate font-mono">term — {{ status }}</span>
       <IconButton label="发送 EOF（结束输入）" class="!h-8 !w-8 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-200" :disabled="!inputEnabled" @click="endInput"><Square class="h-3 w-3" /></IconButton>
       <IconButton label="关闭终端" class="!h-8 !w-8 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-200" @click="close"><X class="h-4 w-4" /></IconButton>
