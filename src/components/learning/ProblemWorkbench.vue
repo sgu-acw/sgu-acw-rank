@@ -18,6 +18,15 @@ const problem = ref<Problem | null>(null), environment = ref<Environment>('cpp')
 interface CustomCase { id: number; input: string; expected: string }
 const customCases = ref<CustomCase[]>([])
 const error = ref(''), notice = ref('')
+// 从集训/题单点进来的题带 from 参数，返回按钮回到来源而不是题库首页。
+const backTarget = computed(() => {
+  const from = new URLSearchParams(location.search).get('from') || ''
+  const camp = /^camp:(\d+)$/.exec(from)
+  if (camp) return { href: `/camp?id=${camp[1]}`, label: '返回集训' }
+  const list = /^list:(\d+)$/.exec(from)
+  if (list) return { href: `/problems/view?id=${list[1]}`, label: '返回题单' }
+  return { href: '/learn', label: '返回题库' }
+})
 // 运行器与语言服务统一走 useLearningRuntime，和云端 IDE 共用同一套逻辑。
 const shared = useLearningRuntime({ environment, code: source })
 const { engine, catalog, ready, lspPhase, lspReason, completion, diagnostics } = shared
@@ -155,7 +164,7 @@ async function saveRecord() {
 </script>
 <template>
   <div class="space-y-5">
-    <a href="/learn" class="inline-flex min-h-11 items-center gap-2 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft class="h-4 w-4" />返回题库</a>
+    <a :href="backTarget.href" class="inline-flex min-h-11 items-center gap-2 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft class="h-4 w-4" />{{ backTarget.label }}</a>
     <ActionNotice :message="error" variant="error" /><ActionNotice :message="notice" variant="info" />
     <template v-if="problem">
       <div class="flex flex-wrap items-start justify-between gap-3">

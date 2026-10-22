@@ -327,6 +327,7 @@ onMounted(async () => {
               :key="problem.id"
               :problem="problem"
               :show-progress="showProgress"
+              :from="`list:${data.id}`"
             />
           </div>
         </CardContent>

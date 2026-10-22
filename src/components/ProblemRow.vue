@@ -22,6 +22,8 @@ withDefaults(
     /** 编辑中的备注，由父组件控制。 */
     editingNote?: boolean
     noteDraft?: string
+    /** 来源标记：题单/集训点进题库题时拼到链接上，做题页按它渲染返回目标。 */
+    from?: string
   }>(),
   {
     showProgress: true,
@@ -64,7 +66,7 @@ const emit = defineEmits<{
     <div class="min-w-0 flex-1">
       <div class="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
         <a
-          :href="problem.url"
+          :href="problem.platform === LEARN_PLATFORM && from ? `${problem.url}&from=${from}` : problem.url"
           target="_blank"
           rel="noreferrer"
           class="text-sm font-medium underline-offset-4 transition-colors hover:text-primary hover:underline"
@@ -140,7 +142,7 @@ const emit = defineEmits<{
 
     <a
       v-else
-      :href="problem.url"
+      :href="problem.platform === LEARN_PLATFORM && from ? `${problem.url}&from=${from}` : problem.url"
       target="_blank"
       rel="noreferrer"
       class="shrink-0 rounded p-1.5 text-muted-foreground/40 transition-colors hover:bg-muted hover:text-foreground"
