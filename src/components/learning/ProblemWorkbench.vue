@@ -20,7 +20,8 @@ const customCases = ref<CustomCase[]>([])
 const error = ref(''), notice = ref('')
 // 从集训/题单点进来的题带 from 参数，返回按钮回到来源而不是题库首页。
 const backTarget = computed(() => {
-  const from = new URLSearchParams(location.search).get('from') || ''
+  // 预渲染时无 location，SSR 输出默认『返回题库』，水合后按真实 from 重新求值。
+  const from = typeof location === 'undefined' ? '' : (new URLSearchParams(location.search).get('from') || '')
   const camp = /^camp:(\d+)$/.exec(from)
   if (camp) return { href: `/camp?id=${camp[1]}`, label: '返回集训' }
   const list = /^list:(\d+)$/.exec(from)
