@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
-import { ArrowLeft, Play, Square, Download, Columns2, Rows2 } from 'lucide-vue-next'
+import { ArrowLeft, Play, Square, Download, Columns2, Rows2, Clock, X, ChevronDown, RotateCcw } from 'lucide-vue-next'
 import { useAuth } from '../../lib/auth'
 import { learningApi } from '../../lib/learning/api'
 import { environments, starter, loadLastEnv, saveLastEnv, type Environment, type JudgeResult, type Problem, type Progress } from '../../lib/learning/types'
@@ -12,9 +12,9 @@ import CustomTestCases from './CustomTestCases.vue'
 import type { TtyEvent } from '../../lib/learning/engine'
 import { useLearningRuntime } from '../../lib/learning/runtime'
 import { verdictStatus } from '../../lib/learning/verdictStyle'
-import SnapshotPane from './SnapshotPane.vue'
 import ScreenshotButton from './ScreenshotButton.vue'
-import { recordSnapshot } from '../../lib/learning/snapshots'
+import { recordSnapshot, listSnapshots, removeSnapshot, fmtSnapTime } from '../../lib/learning/snapshots'
+import { codeDiff } from '../../lib/learning/diff'
 import { dragHorizontal, dragVertical, loadSplit, saveSplit } from '../../lib/learning/resize'
 import ActionNotice from '../ui/ActionNotice.vue'
 const { user, ensureLoaded } = useAuth()
@@ -37,9 +37,18 @@ function startSplitDrag(event: PointerEvent) {
     () => saveSplit('workbench', splitFrac.value))
 }
 // 编辑器高度拖拽：单栏/双栏都能拖，240~900px，记住设置。
-const snapshotPane = ref<InstanceType<typeof SnapshotPane> | null>(null)
 const snapshotBucket = computed(() => problem.value ? String(problem.value.id) : '0')
-const restoreSource = (code: string) => { source.value = code }
+// 代码快照面板：内联而不是子组件（组件挂载在这页不稳定）。
+const snapOpen = ref(false), snapExpanded = ref<number | null>(null), snapTick = ref(0)
+const snapItems = computed(() => (snapTick.value, listSnapshots(snapshotBucket.value, environment.value)))
+const snapDiff = (s: { code: string }) => codeDiff(s.code, source.value)
+const restoreSnapshot = (s: { code: string }) => {
+  recordSnapshot(snapshotBucket.value, environment.value, source.value, 'run')
+  source.value = s.code
+  snapOpen.value = false
+}
+const removeSnap = (ts: number) => { removeSnapshot(snapshotBucket.value, environment.value, ts); snapTick.value++ }
+watch(environment, () => { snapExpanded.value = null })
 const editorMinH = ref(loadSplit('editor-height', 0))
 const editorCodeRef = ref<HTMLElement | null>(null)
 const editorWrapStyle = computed(() => editorMinH.value ? { minHeight: `${editorMinH.value}px` } : undefined)
@@ -181,7 +190,8 @@ async function run(mode: 'samples' | 'all' | 'custom' | 'test') {
     if (!alive) return
     result.value = judged
     recordSnapshot(snapshotBucket.value, environment.value, snapshot.source, mode === 'all' ? 'submit' : 'test', judged.verdict)
-    snapshotPane.value?.refresh()
+    snapTick.value++
+
     if (mode === 'all' && !['ENVIRONMENT_ERROR', 'CANCELLED'].includes(judged.verdict)) {
       pendingRecord = { ...snapshot, id: judged.id, runtime_version: judged.runtimeVersion, verdict: judged.verdict }
       if (user.value) await saveRecord()
@@ -224,7 +234,7 @@ async function saveRecord() {
             <h3 class="text-sm font-medium">样例 {{ index + 1 }}</h3><p class="text-xs text-muted-foreground">输入</p><pre class="max-w-full overflow-x-auto rounded-md bg-muted p-3 text-sm">{{ test.input }}</pre><p class="text-xs text-muted-foreground">输出</p><pre class="max-w-full overflow-x-auto rounded-md bg-muted p-3 text-sm">{{ test.output }}</pre>
           </div>
         </section>
-        <section class="min-w-0 space-y-4" :class="mobilePanel !== 'editor' && 'hidden lg:block'">
+        <section class="min-w-0 space-y-4 notranslate" translate="no" :class="mobilePanel !== 'editor' && 'hidden lg:block'">
           <div class="space-y-4 rounded-xl border p-4 sm:p-5">
             <div class="flex flex-wrap items-center gap-3"><label for="learning-language" class="text-sm font-medium">语言</label><select id="learning-language" class="form-select min-w-0 flex-1" :value="environment" :disabled="!!busy" @change="changeEnvironment"><option v-for="e in allowed" :key="e.id" :value="e.id">{{ e.label }}</option></select><a href="/learn/runtimes" class="inline-flex min-h-11 items-center text-sm text-primary hover:underline">管理语言包</a></div>
             <div v-if="!runtimePackage?.available" class="rounded-lg bg-muted p-3 text-sm text-muted-foreground">{{ runtimePackage?.reason || '正在读取运行包信息…' }}</div>
@@ -241,7 +251,29 @@ async function saveRecord() {
               <span v-else-if="lspPhase === 'ready'" class="text-xs text-emerald-600 dark:text-emerald-400">补全与诊断已开启</span>
               <button v-else-if="lspPhase === 'failed'" type="button" class="text-xs text-amber-600 underline underline-offset-2 hover:text-amber-700 dark:text-amber-400" :title="lspUnavailable" @click="shared.retryLsp()">语言服务不可用，点这重试</button>
               <span v-else-if="lspInstalled" class="text-xs text-muted-foreground">语言服务待启动</span>
-              <SnapshotPane ref="snapshotPane" :bucket="snapshotBucket" :environment="environment" :current="source" class="ml-auto" @restore="restoreSource" />
+              <div class="relative ml-auto">
+              <button type="button" class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground" :class="snapOpen ? 'bg-muted text-foreground' : ''" aria-label="代码快照" title="代码快照：每次运行自动存档" @click="snapOpen = !snapOpen"><Clock class="h-4 w-4" /></button>
+              <div v-if="snapOpen" class="absolute right-0 z-30 mt-2 w-[min(92vw,480px)] rounded-xl border bg-popover p-3 shadow-lg">
+                <div class="flex items-center justify-between"><p class="text-sm font-medium">代码快照<span class="ml-2 text-xs font-normal text-muted-foreground">每次运行自动保存，最多 25 份</span></p><button type="button" class="min-h-8 min-w-8 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground" aria-label="关闭" @click="snapOpen = false"><X class="mx-auto h-4 w-4" /></button></div>
+                <p v-if="!snapItems.length" class="mt-3 text-sm text-muted-foreground">还没有快照——跑一次测试或提交就会自动存档。</p>
+                <ul v-else class="mt-3 max-h-72 space-y-1.5 overflow-y-auto">
+                  <li v-for="s in snapItems" :key="s.ts" class="rounded-lg border">
+                    <button type="button" class="flex w-full min-h-11 items-center gap-2 px-3 py-2 text-left" @click="snapExpanded = snapExpanded === s.ts ? null : s.ts">
+                      <span class="min-w-0 flex-1 truncate font-mono text-xs">{{ s.code.split('\n').find(l => l.trim()) || '（空代码）' }}</span>
+                      <span v-if="s.verdict" class="text-xs font-medium" :class="verdictStatus(s.verdict).cls">{{ s.verdict }}</span>
+                      <span class="text-xs text-muted-foreground">{{ fmtSnapTime(s.ts) }}</span>
+                      <ChevronDown class="h-3.5 w-3.5 text-muted-foreground transition-transform" :class="snapExpanded === s.ts ? 'rotate-180' : ''" />
+                    </button>
+                    <div v-if="snapExpanded === s.ts" class="border-t px-3 py-2">
+                      <div class="flex items-center justify-between gap-2"><p class="text-xs text-muted-foreground">与当前代码的差异</p><button type="button" class="inline-flex min-h-8 items-center gap-1.5 rounded-md border px-2 text-xs hover:bg-muted" @click="restoreSnapshot(s)"><RotateCcw class="h-3.5 w-3.5" />恢复到这份</button></div>
+                      <div v-if="!snapDiff(s).lines.length" class="mt-2 text-xs text-muted-foreground">与当前代码一致。</div>
+                      <div v-else class="mt-2 max-h-52 overflow-auto rounded bg-muted/60 p-2 font-mono text-[11px] leading-5"><div v-for="(l, i) in snapDiff(s).lines" :key="i" class="whitespace-pre-wrap break-all" :class="l.kind === 'add' ? 'text-emerald-600 dark:text-emerald-400' : l.kind === 'remove' ? 'text-red-500 line-through' : 'text-muted-foreground'"><span class="mr-2 inline-block w-6 select-none text-right text-muted-foreground/60">{{ l.kind === 'add' ? l.right : l.left }}</span>{{ l.kind === 'add' ? '+' : l.kind === 'remove' ? '-' : ' ' }}{{ l.text }}</div></div>
+                      <button type="button" class="mt-2 text-xs text-muted-foreground hover:text-destructive" @click="removeSnap(s.ts)">删除这份快照</button>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </div>
               <ScreenshotButton :code="source" :environment="environment" />
               <Button :disabled="!!busy || !ready" @click="run('all')"><Play class="mr-2 h-4 w-4" />提交</Button>
             </div>

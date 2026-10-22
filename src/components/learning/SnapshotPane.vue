@@ -7,7 +7,7 @@ import { computed, ref, watch } from 'vue'
 import { Clock, RotateCcw, X, ChevronDown } from 'lucide-vue-next'
 import { listSnapshots, recordSnapshot, removeSnapshot, fmtSnapTime, type Snapshot } from '../../lib/learning/snapshots'
 import { codeDiff } from '../../lib/learning/diff'
-import { verdictStatusClass } from '../../lib/learning/verdictStyle'
+import { verdictStatus } from '../../lib/learning/verdictStyle'
 import type { Environment } from '../../lib/learning/types'
 
 const props = defineProps<{
@@ -60,7 +60,7 @@ defineExpose({ refresh: () => { tick.value++ } })
         <li v-for="s in items" :key="s.ts" class="rounded-lg border">
           <button type="button" class="flex w-full min-h-11 items-center gap-2 px-3 py-2 text-left" @click="expanded = expanded === s.ts ? null : s.ts">
             <span class="min-w-0 flex-1 truncate font-mono text-xs">{{ s.code.split('\n').find(l => l.trim()) || '（空代码）' }}</span>
-            <span v-if="s.verdict" class="text-xs font-medium" :class="verdictStatusClass(s.verdict)">{{ s.verdict }}</span>
+            <span v-if="s.verdict" class="text-xs font-medium" :class="verdictStatus(s.verdict).cls">{{ s.verdict }}</span>
             <span class="text-xs text-muted-foreground">{{ fmtSnapTime(s.ts) }}</span>
             <ChevronDown class="h-3.5 w-3.5 text-muted-foreground transition-transform" :class="expanded === s.ts ? 'rotate-180' : ''" />
           </button>
