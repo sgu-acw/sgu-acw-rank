@@ -101,7 +101,7 @@ defineExpose({ add: () => add() })
     </div>
     <div v-else class="flex flex-col items-center gap-3 px-5 py-9 text-center">
       <FlaskConical class="h-7 w-7 text-muted-foreground/60" stroke-width="1.5" />
-      <div><p class="text-sm font-medium">用一组输入试试你的代码</p><p class="mt-1 text-xs leading-6 text-muted-foreground">添加样例后运行；也可以切到交互终端逐行输入。</p></div>
+      <div><p class="text-sm font-medium">暂无测试样例</p><p class="mt-1 text-xs leading-6 text-muted-foreground">添加测试样例后运行代码，或在交互终端中逐行输入数据。</p></div>
       <Button variant="outline" :disabled="busy" @click="add()"><Plus class="mr-2 h-4 w-4" />添加样例</Button>
     </div>
   </div>
