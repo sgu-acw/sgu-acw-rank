@@ -19,6 +19,7 @@ import { python } from '@codemirror/lang-python'
 import { java } from '@codemirror/lang-java'
 import { tags } from '@lezer/highlight'
 import type { Environment } from '../../lib/learning/types'
+import { snippetSource } from '../../lib/learning/snippets'
 
 const darkTheme = EditorView.theme({
   '&': { color: '#cdd9e5', backgroundColor: 'transparent' },
@@ -91,8 +92,10 @@ const readOnlyFacet = new Compartment()
 /** 稳定的补全源：始终注册，内部按当前 props 决定是否走 LSP。 */
 const stableSource = (context: import('@codemirror/autocomplete').CompletionContext) =>
   props.completion ? props.completion(context) : null
+/** snippets 常驻：LSP 没装时也有代码片段补全。 */
+const stableSnippets = snippetSource(() => props.environment)
 const completionExtension = () =>
-  autocompletion({ override: [stableSource as never], activateOnTyping: true, defaultKeymap: true })
+  autocompletion({ override: [stableSource as never, stableSnippets], activateOnTyping: true, defaultKeymap: true })
 const lintExtension = () => props.diagnostics ?? []
 let view: EditorView | undefined
 let dark = false
@@ -172,6 +175,10 @@ defineExpose({ focus: () => view?.focus() })
 </template>
 
 <style>
+/* 外层拖拽改的是包装 div 的高度：flex 让 .learning-cm 撑满。 */
+#learning-code, #ide-code { display: flex; flex-direction: column; }
+#learning-code > .learning-cm, #ide-code > .learning-cm { flex: 1 1 auto; }
+
 /* 编辑器高度跟随容器；内容多时内部滚动，不撑破页面，390px 下也不横向溢出。 */
 .learning-cm .cm-editor { height: 100%; min-height: 320px; }
 .learning-cm .cm-scroller {

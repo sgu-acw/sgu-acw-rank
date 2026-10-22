@@ -8,6 +8,10 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { Download, Play, Square } from 'lucide-vue-next'
 import { environments, starter, loadLastEnv, saveLastEnv, type Environment, type JudgeResult, type Progress } from '../../lib/learning/types'
+import SnapshotPane from './SnapshotPane.vue'
+import ScreenshotButton from './ScreenshotButton.vue'
+import { recordSnapshot } from '../../lib/learning/snapshots'
+import { dragVertical, loadSplit, saveSplit } from '../../lib/learning/resize'
 import type { TtyEvent } from '../../lib/learning/engine'
 import { useLearningRuntime, runtimeIdOf } from '../../lib/learning/runtime'
 import Button from '../ui/button/Button.vue'
@@ -16,6 +20,8 @@ import CustomTestCases, { type CustomCase } from './CustomTestCases.vue'
 import CodeEditor from './CodeEditor.vue'
 import ActionNotice from '../ui/ActionNotice.vue'
 
+const snapshotPane = ref<InstanceType<typeof SnapshotPane> | null>(null)
+const restoreSource = (code: string) => { source.value = code }
 const environment = ref<Environment>(loadLastEnv() ?? 'cpp')
 const source = ref(starter[environment.value])
 const busy = ref<'run' | null>(null)
@@ -37,6 +43,16 @@ const ttyHint = computed(() => !jspi
   : !ttySupported.value ? 'Java 暂不支持交互终端' : '')
 const ttyUsable = computed(() => ready.value && !busy.value && ttySupported.value && jspi && !!engine.value)
 // 一个「运行」按钮，当前 tab 决定跑法：自定义输入整段喂，终端开交互会话。
+// 编辑器高度拖拽：与做题页同一套手感。
+const editorMinH = ref(loadSplit('editor-height', 0))
+const editorCodeRef = ref<HTMLElement | null>(null)
+const editorWrapStyle = computed(() => editorMinH.value ? { minHeight: `${editorMinH.value}px` } : undefined)
+function startEditorDrag(event: PointerEvent) {
+  const top = editorCodeRef.value?.getBoundingClientRect().top ?? event.clientY
+  dragVertical(event,
+    y => { editorMinH.value = Math.min(900, Math.max(240, Math.round(y - top))) },
+    () => saveSplit('editor-height', editorMinH.value))
+}
 const runTab = ref<'custom' | 'tty'>('custom')
 const ttyStarted = ref(false)
 const ttyKey = ref(0)
@@ -73,12 +89,16 @@ async function run() {
   if (busy.value || !engine.value || !ready.value) return
   busy.value = 'run'; error.value = ''; notice.value = ''; result.value = null
   controller = new AbortController()
+  const snapSource = source.value, snapEnv = environment.value
+  recordSnapshot('ide', snapEnv, snapSource, 'run')
   try {
     result.value = await engine.value.run({
-      environment: environment.value, source: source.value,
+      environment: snapEnv, source: snapSource,
       cases: customCases.value.map((c, i) => ({ name: `自定义样例 ${i + 1}`, input: c.input, output: c.expected, sample: true })),
       checker: 'tokens', timeMs: 10000, custom: true,
     }, controller.signal, p => { progress.value = p })
+    recordSnapshot('ide', snapEnv, snapSource, 'run', result.value.verdict)
+    snapshotPane.value?.refresh()
   } catch (e) {
     if ((e as Error).name !== 'AbortError') error.value = String(e)
   } finally { busy.value = null; progress.value = null; controller = undefined }
@@ -136,14 +156,17 @@ onMounted(() => { restore(); void runtime.connect() })
             </span>
             <span v-else-if="lspPhase === 'ready'" class="text-xs text-emerald-600 dark:text-emerald-400">补全与诊断已开启</span>
             <button v-else-if="lspPhase === 'failed'" type="button" class="text-xs text-amber-600 underline underline-offset-2 hover:text-amber-700 dark:text-amber-400" :title="lspReason" @click="retryLsp">语言服务不可用，点这重试</button>
-            <Button class="ml-auto" :disabled="!!busy || !ready || (runTab === 'tty' && !ttyUsable)" @click="runActive">
+            <SnapshotPane ref="snapshotPane" bucket="ide" :environment="environment" :current="source" class="ml-auto" @restore="restoreSource" />
+            <ScreenshotButton :code="source" :environment="environment" />
+            <Button :disabled="!!busy || !ready || (runTab === 'tty' && !ttyUsable) || (runTab === 'custom' && !customCases.length)" @click="runActive">
               <Play v-if="!busy" class="mr-2 h-4 w-4" /><Square v-else class="mr-2 h-4 w-4" />{{ busy ? '运行中' : '运行' }}
             </Button>
             <Button v-if="busy" variant="outline" @click="controller?.abort()">取消</Button>
           </div>
-          <div id="ide-code" role="group" aria-label="源码">
+          <div id="ide-code" ref="editorCodeRef" role="group" aria-label="源码" :style="editorWrapStyle">
             <CodeEditor v-model="source" :environment="environment" :readonly="!!busy" :completion="completion" :diagnostics="diagnostics" />
           </div>
+          <button type="button" class="group flex h-3 w-full cursor-row-resize select-none items-center" role="separator" aria-orientation="horizontal" aria-label="拖动调整编辑器高度" @pointerdown="startEditorDrag"><span class="mx-auto h-0.5 w-12 rounded bg-border transition-colors group-hover:bg-primary" /></button>
           <p v-if="progress" class="text-xs text-muted-foreground" role="status">{{ progress.phase }}<span v-if="progress.points"> · {{ progress.point }}/{{ progress.points }}</span></p>
         </div>
 
@@ -153,6 +176,7 @@ onMounted(() => { restore(); void runtime.connect() })
             <button type="button" role="tab" :aria-selected="runTab === 'tty'" class="min-h-11 flex-1 px-3 text-sm transition-colors" :class="runTab === 'tty' ? 'border-b-2 border-primary font-medium text-foreground' : 'text-muted-foreground hover:text-foreground'" @click="runTab = 'tty'">交互终端</button>
           </div>
           <div v-show="runTab === 'custom'" class="p-3">
+            <p v-if="!customCases.length" class="mb-2 text-xs text-muted-foreground">先添加一个自定义样例才能运行。</p>
             <CustomTestCases v-model="customCases" :point="i => result?.points[i]" :busy="!!busy" />
           </div>
           <div v-show="runTab === 'tty'" class="p-3">
