@@ -667,7 +667,7 @@ export type ProblemListKind = 'collection' | 'list'
 
 export interface ProblemEntry {
   id: number
-  /** 同步平台或本地练习（learn）；本地条目的完成标记来自客户端自报 AC。 */
+  /** 同步平台或本地练习（learn）。
   platform: Platform | 'learn'
   key: string
   position: number
