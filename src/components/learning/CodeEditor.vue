@@ -79,8 +79,11 @@ const props = defineProps<{
   completion?: (context: import('@codemirror/autocomplete').CompletionContext) => Promise<unknown>
   /** 语言服务诊断扩展（linter）。 */
   diagnostics?: Extension
+  fontSize?: number
+  tabSize?: number
+  wrap?: boolean
 }>()
-const emit = defineEmits<{ 'update:modelValue': [string] }>()
+const emit = defineEmits<{ 'update:modelValue': [string]; cursor: [{ line: number; column: number }] }>()
 const host = ref<HTMLElement | null>(null)
 const languageFacet = new Compartment()
 const themeFacet = new Compartment()
@@ -89,6 +92,13 @@ const completionFacet = new Compartment()
 const lintFacet = new Compartment()
 // readOnly 是 Facet，不能直接 reconfigure，必须走 Compartment。
 const readOnlyFacet = new Compartment()
+const preferencesFacet = new Compartment()
+const editorPreferences = () => [
+  indentUnit.of(' '.repeat(props.tabSize || 4)),
+  EditorState.tabSize.of(props.tabSize || 4),
+  ...(props.wrap === false ? [] : [EditorView.lineWrapping]),
+  EditorView.theme({ '.cm-scroller': { fontSize: `${props.fontSize || 14}px` } }),
+]
 /** 稳定的补全源：始终注册，内部按当前 props 决定是否走 LSP。 */
 const stableSource = (context: import('@codemirror/autocomplete').CompletionContext) =>
   props.completion ? props.completion(context) : null
@@ -114,11 +124,11 @@ function buildState(value: string, env: Environment, readOnly: boolean) {
       bracketMatching(),
       closeBrackets(),
       indentOnInput(),
-      indentUnit.of('    '),
+      preferencesFacet.of(editorPreferences()),
       highlightSelectionMatches(),
       completionFacet.of(completionExtension()),
       keymap.of([...closeBracketsKeymap, ...defaultKeymap, ...searchKeymap, ...historyKeymap, ...completionKeymap, ...lintKeymap, indentWithTab]),
-      EditorView.lineWrapping,
+      EditorView.contentAttributes.of({ 'aria-label': '源码编辑器' }),
       placeholder('在此编写代码…'),
       readOnlyFacet.of(EditorState.readOnly.of(readOnly)),
       languageFacet.of(languageOf(env)),
@@ -126,6 +136,10 @@ function buildState(value: string, env: Environment, readOnly: boolean) {
       lintFacet.of(lintExtension()),
       EditorView.updateListener.of(update => {
         if (update.docChanged) emit('update:modelValue', update.state.doc.toString())
+        if (update.selectionSet || update.docChanged) {
+          const pos = update.state.selection.main.head, line = update.state.doc.lineAt(pos)
+          emit('cursor', { line: line.number, column: pos - line.from + 1 })
+        }
       }),
     ],
   })
@@ -156,12 +170,10 @@ watch(() => props.modelValue, value => {
 })
 watch(() => props.environment, env => view?.dispatch({ effects: languageFacet.reconfigure(languageOf(env)) }))
 watch(() => props.readonly, ro => view?.dispatch({ effects: readOnlyFacet.reconfigure(EditorState.readOnly.of(!!ro)) }))
-watch(() => props.completion, v => {
-  const g = globalThis as Record<string, unknown>
-  g.__reconf = ((g.__reconf as number) || 0) + 1
-  g.__hasCompletion = !!v
+watch(() => props.completion, () => {
   view?.dispatch({ effects: completionFacet.reconfigure(completionExtension()) })
 }, { immediate: false })
+watch(() => [props.fontSize, props.tabSize, props.wrap], () => view?.dispatch({ effects: preferencesFacet.reconfigure(editorPreferences()) }))
 watch(() => props.diagnostics, () => view?.dispatch({ effects: lintFacet.reconfigure(lintExtension()) }))
 
 onUnmounted(() => { observer?.disconnect(); view?.destroy(); view = undefined })
@@ -171,7 +183,7 @@ defineExpose({ focus: () => view?.focus() })
 
 <template>
   <!-- 不能加 overflow-hidden：补全提示渲染在编辑器内部，裁剪会把 tooltip 整个切掉。 -->
-  <div ref="host" class="learning-cm min-h-[320px] overflow-visible rounded-md border border-border/60 bg-background/40 text-sm" />
+  <div ref="host" :style="{ '--editor-font-size': `${fontSize || 14}px` }" class="learning-cm min-h-[320px] overflow-visible rounded-md border border-border/60 bg-background/40 text-sm" />
 </template>
 
 <style>

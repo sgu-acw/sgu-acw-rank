@@ -1,330 +1,73 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
-import { ArrowLeft, Play, Square, Download, Columns2, Rows2, Clock, X, ChevronDown, RotateCcw } from 'lucide-vue-next'
-import { useAuth } from '../../lib/auth'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { ArrowLeft, Columns2, Rows2, ChevronLeft, ChevronRight, BookOpen, Code2 } from 'lucide-vue-next'
 import { learningApi } from '../../lib/learning/api'
-import { environments, starter, loadLastEnv, saveLastEnv, type Environment, type JudgeResult, type Problem, type Progress } from '../../lib/learning/types'
-import Button from '../ui/button/Button.vue'
-import VerdictDots from './VerdictDots.vue'
-import CodeEditor from './CodeEditor.vue'
-import TerminalPane from './TerminalPane.vue'
-import CustomTestCases from './CustomTestCases.vue'
-import type { TtyEvent } from '../../lib/learning/engine'
-import { useLearningRuntime } from '../../lib/learning/runtime'
-import { verdictStatus } from '../../lib/learning/verdictStyle'
-import ScreenshotButton from './ScreenshotButton.vue'
-import { recordSnapshot, listSnapshots, removeSnapshot, fmtSnapTime } from '../../lib/learning/snapshots'
-import { codeDiff } from '../../lib/learning/diff'
-import { dragHorizontal, dragVertical, loadSplit, saveSplit } from '../../lib/learning/resize'
+import type { Problem, ProblemSummary } from '../../lib/learning/types'
+import { dragHorizontal, loadSplit, saveSplit } from '../../lib/learning/resize'
+import CodingWorkspace from './CodingWorkspace.vue'
+import ProblemStatement from './ProblemStatement.vue'
 import ActionNotice from '../ui/ActionNotice.vue'
-const { user, ensureLoaded } = useAuth()
-const problem = ref<Problem | null>(null), environment = ref<Environment>('cpp'), source = ref('')
-interface CustomCase { id: number; input: string; expected: string }
-const customCases = ref<CustomCase[]>([])
-const error = ref(''), notice = ref('')
-// 从集训/题单点进来的题带 from 参数，返回按钮回到来源而不是题库首页。
-// 两栏宽度拖拽（lg 双栏布局）：左栏占比 0.25~0.75，存 localStorage。
-const splitFrac = ref(loadSplit('workbench', 0.4))
-const splitGridStyle = computed(() => split.value
-  ? { '--lc': `${(splitFrac.value / (1 - splitFrac.value)).toFixed(3)}fr` } as Record<string, string>
-  : undefined)
-const splitHandleLeft = computed(() => `calc(${(splitFrac.value * 100).toFixed(2)}% - 10px)`)
-function startSplitDrag(event: PointerEvent) {
-  const grid = (event.currentTarget as HTMLElement).parentElement
-  if (!grid) return
-  dragHorizontal(event, grid,
-    f => { splitFrac.value = Math.min(0.75, Math.max(0.25, f)) },
-    () => saveSplit('workbench', splitFrac.value))
-}
-// 编辑器高度拖拽：单栏/双栏都能拖，240~900px，记住设置。
-const snapshotBucket = computed(() => problem.value ? String(problem.value.id) : '0')
-// 代码快照面板：内联而不是子组件（组件挂载在这页不稳定）。
-const snapOpen = ref(false), snapExpanded = ref<number | null>(null), snapTick = ref(0)
-const snapItems = computed(() => (snapTick.value, listSnapshots(snapshotBucket.value, environment.value)))
-const snapDiff = (s: { code: string }) => codeDiff(s.code, source.value)
-const restoreSnapshot = (s: { code: string }) => {
-  recordSnapshot(snapshotBucket.value, environment.value, source.value, 'run')
-  source.value = s.code
-  snapOpen.value = false
-}
-const removeSnap = (ts: number) => { removeSnapshot(snapshotBucket.value, environment.value, ts); snapTick.value++ }
-watch(environment, () => { snapExpanded.value = null })
-const editorMinH = ref(loadSplit('editor-height', 0))
-const editorCodeRef = ref<HTMLElement | null>(null)
-const editorWrapStyle = computed(() => editorMinH.value ? { minHeight: `${editorMinH.value}px` } : undefined)
-function startEditorDrag(event: PointerEvent) {
-  const top = editorCodeRef.value?.getBoundingClientRect().top ?? event.clientY
-  dragVertical(event,
-    y => { editorMinH.value = Math.min(900, Math.max(240, Math.round(y - top))) },
-    () => saveSplit('editor-height', editorMinH.value))
-}
-const backTarget = computed(() => {
-  // 预渲染时无 location，SSR 输出默认『返回题库』，水合后按真实 from 重新求值。
-  const from = typeof location === 'undefined' ? '' : (new URLSearchParams(location.search).get('from') || '')
-  const camp = /^camp:(\d+)$/.exec(from)
-  if (camp) return { href: `/camp?id=${camp[1]}`, label: '返回集训' }
-  const list = /^list:(\d+)$/.exec(from)
-  if (list) return { href: `/problems/view?id=${list[1]}`, label: '返回题单' }
-  return { href: '/learn', label: '返回题库' }
+import Button from '../ui/button/Button.vue'
+import IconButton from '../ui/IconButton.vue'
+const problem = ref<Problem | null>(null), rows = ref<ProblemSummary[]>([])
+const error = ref(''), loading = ref(false), mobilePanel = ref('statement'), split = ref(true)
+const fraction = ref(loadSplit('workbench', 0.42)), backFrom = ref('')
+const splitStyle = computed(() => ({ '--statement-width': `${fraction.value * 100}%` }))
+let serial = 0
+const back = computed(() => {
+  const camp = /^camp:(\d+)$/.exec(backFrom.value), list = /^list:(\d+)$/.exec(backFrom.value)
+  return camp ? { href: `/camp?id=${camp[1]}`, label: '返回集训' } : list ? { href: `/problems/view?id=${list[1]}`, label: '返回题单' } : { href: '/learn', label: '返回题库' }
 })
-// 运行器与语言服务统一走 useLearningRuntime，和云端 IDE 共用同一套逻辑。
-const shared = useLearningRuntime({ environment, code: source })
-const { engine, catalog, ready, lspPhase, lspReason, completion, diagnostics } = shared
-const completionSource = completion
-const diagnosticsExtension = diagnostics
-const lspUnavailable = lspReason
-const lspInstalled = computed(() => lspPhase.value === 'ready' || lspPhase.value === 'starting')
-
-const busy = ref<'run' | null>(null), progress = ref<Progress | null>(null), result = ref<JudgeResult | null>(null)
-
-// ---------- 运行方式 tabs ----------
-// 一个「运行」按钮，当前在哪个 tab 就在哪个模式里跑：
-// 样例 = 题目自带测试点；自定义 = 用户填的用例；终端 = 真交互会话。
-const runTab = ref<'test' | 'tty'>('test')
-const ttyStarted = ref(false)
-const ttyKey = ref(0)
-const wasmGlobal = globalThis.WebAssembly as { promising?: unknown } | undefined
-const jspi = typeof wasmGlobal?.promising === 'function'
-const ttyUsable = computed(() => jspi && ['c', 'cpp', 'python'].includes(environment.value) && ready.value && !!engine.value)
-const ttyReason = computed(() => !jspi
-  ? '此浏览器不支持交互终端（需要较新的 Chrome 或 Edge）'
-  : !['c', 'cpp', 'python'].includes(environment.value) ? 'Java 暂不支持交互终端' : '')
-const sampleCount = computed(() => problem.value?.content.tests.filter(t => t.sample).length ?? 0)
-const sampleCases = computed(() => problem.value?.content.tests.filter(t => t.sample) ?? [])
-function launchTty(onEvent: (e: TtyEvent) => void) {
-  return engine.value!.terminal(environment.value, source.value, onEvent)
+const position = computed(() => rows.value.findIndex(p => p.id === problem.value?.id))
+const previous = computed(() => position.value > 0 ? rows.value[position.value - 1] : null)
+const next = computed(() => position.value >= 0 ? rows.value[position.value + 1] : null)
+const problemHref = (id: number) => `/learn/problem?id=${id}${backFrom.value ? `&from=${encodeURIComponent(backFrom.value)}` : ''}`
+function toggleSplit() { split.value = !split.value; try { localStorage.setItem('learning-layout:split', split.value ? '1' : '0') } catch { /* 忽略 */ } }
+function resize(event: PointerEvent) {
+  const host = (event.currentTarget as HTMLElement).parentElement
+  if (host) dragHorizontal(event, host, value => { fraction.value = Math.max(0.28, Math.min(0.65, value)) }, () => saveSplit('workbench', fraction.value))
 }
-function runActive() {
-  if (busy.value || !ready.value) return
-  if (runTab.value === 'tty') { ttyStarted.value = true; ttyKey.value += 1; return }
-  void run('test')
+function resizeKey(event: KeyboardEvent) {
+  if (!['ArrowLeft', 'ArrowRight'].includes(event.key)) return
+  event.preventDefault(); fraction.value = Math.max(0.28, Math.min(0.65, fraction.value + (event.key === 'ArrowLeft' ? -0.03 : 0.03))); saveSplit('workbench', fraction.value)
 }
-const resultSource = ref(''), resultMode = ref(''), saving = ref(false), saved = ref(false), mobilePanel = ref('statement')
-// 默认单列（题面在上、编辑器在下），切到双栏后记住选择。
-const LAYOUT_KEY = 'learning-layout:split'
-const split = ref(false)
-function toggleSplit() {
-  split.value = !split.value
-  try { localStorage.setItem(LAYOUT_KEY, split.value ? '1' : '0') } catch { /* 隐私模式忽略 */ }
-}
-let controller: AbortController | undefined, alive = true, persistTimer: ReturnType<typeof setTimeout> | undefined
-let pendingRecord: Parameters<typeof learningApi.record>[0] | undefined
-const selected = computed(() => environments.find(e => e.id === environment.value)!)
-// 通过之后只显示“通过”，不回退成运行完成之类的措辞。
-// 自定义测试的结果就地显示在对应测试点里（输入/期望/实际在一起）。
-const customPoint = (index: number) => resultMode.value === 'custom' ? result.value?.points[index]
-  : resultMode.value === 'test' ? result.value?.points[sampleCount.value + index] : undefined
-/** 超长测试数据只显示开头——整坨塞进 DOM 会把页面拖死。 */
-const showText = (text: string, limit = 4096) =>
-  text.length > limit ? `${text.slice(0, limit)}
-…（共 ${text.length} 字符，已截断显示）` : text
-const samplePoint = (index: number) => resultMode.value === 'test' ? result.value?.points[index] : undefined
-const sampleStatus = (index: number) => {
-  const p = samplePoint(index)
-  return p ? verdictStatus(p.verdict) : null
-}
-const runtimePackage = computed(() => catalog.value?.runtimes.find(r => r.id === selected.value.runtime))
-const allowed = computed(() => environments.filter(e => problem.value?.content.environments.includes(e.id)))
-const key = (env: Environment) => `learning-draft:${problem.value?.id}:${env}`
-function persist(env = environment.value, code = source.value) {
-  if (!problem.value) return
-  try { localStorage.setItem(key(env), code) } catch { notice.value = '浏览器无法保存草稿，请在离开前复制源码。' }
-}
-function readDraft(env: Environment) {
-  try { return localStorage.getItem(key(env)) ?? starter[env] } catch { return starter[env] }
-}
-watch(source, code => {
-  clearTimeout(persistTimer)
-  const env = environment.value
-  persistTimer = setTimeout(() => persist(env, code), 200)
-})
-function changeEnvironment(event: Event) {
-  if (busy.value) return
-  persist(); clearTimeout(persistTimer)
-  environment.value = (event.target as HTMLSelectElement).value as Environment
-  saveLastEnv(environment.value)
-  source.value = readDraft(environment.value)
-  // 换语言要换语言服务器；同类语言（C/C++）沿用同一个。
-  void shared.switchEnvironment()
-}
-function interruptBackground() { if (document.hidden && busy.value === 'run') { controller?.abort(); notice.value = '页面进入后台，评测已中断；源码已保留。' } }
-onMounted(async () => {
-  document.addEventListener('visibilitychange', interruptBackground)
-  try { split.value = localStorage.getItem(LAYOUT_KEY) === '1' } catch { /* 隐私模式忽略 */ }
+async function load() {
+  const request = ++serial; loading.value = true; error.value = ''
   try {
     const id = Number(new URLSearchParams(location.search).get('id'))
     if (!Number.isSafeInteger(id) || id < 1) throw new Error('题目 ID 无效')
     const p = await learningApi.get(id)
-    if (!alive) return
+    if (request !== serial) return
     problem.value = p
-    const last = loadLastEnv()
-    environment.value = last && p.content.environments.includes(last) ? last : (p.content.environments.includes('cpp') ? 'cpp' : p.content.environments[0]!)
-    source.value = readDraft(environment.value)
-    customCases.value = []
-    await shared.connect()
-    await ensureLoaded()
-  } catch (e) { if (alive) error.value = String(e) }
-})
-onUnmounted(() => {
-  persist(); alive = false; clearTimeout(persistTimer); controller?.abort()
-  document.removeEventListener('visibilitychange', interruptBackground)
-})
-async function run(mode: 'samples' | 'all' | 'custom' | 'test') {
-  if (busy.value || !engine.value || !problem.value || !ready.value) return
-  persist(); busy.value = 'run'; error.value = ''; notice.value = ''; saved.value = false; pendingRecord = undefined
-  controller = new AbortController()
-  const snapshot = { source: source.value, environment: environment.value, version_id: problem.value.version_id }
-  // 按下运行那一刻的代码进快照库；判定出来后把结果写进同一条（同码去重）。
-  recordSnapshot(snapshotBucket.value, environment.value, snapshot.source, mode === 'all' ? 'submit' : 'test')
-  const content = problem.value.content
-  const cases = mode === 'custom'
-    ? customCases.value.map((c, i) => ({ name: `测试点 ${i + 1}`, input: c.input, output: c.expected, sample: true }))
-    : mode === 'test'
-      ? [...content.tests.filter(t => t.sample),
-         ...customCases.value.map((c, i) => ({ name: `自定义 ${i + 1}`, input: c.input, output: c.expected, sample: true }))]
-      : content.tests.filter(t => mode === 'all' || t.sample)
-  result.value = null; resultMode.value = mode; resultSource.value = snapshot.source; mobilePanel.value = 'editor'
-  try {
-    const judged = await engine.value.run({ environment: snapshot.environment, source: snapshot.source, cases,
-      checker: content.checker, checkerSource: content.checker_source, timeMs: content.time_ms, custom: mode === 'custom' }, controller.signal, p => { if (alive) progress.value = p })
-    if (!alive) return
-    result.value = judged
-    recordSnapshot(snapshotBucket.value, environment.value, snapshot.source, mode === 'all' ? 'submit' : 'test', judged.verdict)
-    snapTick.value++
-
-    if (mode === 'all' && !['ENVIRONMENT_ERROR', 'CANCELLED'].includes(judged.verdict)) {
-      pendingRecord = { ...snapshot, id: judged.id, runtime_version: judged.runtimeVersion, verdict: judged.verdict }
-      if (user.value) await saveRecord()
-    }
-  } catch (e) { if (alive) { if ((e as Error).name !== 'AbortError') error.value = String(e); else if (!notice.value) notice.value = '评测已取消，源码已保留。' } }
-  finally { if (alive) { busy.value = null; progress.value = null; controller = undefined } }
+    try { localStorage.setItem('learning:last-problem', String(p.id)) } catch { /* 忽略 */ }
+    const list = await learningApi.list().catch(() => [])
+    if (request === serial) rows.value = list
+  } catch (e) { if (request === serial) error.value = e instanceof Error ? e.message : String(e) }
+  finally { if (request === serial) loading.value = false }
 }
-async function saveRecord() {
-  if (!pendingRecord || saving.value || saved.value || !user.value) return
-  saving.value = true
-  try { await learningApi.record(pendingRecord); saved.value = true }
-  catch { notice.value = '评测已完成，记录尚未同步。可使用同一评测 ID 重试同步。' }
-  finally { saving.value = false }
-}
+onMounted(() => {
+  backFrom.value = new URLSearchParams(location.search).get('from') || ''
+  try { split.value = localStorage.getItem('learning-layout:split') !== '0' } catch { /* 默认双栏 */ }
+  void load()
+})
+onUnmounted(() => { serial++ })
 </script>
 <template>
-  <div class="space-y-5">
-    <a :href="backTarget.href" class="inline-flex min-h-11 items-center gap-2 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft class="h-4 w-4" />{{ backTarget.label }}</a>
-    <ActionNotice :message="error" variant="error" /><ActionNotice :message="notice" variant="info" />
+  <div class="learning-page">
+    <div class="flex min-w-0 flex-wrap items-center justify-between gap-2">
+      <a :href="back.href" class="learning-text-link"><ArrowLeft class="h-4 w-4" />{{ back.label }}</a>
+      <div v-if="problem && !backFrom" class="flex items-center gap-1 text-xs text-muted-foreground"><a v-if="previous" :href="problemHref(previous.id)" class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md hover:bg-muted" :aria-label="`上一题：${previous.title}`"><ChevronLeft class="h-4 w-4" /></a><span v-if="rows.length">{{ position + 1 }} / {{ rows.length }}</span><a v-if="next" :href="problemHref(next.id)" class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md hover:bg-muted" :aria-label="`下一题：${next.title}`"><ChevronRight class="h-4 w-4" /></a></div>
+    </div>
+    <ActionNotice :message="error" variant="error" />
+    <div v-if="!problem && loading" class="space-y-5 py-4" role="status" aria-label="正在加载题目"><div class="h-7 w-48 animate-pulse rounded bg-muted" /><div class="grid gap-4 lg:grid-cols-2"><div v-for="n in 2" :key="n" class="h-[480px] animate-pulse rounded-xl bg-muted/50" /></div></div>
+    <Button v-if="error && !problem" variant="outline" :disabled="loading" @click="load">重新加载题目</Button>
     <template v-if="problem">
-      <div class="flex flex-wrap items-start justify-between gap-3">
-        <div class="min-w-0"><p class="text-sm text-muted-foreground">{{ problem.content.chapter }} · {{ problem.content.difficulty }} · 版本 {{ problem.revision }}</p><h1 class="mt-2 text-2xl font-semibold">{{ problem.content.title }}</h1></div>
-        <div class="flex shrink-0 items-center gap-2">
-          <Button variant="outline" :disabled="!!busy" :aria-pressed="split" :title="split ? '切换到单列' : '切换到双栏'" @click="toggleSplit">
-            <Columns2 v-if="!split" class="h-4 w-4" /><Rows2 v-else class="h-4 w-4" />
-            <span class="ml-2 hidden sm:inline">{{ split ? '单列' : '双栏' }}</span>
-          </Button>
-        </div>
-      </div>
-      <div class="flex gap-2 lg:hidden"><button type="button" class="choice-button" :aria-pressed="mobilePanel === 'statement'" @click="mobilePanel = 'statement'">题面</button><button type="button" class="choice-button" :aria-pressed="mobilePanel === 'editor'" @click="mobilePanel = 'editor'">代码与结果</button></div>
-      <div class="relative grid min-w-0 gap-5" :class="split ? 'lg:grid-cols-[minmax(0,var(--lc,0.8fr))_minmax(0,1fr)]' : ''" :style="splitGridStyle">
-        <button v-if="split" type="button" class="absolute bottom-0 top-0 z-10 hidden w-5 cursor-col-resize select-none lg:block" :style="{ left: splitHandleLeft }" role="separator" aria-orientation="vertical" aria-label="拖动调整栏宽" @pointerdown="startSplitDrag"><span class="mx-auto block h-full w-0.5 rounded bg-border transition-colors hover:bg-primary" /></button>
-        <section class="min-w-0 space-y-5 rounded-xl border p-5" :class="[mobilePanel !== 'statement' && 'hidden lg:block', split && 'lg:max-h-[70vh] lg:overflow-auto']">
-          <h2 class="font-semibold">题目描述</h2><p class="whitespace-pre-wrap break-words text-sm leading-7">{{ problem.content.statement }}</p>
-          <template v-if="problem.content.input_format"><h2 class="font-semibold">输入格式</h2><p class="whitespace-pre-wrap break-words text-sm leading-7">{{ problem.content.input_format }}</p></template>
-          <template v-if="problem.content.output_format"><h2 class="font-semibold">输出格式</h2><p class="whitespace-pre-wrap break-words text-sm leading-7">{{ problem.content.output_format }}</p></template>
-          <template v-if="problem.content.note"><h2 class="font-semibold">说明</h2><p class="whitespace-pre-wrap break-words text-sm leading-7">{{ problem.content.note }}</p></template>
-          <p class="text-xs text-muted-foreground">每点时限 {{ problem.content.time_ms }} ms · {{ problem.content.checker === 'tokens' ? '忽略空白比较' : problem.content.checker === 'exact' ? '逐字比较' : 'Special Judge' }}</p>
-          <div v-for="(test, index) in problem.content.tests.filter(t => t.sample)" :key="index" class="min-w-0 space-y-2">
-            <h3 class="text-sm font-medium">样例 {{ index + 1 }}</h3><p class="text-xs text-muted-foreground">输入</p><pre class="max-w-full overflow-x-auto rounded-md bg-muted p-3 text-sm">{{ test.input }}</pre><p class="text-xs text-muted-foreground">输出</p><pre class="max-w-full overflow-x-auto rounded-md bg-muted p-3 text-sm">{{ test.output }}</pre>
-          </div>
-        </section>
-        <section class="min-w-0 space-y-4 notranslate" translate="no" :class="mobilePanel !== 'editor' && 'hidden lg:block'">
-          <div class="space-y-4 rounded-xl border p-4 sm:p-5">
-            <div class="flex flex-wrap items-center gap-3"><label for="learning-language" class="text-sm font-medium">语言</label><select id="learning-language" class="form-select min-w-0 flex-1" :value="environment" :disabled="!!busy" @change="changeEnvironment"><option v-for="e in allowed" :key="e.id" :value="e.id">{{ e.label }}</option></select><a href="/learn/runtimes" class="inline-flex min-h-11 items-center text-sm text-primary hover:underline">管理语言包</a></div>
-            <div v-if="!runtimePackage?.available" class="rounded-lg bg-muted p-3 text-sm text-muted-foreground">{{ runtimePackage?.reason || '正在读取运行包信息…' }}</div>
-            <div v-else-if="!ready" class="flex flex-wrap items-center gap-3 rounded-lg bg-muted p-3">
-              <p class="min-w-0 flex-1 text-sm">{{ runtimePackage.label }} 还没装好。</p>
-              <a href="/learn/runtimes" class="inline-flex min-h-11 items-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-90"><Download class="h-4 w-4" />去语言包页面安装</a>
-            </div>
-            <div class="flex flex-wrap items-center gap-2">
-              <span class="text-sm font-medium">源码</span>
-              <span v-if="environment.startsWith('java')" class="text-sm text-muted-foreground">Main.java</span>
-              <span v-if="lspPhase === 'starting'" class="inline-flex items-center gap-1.5 text-xs text-muted-foreground" role="status">
-                <span class="h-2 w-2 animate-pulse rounded-full bg-amber-500" aria-hidden="true"></span>语言服务启动中…
-              </span>
-              <span v-else-if="lspPhase === 'ready'" class="text-xs text-emerald-600 dark:text-emerald-400">补全与诊断已开启</span>
-              <button v-else-if="lspPhase === 'failed'" type="button" class="text-xs text-amber-600 underline underline-offset-2 hover:text-amber-700 dark:text-amber-400" :title="lspUnavailable" @click="shared.retryLsp()">语言服务不可用，点这重试</button>
-              <span v-else-if="lspInstalled" class="text-xs text-muted-foreground">语言服务待启动</span>
-              <div class="relative ml-auto">
-              <button type="button" class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground" :class="snapOpen ? 'bg-muted text-foreground' : ''" aria-label="代码快照" title="代码快照：每次运行自动存档" @click="snapOpen = !snapOpen"><Clock class="h-4 w-4" /></button>
-              <div v-if="snapOpen" class="absolute right-0 z-30 mt-2 w-[min(92vw,480px)] rounded-xl border bg-popover p-3 shadow-lg">
-                <div class="flex items-center justify-between"><p class="text-sm font-medium">代码快照<span class="ml-2 text-xs font-normal text-muted-foreground">每次运行自动保存，最多 25 份</span></p><button type="button" class="min-h-8 min-w-8 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground" aria-label="关闭" @click="snapOpen = false"><X class="mx-auto h-4 w-4" /></button></div>
-                <p v-if="!snapItems.length" class="mt-3 text-sm text-muted-foreground">还没有快照——跑一次测试或提交就会自动存档。</p>
-                <ul v-else class="mt-3 max-h-72 space-y-1.5 overflow-y-auto">
-                  <li v-for="s in snapItems" :key="s.ts" class="rounded-lg border">
-                    <button type="button" class="flex w-full min-h-11 items-center gap-2 px-3 py-2 text-left" @click="snapExpanded = snapExpanded === s.ts ? null : s.ts">
-                      <span class="min-w-0 flex-1 truncate font-mono text-xs">{{ s.code.split('\n').find(l => l.trim()) || '（空代码）' }}</span>
-                      <span v-if="s.verdict" class="text-xs font-medium" :class="verdictStatus(s.verdict).cls">{{ s.verdict }}</span>
-                      <span class="text-xs text-muted-foreground">{{ fmtSnapTime(s.ts) }}</span>
-                      <ChevronDown class="h-3.5 w-3.5 text-muted-foreground transition-transform" :class="snapExpanded === s.ts ? 'rotate-180' : ''" />
-                    </button>
-                    <div v-if="snapExpanded === s.ts" class="border-t px-3 py-2">
-                      <div class="flex items-center justify-between gap-2"><p class="text-xs text-muted-foreground">与当前代码的差异</p><button type="button" class="inline-flex min-h-8 items-center gap-1.5 rounded-md border px-2 text-xs hover:bg-muted" @click="restoreSnapshot(s)"><RotateCcw class="h-3.5 w-3.5" />恢复到这份</button></div>
-                      <div v-if="!snapDiff(s).lines.length" class="mt-2 text-xs text-muted-foreground">与当前代码一致。</div>
-                      <div v-else class="mt-2 max-h-52 overflow-auto rounded bg-muted/60 p-2 font-mono text-[11px] leading-5"><div v-for="(l, i) in snapDiff(s).lines" :key="i" class="whitespace-pre-wrap break-all" :class="l.kind === 'add' ? 'text-emerald-600 dark:text-emerald-400' : l.kind === 'remove' ? 'text-red-500 line-through' : 'text-muted-foreground'"><span class="mr-2 inline-block w-6 select-none text-right text-muted-foreground/60">{{ l.kind === 'add' ? l.right : l.left }}</span>{{ l.kind === 'add' ? '+' : l.kind === 'remove' ? '-' : ' ' }}{{ l.text }}</div></div>
-                      <button type="button" class="mt-2 text-xs text-muted-foreground hover:text-destructive" @click="removeSnap(s.ts)">删除这份快照</button>
-                    </div>
-                  </li>
-                </ul>
-              </div>
-            </div>
-              <ScreenshotButton :code="source" :environment="environment" />
-              <Button :disabled="!!busy || !ready" @click="run('all')"><Play class="mr-2 h-4 w-4" />提交</Button>
-            </div>
-            <div id="learning-code" ref="editorCodeRef" role="group" aria-label="源码" :style="editorWrapStyle">
-              <CodeEditor v-model="source" :environment="environment" :readonly="!!busy" :completion="completionSource" :diagnostics="diagnosticsExtension" />
-            </div>
-            <button type="button" class="group flex h-3 w-full cursor-row-resize select-none items-center" role="separator" aria-orientation="horizontal" aria-label="拖动调整编辑器高度" @pointerdown="startEditorDrag"><span class="mx-auto h-0.5 w-12 rounded bg-border transition-colors group-hover:bg-primary" /></button>
-            <div class="overflow-hidden rounded-lg border">
-              <div class="flex border-b" role="tablist" aria-label="测试方式">
-                <button v-for="t in ([{ id: 'test', label: '测试' }, { id: 'tty', label: '交互终端' }] as const)" :key="t.id" type="button" role="tab" :aria-selected="runTab === t.id" class="min-h-11 flex-1 px-3 text-sm transition-colors" :class="runTab === t.id ? 'border-b-2 border-primary font-medium text-foreground' : 'text-muted-foreground hover:text-foreground'" @click="runTab = t.id">{{ t.label }}</button>
-              </div>
-              <div v-show="runTab === 'test'" class="space-y-4 p-3">
-                <!-- 总判定放在所有测试点上面；各点的输出挂在各自下面。 -->
-                <VerdictDots v-if="result && resultMode === 'test'" :points="result.points" label="测试" />
-                <section v-for="(t, i) in sampleCases" :key="`sample-${i}`" class="space-y-2 border-t border-border/60 pt-3 first:border-t-0 first:pt-0">
-                  <div class="flex items-baseline gap-2">
-                    <span class="text-sm font-medium">{{ t.name }}</span>
-                    <span v-if="sampleStatus(i)" class="text-xs font-medium" :class="sampleStatus(i)!.cls">{{ sampleStatus(i)!.text }}</span>
-                    <span v-if="samplePoint(i)?.elapsedMs !== undefined" class="text-xs text-muted-foreground">{{ Math.round(samplePoint(i)!.elapsedMs!) }} ms</span>
-                  </div>
-                  <div class="grid gap-3 sm:grid-cols-2">
-                    <div><p class="text-xs text-muted-foreground">输入</p><pre class="mt-1 max-h-28 overflow-auto whitespace-pre-wrap break-all rounded bg-muted/60 p-2 font-mono text-xs">{{ showText(t.input) }}</pre></div>
-                    <div><p class="text-xs text-muted-foreground">期望输出</p><pre class="mt-1 max-h-28 overflow-auto whitespace-pre-wrap break-all rounded bg-muted/60 p-2 font-mono text-xs">{{ showText(t.output) }}</pre></div>
-                  </div>
-                  <div v-if="samplePoint(i)" class="space-y-1">
-                    <p v-if="samplePoint(i)!.error" class="break-words text-xs text-destructive">{{ samplePoint(i)!.error }}</p>
-                    <p class="text-xs text-muted-foreground">程序输出</p>
-                    <pre class="max-h-40 overflow-auto whitespace-pre rounded bg-muted/60 p-2 text-xs">{{ samplePoint(i)!.stdout || '（空）' }}</pre>
-                    <pre v-if="samplePoint(i)!.stderr" class="max-h-40 overflow-auto whitespace-pre-wrap break-words rounded bg-muted/60 p-2 text-xs text-destructive">{{ samplePoint(i)!.stderr }}</pre>
-                  </div>
-                </section>
-                <CustomTestCases v-model="customCases" :point="customPoint" :busy="!!busy" />
-              </div>
-              <div v-show="runTab === 'tty'" class="p-3">
-                <TerminalPane v-if="ttyStarted && ttyUsable" :key="ttyKey" :launch="launchTty" @close="ttyStarted = false" />
-                <p v-else class="text-sm text-muted-foreground">{{ ttyStarted ? ttyReason : (ttyUsable ? '逐行输入、实时输出的终端。点「运行」启动会话。' : ttyReason || '语言包就绪后可用。') }}</p>
-              </div>
-              <div class="flex flex-wrap items-center gap-2 border-t px-3 py-2">
-                <Button :disabled="!!busy || !ready || (runTab === 'tty' && !ttyUsable) || (runTab === 'test' && !sampleCount && !customCases.length)" @click="runActive"><Play class="mr-2 h-4 w-4" />{{ busy ? '运行中' : '运行' }}</Button>
-                <Button v-if="busy && !saving" variant="outline" @click="controller?.abort()"><Square class="mr-2 h-4 w-4" />取消</Button>
-                <span v-if="progress" class="text-xs text-muted-foreground" role="status">{{ progress.phase }}<span v-if="progress.points"> · {{ progress.point }}/{{ progress.points }}</span></span>
-              </div>
-            </div>
-          </div>
-          <section v-if="result && resultMode === 'all'" class="min-w-0 space-y-3 rounded-xl border p-5" aria-label="评测结果" aria-live="polite">
-            <VerdictDots :points="result.points" :label="resultMode === 'all' ? '提交结果' : '运行结果'" />
-            <p v-if="resultSource !== source" class="text-xs text-muted-foreground">源码已修改，以下结果对应本次评测开始时的代码。</p>
-            <!-- 提交结果只看总判定：逐点详情（输出/期望）一概不回显。 -->
-            <Button v-if="!saved && pendingRecord && user && !error" variant="outline" :disabled="saving" @click="saveRecord">{{ saving ? '同步中…' : '同步本次记录' }}</Button>
-          </section>
-        </section>
+      <header class="learning-page-heading !mt-2 !mb-5"><div class="min-w-0"><p class="mb-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground"><span class="font-mono">#{{ problem.id.toString().padStart(3, '0') }}</span><span>·</span><span>{{ problem.content.chapter }}</span><span class="learning-difficulty" :data-level="problem.content.difficulty">{{ problem.content.difficulty }}</span></p><h1 class="break-words text-2xl font-semibold tracking-tight">{{ problem.content.title }}</h1></div><div class="hidden lg:block"><IconButton :label="split ? '切换到单列布局' : '切换到双栏布局'" :aria-pressed="split" @click="toggleSplit"><Rows2 v-if="split" class="h-4 w-4" /><Columns2 v-else class="h-4 w-4" /></IconButton></div></header>
+      <div class="problem-mobile-tabs" role="group" aria-label="做题面板"><button type="button" :aria-pressed="mobilePanel === 'statement'" @click="mobilePanel = 'statement'"><BookOpen class="h-4 w-4" />题目</button><button type="button" :aria-pressed="mobilePanel === 'editor'" @click="mobilePanel = 'editor'"><Code2 class="h-4 w-4" />代码与测试</button></div>
+      <div class="problem-panels" :class="{ 'is-split': split }" :style="splitStyle">
+        <section class="statement-panel" :class="{ 'mobile-panel-hidden': mobilePanel !== 'statement' }"><div class="panel-heading"><BookOpen class="h-4 w-4" />题目详情</div><ProblemStatement :problem="problem" /></section>
+        <div v-if="split" role="separator" tabindex="0" aria-label="调整题目与代码栏宽" aria-orientation="vertical" aria-valuemin="28" aria-valuemax="65" :aria-valuenow="Math.round(fraction * 100)" class="problem-resize" @pointerdown="resize" @keydown="resizeKey"><span /></div>
+        <div class="min-w-0" :class="{ 'mobile-panel-hidden': mobilePanel !== 'editor' }"><CodingWorkspace :key="problem.version_id" :problem="problem" /></div>
       </div>
     </template>
   </div>

@@ -1,82 +1,51 @@
 <script setup lang="ts">
-/**
- * 代码快照面板：查看历史版本、对比差异、恢复。
- * 恢复前先把当前代码也存一份，防止手滑丢稿。
- */
 import { computed, ref, watch } from 'vue'
-import { Clock, RotateCcw, X, ChevronDown } from 'lucide-vue-next'
+import { History, Save, RotateCcw, Trash2 } from 'lucide-vue-next'
 import { listSnapshots, recordSnapshot, removeSnapshot, fmtSnapTime, type Snapshot } from '../../lib/learning/snapshots'
 import { codeDiff } from '../../lib/learning/diff'
 import { verdictStatus } from '../../lib/learning/verdictStyle'
 import type { Environment } from '../../lib/learning/types'
-
-const props = defineProps<{
-  /** 快照桶：题目用 problemId，IDE 用 'ide'。 */
-  bucket: string
-  environment: Environment
-  /** 当前编辑器代码，恢复时先备份它。 */
-  current: string
-  disabled?: boolean
-}>()
+import Button from '../ui/button/Button.vue'
+import IconButton from '../ui/IconButton.vue'
+const props = defineProps<{ bucket: string; environment: Environment; current: string; disabled?: boolean; revision?: number }>()
 const emit = defineEmits<{ restore: [string] }>()
-
-const open = ref(false), expanded = ref<number | null>(null), tick = ref(0)
-const items = computed(() => (tick.value, listSnapshots(props.bucket, props.environment)))
-watch(() => props.environment, () => { expanded.value = null })
-
-function diffOf(s: Snapshot) {
-  return codeDiff(s.code, props.current)
-}
+const selected = ref<number | null>(null), tick = ref(0)
+const items = computed(() => { void tick.value; void props.revision; return listSnapshots(props.bucket, props.environment) })
+const currentSnapshot = computed(() => items.value.find(s => s.ts === selected.value))
+const diff = computed(() => currentSnapshot.value ? codeDiff(currentSnapshot.value.code, props.current) : null)
+watch(() => props.environment, () => { selected.value = null })
+function save() { if (!props.disabled) { recordSnapshot(props.bucket, props.environment, props.current, 'run'); tick.value++ } }
 function restore(s: Snapshot) {
-  // 先备份当前内容再覆盖，防误恢复丢稿。
+  if (props.disabled) return
   recordSnapshot(props.bucket, props.environment, props.current, 'run')
-  emit('restore', s.code)
-  open.value = false
+  emit('restore', s.code); selected.value = null; tick.value++
 }
-function remove(s: Snapshot) {
-  removeSnapshot(props.bucket, props.environment, s.ts)
-  tick.value++
-}
-// 外面记录了新快照（运行/提交）时，面板开着就刷新一下。
-defineExpose({ refresh: () => { tick.value++ } })
+function remove(s: Snapshot) { if (!props.disabled) { removeSnapshot(props.bucket, props.environment, s.ts); tick.value++ } }
 </script>
-
 <template>
-  <div class="relative">
-    <button
-      type="button" class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-      :class="open ? 'bg-muted text-foreground' : ''" :disabled="disabled"
-      aria-label="代码快照" title="代码快照：每次运行自动存档" @click="open = !open; tick++"
-    >
-<Clock class="h-4 w-4" />
-</button>
-    <div v-if="open" class="absolute right-0 z-30 mt-2 w-[min(92vw,480px)] rounded-xl border bg-popover p-3 shadow-lg">
-      <div class="flex items-center justify-between">
-        <p class="text-sm font-medium">代码快照<span class="ml-2 text-xs font-normal text-muted-foreground">每次运行自动保存，最多 25 份</span></p>
-        <button type="button" class="min-h-8 min-w-8 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground" aria-label="关闭" @click="open = false"><X class="mx-auto h-4 w-4" /></button>
-      </div>
-      <p v-if="!items.length" class="mt-3 text-sm text-muted-foreground">还没有快照——跑一次测试或提交就会自动存档。</p>
-      <ul v-else class="mt-3 max-h-72 space-y-1.5 overflow-y-auto">
-        <li v-for="s in items" :key="s.ts" class="rounded-lg border">
-          <button type="button" class="flex w-full min-h-11 items-center gap-2 px-3 py-2 text-left" @click="expanded = expanded === s.ts ? null : s.ts">
-            <span class="min-w-0 flex-1 truncate font-mono text-xs">{{ s.code.split('\n').find(l => l.trim()) || '（空代码）' }}</span>
+  <section class="p-4" aria-label="代码快照">
+    <div class="mb-3 flex flex-wrap items-center justify-between gap-2"><p class="text-xs leading-5 text-muted-foreground">每次运行自动保存 · 当前语言最近 25 份<br />恢复前会备份当前代码。</p><Button variant="outline" :disabled="disabled || !current.trim()" @click="save"><Save class="mr-2 h-4 w-4" />保存快照</Button></div>
+    <div v-if="!items.length" class="flex flex-col items-center gap-3 py-7 text-center"><History class="h-7 w-7 text-muted-foreground/60" stroke-width="1.5" /><p class="text-sm text-muted-foreground">还没有历史，运行代码或保存一份快照。</p></div>
+    <div v-else class="divide-y border-y">
+      <div v-for="s in items" :key="s.ts">
+        <div class="flex min-w-0 items-center gap-2">
+          <button type="button" class="flex min-h-14 min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1 py-3 text-left" :aria-expanded="selected === s.ts" @click="selected = selected === s.ts ? null : s.ts">
+            <span class="text-xs tabular-nums text-muted-foreground">{{ fmtSnapTime(s.ts) }}</span>
             <span v-if="s.verdict" class="text-xs font-medium" :class="verdictStatus(s.verdict).cls">{{ s.verdict }}</span>
-            <span class="text-xs text-muted-foreground">{{ fmtSnapTime(s.ts) }}</span>
-            <ChevronDown class="h-3.5 w-3.5 text-muted-foreground transition-transform" :class="expanded === s.ts ? 'rotate-180' : ''" />
+            <span class="text-[11px] text-muted-foreground">{{ s.source === 'submit' ? '提交' : s.source === 'test' ? '测试' : '运行 / 保存' }} · {{ s.code.split('\n').length }} 行</span>
+            <span class="basis-full truncate font-mono text-xs text-muted-foreground">{{ s.code.split('\n').find(l => l.trim()) }}</span>
           </button>
-          <div v-if="expanded === s.ts" class="border-t px-3 py-2">
-            <div class="flex items-center justify-between gap-2">
-              <p class="text-xs text-muted-foreground">与当前代码的差异</p>
-              <button type="button" class="inline-flex min-h-8 items-center gap-1.5 rounded-md border px-2 text-xs hover:bg-muted" @click="restore(s)"><RotateCcw class="h-3.5 w-3.5" />恢复到这份</button>
-            </div>
-            <div v-if="!diffOf(s).lines.length" class="mt-2 text-xs text-muted-foreground">与当前代码一致。</div>
-            <div v-else class="mt-2 max-h-52 overflow-auto rounded bg-muted/60 p-2 font-mono text-[11px] leading-5">
-              <div v-for="(l, i) in diffOf(s).lines" :key="i" class="whitespace-pre-wrap break-all" :class="l.kind === 'add' ? 'text-emerald-600 dark:text-emerald-400' : l.kind === 'remove' ? 'text-red-500 line-through' : 'text-muted-foreground'"><span class="mr-2 inline-block w-6 select-none text-right text-muted-foreground/60">{{ l.kind === 'add' ? l.right : l.left }}</span>{{ l.kind === 'add' ? '+' : l.kind === 'remove' ? '-' : ' ' }}{{ l.text }}</div>
-            </div>
-            <button type="button" class="mt-2 text-xs text-muted-foreground hover:text-destructive" @click="remove(s)">删除这份快照</button>
+          <IconButton label="删除这份快照" destructive :disabled="disabled" @click="remove(s)"><Trash2 class="h-4 w-4" /></IconButton>
+        </div>
+        <div v-if="selected === s.ts" class="pb-4">
+          <div class="mb-3 flex flex-wrap items-center justify-between gap-2"><p class="text-xs text-muted-foreground">与当前代码比较 · 红色为历史，绿色为当前</p><Button variant="outline" :disabled="disabled" @click="restore(s)"><RotateCcw class="mr-2 h-4 w-4" />恢复此版本</Button></div>
+          <p v-if="!diff?.lines.length" class="text-xs text-muted-foreground">与当前代码一致。</p>
+          <div v-else class="max-h-72 overflow-auto rounded-md bg-muted/40 p-3 font-mono text-xs leading-6">
+            <div v-for="(line, i) in diff.lines" :key="i" class="whitespace-pre-wrap break-all" :class="line.kind === 'add' ? 'text-emerald-600 dark:text-emerald-400' : line.kind === 'remove' ? 'text-rose-600 dark:text-rose-400' : 'text-muted-foreground'"><span class="mr-3 inline-block w-6 select-none text-right opacity-60">{{ line.kind === 'add' ? line.right : line.left }}</span>{{ line.kind === 'add' ? '+' : line.kind === 'remove' ? '−' : ' ' }} {{ line.text }}</div>
+            <p v-if="diff.truncated" class="mt-2 text-muted-foreground">差异较长，预览已截断；恢复会载入完整代码。</p>
           </div>
-        </li>
-      </ul>
+        </div>
+      </div>
     </div>
-  </div>
+  </section>
 </template>

@@ -116,6 +116,7 @@ export class LearningEngine {
     let ended = false, started = false
     const queued: string[] = []
     const fire = (e: TtyEvent) => {
+      if (ended) return
       if (e.event === 'ready') {
         started = true
         for (const data of queued.splice(0)) void this.callRaw('ttyInput', { data }).catch(() => undefined)
@@ -124,9 +125,10 @@ export class LearningEngine {
       onEvent(e)
     }
     const done = this.call<unknown>('tty', { environment, source }, controller.signal, undefined, fire)
-      .then(() => { ended = true }, error => {
-        ended = true
-        if (!controller.signal.aborted) {
+      .then(() => { if (!ended) fire({ event: 'exit', verdict: 'OK' }) }, error => {
+        if (ended) return
+        if (controller.signal.aborted) fire({ event: 'exit', verdict: 'CANCELLED' })
+        else {
           fire({ event: 'error', data: String(error instanceof Error ? error.message : error) })
           fire({ event: 'exit', verdict: 'ENVIRONMENT_ERROR' })
         }
@@ -139,7 +141,7 @@ export class LearningEngine {
         void this.callRaw('ttyInput', { data }).catch(() => undefined)
       },
       eof: () => { if (!ended) void this.callRaw('ttyEof', {}).catch(() => undefined) },
-      close: () => { controller.abort() },
+      close: () => { if (!ended) { controller.abort(); fire({ event: 'exit', verdict: 'CANCELLED' }) } },
       done,
     }
   }

@@ -30,7 +30,7 @@ export interface LearningRuntime {
   /** 语言服务失败后的手动重试。 */
   retryLsp: () => Promise<void>
   /** 语言切换后调用：换语言服务、清掉旧会话。 */
-  switchEnvironment: (environment: Environment, code: string) => Promise<void>
+  switchEnvironment: () => Promise<void>
   dispose: () => void
 }
 
@@ -47,19 +47,21 @@ export function useLearningRuntime(options: {
   const lspClientActive = ref(false)
   const lspState = ref<Record<LspId, string | null>>({ clangd: null, pyright: null })
   let lastService: LspId | null = null
-  let alive = true
+  let alive = true, lspSerial = 0, connecting = false
 
   const activeService = computed(() => serviceFor(options.environment.value))
   const lspInstalled = computed(() => !!activeService.value && !!lspState.value[activeService.value])
 
   async function refreshPackages() {
-    if (!engine.value) return
-    const [m, s] = await Promise.all([engine.value.manifest(), engine.value.status()])
-    if (alive) { catalog.value = m; packages.value = s }
+    const active = engine.value
+    if (!active) return
+    const [m, s] = await Promise.all([active.manifest(), active.status()])
+    if (alive && active === engine.value) { catalog.value = m; packages.value = s }
   }
   async function refreshLsp() {
-    if (!engine.value) return
-    try { lspState.value = await engine.value.lspStatus() } catch { /* 忽略 */ }
+    const active = engine.value
+    if (!active) return
+    try { const state = await active.lspStatus(); if (alive && active === engine.value) lspState.value = state } catch { /* 忽略 */ }
   }
 
   /**
@@ -67,26 +69,31 @@ export function useLearningRuntime(options: {
    * 但挂起不能永远转圈——90 秒还不行就标失败，用户能点状态重试。
    */
   async function startLsp() {
+    const request = ++lspSerial, active = engine.value
+    const environment = options.environment.value, code = options.code.value
+    const current = () => alive && request === lspSerial && active === engine.value
     lspClientActive.value = false
     lspReason.value = ''
     const service = activeService.value
-    if (!service || !engine.value || !lspInstalled.value) { lspPhase.value = 'off'; return }
+    if (!service || !active || !lspInstalled.value) { lspPhase.value = 'off'; return }
     lspPhase.value = 'starting'
     try {
-      if (lastService && lastService !== service) await engine.value.lspStop(lastService).catch(() => undefined)
+      if (lastService && lastService !== service) await active.lspStop(lastService).catch(() => undefined)
+      if (!current()) return
+      lastService = service
       let timeout: ReturnType<typeof setTimeout> | undefined
-      const started = engine.value.lspStart(service, options.environment.value, options.code.value)
+      const started = active.lspStart(service, environment, code)
       await Promise.race([
         started,
         new Promise<never>((_, reject) => {
           timeout = setTimeout(() => reject(new Error('语言服务启动超时，点这条重试')), 90000)
         }),
       ]).finally(() => clearTimeout(timeout))
-      if (!alive) return
-      lastService = service
+      if (!current()) return
       lspClientActive.value = true
       lspPhase.value = 'ready'
     } catch (e) {
+      if (!current()) return
       lspReason.value = String(e)
       lspPhase.value = 'failed'
     }
@@ -105,12 +112,16 @@ export function useLearningRuntime(options: {
   const diagnostics = computed(() => binding.value.extension)
 
   async function connect() {
+    if (connecting || !alive) return
+    connecting = true; error.value = ''
     try {
+      lspSerial++; engine.value?.dispose(); lastService = null
       engine.value = new LearningEngine()
       await refreshPackages()
       await refreshLsp()
       await startLsp()
-    } catch (e) { error.value = String(e) }
+    } catch (e) { if (alive) error.value = String(e) }
+    finally { connecting = false }
   }
 
   /** 切语言后重启语言服务。文档内容由下一次补全请求带上，这里不用推。 */
@@ -118,7 +129,7 @@ export function useLearningRuntime(options: {
     await startLsp()
   }
   const dispose = () => {
-    alive = false
+    alive = false; lspSerial++
     if (lastService && engine.value) void engine.value.lspStop(lastService).catch(() => undefined)
     engine.value?.dispose()
     engine.value = undefined
