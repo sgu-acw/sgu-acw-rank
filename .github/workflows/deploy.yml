@@ -48,6 +48,9 @@ jobs:
       - name: Type check
         run: pnpm check
 
+      - name: Judge regressions
+        run: pnpm learning:test
+
       - name: Build
         env:
           # 题库在线上启用；运行器在独立域名。
@@ -120,10 +123,14 @@ jobs:
       - name: Publish release
         run: |
           RELEASE_ID="$(date -u +%Y%m%d%H%M%S)-${GITHUB_SHA::7}"
+          # 本地生成的发布路径需要在发送给 SSH 前展开。
+          # shellcheck disable=SC2029
           ssh deploy-target "mkdir -p '$REMOTE_ROOT/releases/$RELEASE_ID'"
           # 单流 tar：长连接大流量下比 rsync 更稳。
+          # shellcheck disable=SC2029
           tar -C dist -czf - . | ssh deploy-target "tar -xzf - -C '$REMOTE_ROOT/releases/$RELEASE_ID'"
           # 相对链接：OpenResty 在容器内运行，宿主机绝对路径不可见。
+          # shellcheck disable=SC2029
           ssh deploy-target "set -e
             ln -sfn 'releases/$RELEASE_ID' '$REMOTE_ROOT/dist.next'
             mv -Tf '$REMOTE_ROOT/dist.next' '$REMOTE_ROOT/dist'

@@ -8,6 +8,7 @@ import { learningApi } from '../../lib/learning/api'
 import { useAuth } from '../../lib/auth'
 import { confirmAction } from '../../lib/confirm'
 import { recordSnapshot } from '../../lib/learning/snapshots'
+import { makePendingSubmission, storePendingSubmission, loadPendingSubmissions, removePendingSubmission, type PendingSubmission } from '../../lib/learning/submissions'
 import { caseSignature, filenameOf, loadCases, loadPreferences, saveLocal, downloadText, clipText, type CustomCase, type WorkspaceCase, type CaseResult } from '../../lib/learning/workspace'
 import { dragVertical, loadSplit, saveSplit } from '../../lib/learning/resize'
 import { verdictStatus } from '../../lib/learning/verdictStyle'
@@ -41,7 +42,7 @@ const runtimePackage = computed(() => catalog.value?.runtimes.find(r => r.id ===
 const busy = ref<'test' | 'submit' | 'tty' | null>(null), progress = ref<Progress | null>(null)
 const error = ref(''), notice = ref(''), saveState = ref('草稿已保存')
 const caseResults = ref<Record<string, CaseResult>>({}), testCode = ref(''), testOptions = ref('')
-const submitted = ref<JudgeResult | null>(null), submittedCode = ref(''), submittedEnv = ref<Environment>('cpp')
+const submitted = ref<{ verdict: JudgeResult['verdict']; passed: number; total: number; diagnostic?: string } | null>(null), submittedCode = ref(''), submittedEnv = ref<Environment>('cpp')
 const dockTab = ref('tests'), dockCollapsed = ref(false), historyRevision = ref(0)
 const settingsOpen = ref(false), expanded = ref(false)
 const timeMs = ref(10000), checker = ref<'tokens' | 'exact'>('tokens')
@@ -52,10 +53,10 @@ const fileInput = ref<HTMLInputElement | null>(null)
 const editorHost = ref<HTMLElement | null>(null)
 const editorHeight = ref(loadSplit('editor-height', 380))
 const ttyStarted = ref(false), ttyKey = ref(0)
-const { user, ensureLoaded } = useAuth()
+const { user, ensureLoaded, ready: authReady } = useAuth()
 let initialized = false, alive = true, controller: AbortController | undefined
 let persistTimer: ReturnType<typeof setTimeout> | undefined
-let pendingRecord: Parameters<typeof learningApi.record>[0] | undefined
+const pendingRecord = ref<PendingSubmission | null>(null), pendingSaved = ref(true), syncLoginRequired = ref(false)
 const syncing = ref(false), synced = ref(false)
 const draftKey = (env: Environment) => bucket === 'ide' ? `learning-ide:draft:${env}` : `learning-draft:${bucket}:${env}`
 const optionsSignature = computed(() => JSON.stringify([timeMs.value, checker.value, environment.value]))
@@ -64,11 +65,12 @@ const jspi = typeof (globalThis.WebAssembly as { promising?: unknown } | undefin
 const ttyReason = computed(() => !jspi ? '交互终端需要支持 JSPI 的新版 Chrome 或 Edge，可使用测试样例运行。'
   : environment.value.startsWith('java') ? 'Java 暂不支持逐行交互，请在测试台填写标准输入运行。' : '')
 const canRun = computed(() => ready.value && !busy.value && !syncing.value && !!engine.value)
+const canSubmit = computed(() => canRun.value && authReady.value && !pendingRecord.value)
 const canRunActive = computed(() => canRun.value && (dockTab.value === 'tty' ? !ttyReason.value : tests.value.length > 0))
 const runDisabledReason = computed(() => busy.value ? '请等待当前运行结束' : !ready.value ? '请先安装当前语言包' : dockTab.value === 'tty' ? ttyReason.value : !tests.value.length ? '添加一个测试样例后即可运行' : '')
 const selectedLanguage = computed(() => environments.find(e => e.id === environment.value)!.label)
 const submissionStatus = computed(() => submitted.value ? verdictStatus(submitted.value.verdict) : null)
-const passed = computed(() => submitted.value?.points.filter(p => p.verdict === 'AC').length || 0)
+const passed = computed(() => submitted.value?.passed || 0)
 const cursor = ref({ line: 1, column: 1 })
 
 function persist() {
@@ -108,13 +110,43 @@ function resizeKey(event: KeyboardEvent) {
   event.preventDefault(); editorHeight.value = event.key === 'Home' ? 220 : event.key === 'End' ? 800 : Math.max(220, Math.min(800, editorHeight.value + (event.key === 'ArrowDown' ? 40 : -40)))
   saveSplit('editor-height', editorHeight.value)
 }
+function restorePending(skipId?: string): boolean {
+  if (!props.problem || !user.value || !alive) return false
+  if (pendingRecord.value) return true
+  const pending = loadPendingSubmissions(user.value, props.problem.id).find(p => p.record.id !== skipId)
+  if (!pending) return false
+  pendingRecord.value = pending; pendingSaved.value = true; synced.value = false
+  submitted.value = { verdict: pending.record.verdict as JudgeResult['verdict'], passed: pending.passed, total: pending.total }
+  submittedCode.value = pending.record.source; submittedEnv.value = pending.record.environment
+  dockTab.value = 'submission'; dockCollapsed.value = false
+  notice.value = '上次提交尚未同步，成功同步后才计入练习记录和集训成绩。'
+  return true
+}
+watch(() => user.value?.id, () => {
+  pendingRecord.value = null; syncLoginRequired.value = false; synced.value = false
+  submitted.value = null
+  if (initialized) restorePending()
+})
 async function syncRecord() {
-  if (!pendingRecord || syncing.value || synced.value || !user.value) return
-  const record = pendingRecord
-  syncing.value = true
-  try { await learningApi.record(record); if (alive && pendingRecord?.id === record.id) { synced.value = true; if (record.verdict === 'AC') emit('passed') } }
-  catch { if (alive && pendingRecord?.id === record.id) notice.value = '评测已完成，记录同步失败。可点击重试同步。' }
-  finally { if (alive) syncing.value = false }
+  const pending = pendingRecord.value
+  if (!pending || syncing.value || synced.value || !user.value || pending.owner.id !== user.value.id || pending.owner.student_id !== user.value.student_id) return
+  syncing.value = true; syncLoginRequired.value = false
+  try {
+    await learningApi.record(pending.record)
+    removePendingSubmission(pending)
+    if (alive && pendingRecord.value?.record.id === pending.record.id && user.value?.id === pending.owner.id) {
+      pendingRecord.value = null; synced.value = true; notice.value = ''
+      if (pending.record.verdict === 'AC') emit('passed')
+      restorePending(pending.record.id)
+    }
+  } catch (e) {
+    if (alive && pendingRecord.value?.record.id === pending.record.id) {
+      syncLoginRequired.value = [401, 403].includes((e as { status?: number }).status || 0)
+      notice.value = syncLoginRequired.value ? '登录状态已变化，请重新登录原账号后同步。'
+        : pendingSaved.value ? '评测已完成，记录同步失败。待同步记录已保存，刷新后可继续重试。'
+          : '记录同步失败，浏览器也无法保存待同步记录。请保持页面打开并重试同步。'
+    }
+  } finally { if (alive) syncing.value = false }
 }
 function codeWithinLimit() {
   if (new Blob([source.value]).size <= 256000) return true
@@ -125,25 +157,33 @@ async function execute(mode: 'test' | 'submit', single?: WorkspaceCase) {
   if (!canRun.value || !engine.value || !codeWithinLimit()) return
   const selected = single ? [single] : tests.value
   if (mode === 'test' && !selected.length) return
-  if (mode === 'submit' && !props.problem) return
+  if (mode === 'submit' && (!props.problem || !canSubmit.value || restorePending())) return
   busy.value = mode; error.value = ''; notice.value = ''; dockCollapsed.value = false
   dockTab.value = mode === 'submit' ? 'submission' : 'tests'
   controller = new AbortController(); persist()
+  const owner = user.value ? { id: user.value.id, student_id: user.value.student_id } : null
   const code = source.value, env = environment.value, signature = optionsSignature.value
   const snapshotSource = mode === 'submit' ? 'submit' : 'test'
   recordSnapshot(bucket, env, code, snapshotSource); historyRevision.value++
   try {
     if (mode === 'submit') {
-      submitted.value = null; pendingRecord = undefined; synced.value = false
+      submitted.value = null; synced.value = false; syncLoginRequired.value = false
       const content = props.problem!.content
       const judged = await engine.value.run({ source: code, environment: env, cases: content.tests,
         checker: content.checker, checkerSource: content.checker_source, timeMs: content.time_ms }, controller.signal, p => { if (alive) progress.value = p })
       if (!alive) return
-      submitted.value = judged; submittedCode.value = code; submittedEnv.value = env
+      submitted.value = { verdict: judged.verdict, passed: judged.points.filter(p => p.verdict === 'AC').length, total: judged.points.length,
+        diagnostic: judged.verdict === 'CE' ? clipText(judged.points[0]?.stderr || judged.points[0]?.error || '请检查编译诊断。') : undefined }
+      submittedCode.value = code; submittedEnv.value = env
       recordSnapshot(bucket, env, code, snapshotSource, judged.verdict)
-      if (!['ENVIRONMENT_ERROR', 'CANCELLED'].includes(judged.verdict)) {
-        pendingRecord = { source: code, environment: env, version_id: props.problem!.version_id, id: judged.id, runtime_version: judged.runtimeVersion, verdict: judged.verdict }
-        if (user.value) await syncRecord()
+      if (owner && !['ENVIRONMENT_ERROR', 'CANCELLED'].includes(judged.verdict)) {
+        const pending = makePendingSubmission(owner, props.problem!.id,
+          { source: code, environment: env, version_id: props.problem!.version_id, id: judged.id, runtime_version: judged.runtimeVersion, verdict: judged.verdict }, judged)
+        const saved = storePendingSubmission(pending)
+        if (user.value?.id === owner.id && user.value.student_id === owner.student_id) {
+          pendingRecord.value = pending; pendingSaved.value = saved
+          await syncRecord()
+        } else notice.value = '登录账号已变化，请使用原账号恢复待同步记录。'
       }
     } else {
       // 按是否自定义分批：题目样例严格比较空输出，自定义空期望只执行。
@@ -231,6 +271,7 @@ async function importCode(event: Event) {
     recordSnapshot(bucket, env, source.value, 'run'); historyRevision.value++; source.value = code; persist(); settingsOpen.value = false
   } catch { error.value = '无法读取这个文件。' }
 }
+function beforeUnload(event: BeforeUnloadEvent) { if (pendingRecord.value && !pendingSaved.value) event.preventDefault() }
 function visibility() {
   if (document.hidden) { persist(); if (busy.value && busy.value !== 'tty') { controller?.abort(); notice.value = '页面进入后台，评测已中断；代码已保留。' } }
   else if (!busy.value) void runtime.refreshPackages().catch(() => undefined)
@@ -245,11 +286,13 @@ onMounted(() => {
     if (options.checker === 'exact' || options.checker === 'tokens') checker.value = options.checker
   } catch { /* 使用默认值 */ }
   initialized = true
-  void runtime.connect(); void ensureLoaded()
+  void runtime.connect(); void ensureLoaded().then(() => { if (alive) restorePending() })
+  window.addEventListener('beforeunload', beforeUnload)
   window.addEventListener('keydown', shortcut); document.addEventListener('visibilitychange', visibility)
 })
 onUnmounted(() => {
   persist(); alive = false; clearTimeout(persistTimer); controller?.abort(); document.body.style.overflow = oldOverflow
+  window.removeEventListener('beforeunload', beforeUnload)
   window.removeEventListener('keydown', shortcut); document.removeEventListener('visibilitychange', visibility)
 })
 </script>
@@ -310,12 +353,12 @@ onUnmounted(() => {
           <section class="space-y-3 p-5" aria-label="提交结果" aria-live="polite">
             <div v-if="busy === 'submit'" class="flex items-center gap-2 py-4 text-sm text-muted-foreground"><LoaderCircle class="h-4 w-4 animate-spin" />正在评测…</div>
             <template v-else-if="submitted && submissionStatus">
-              <div class="flex flex-wrap items-center gap-3"><CheckCircle2 v-if="submitted.verdict === 'AC'" class="h-6 w-6 text-emerald-500" /><p class="text-lg font-semibold" :class="submissionStatus.cls">{{ submissionStatus.text }}</p><span class="text-xs text-muted-foreground">{{ passed }} / {{ submitted.points.length }} 测试点通过</span></div>
+              <div class="flex flex-wrap items-center gap-3"><CheckCircle2 v-if="submitted.verdict === 'AC'" class="h-6 w-6 text-emerald-500" /><p class="text-lg font-semibold" :class="submissionStatus.cls">{{ submissionStatus.text }}</p><span class="text-xs text-muted-foreground">{{ passed }} / {{ submitted.total }} 测试点通过</span></div>
               <p v-if="source !== submittedCode || environment !== submittedEnv" class="text-xs text-amber-600 dark:text-amber-400">代码或语言已修改，此结果对应上次提交。</p>
-              <pre v-if="submitted.verdict === 'CE'" class="test-data text-destructive">{{ clipText(submitted.points[0]?.stderr || submitted.points[0]?.error || '请检查编译诊断。') }}</pre>
-              <p class="text-xs text-muted-foreground">{{ synced ? '本次提交已同步到练习记录。' : !user ? '登录后重新提交，可保存练习记录。' : pendingRecord ? '本次提交尚未同步。' : '' }}</p>
+              <pre v-if="submitted.verdict === 'CE'" class="test-data text-destructive">{{ submitted.diagnostic || '请检查编译诊断。' }}</pre>
+              <p class="text-xs text-muted-foreground">{{ synced ? '本次提交已同步到练习记录。' : !user ? '登录后重新提交，可保存练习记录。' : pendingRecord ? '本次提交尚未同步，暂未计入练习记录和集训成绩。' : '' }}</p>
               <Button v-if="pendingRecord && !synced && user" variant="outline" :disabled="syncing" @click="syncRecord">{{ syncing ? '同步中…' : '重试同步记录' }}</Button>
-              <a v-if="!user && pendingRecord" href="/login" class="inline-flex min-h-11 items-center text-sm underline underline-offset-4">前往登录</a>
+              <a v-if="(!user && submitted) || syncLoginRequired" href="/login" class="inline-flex min-h-11 items-center text-sm underline underline-offset-4">前往登录</a>
             </template>
           </section>
         </TabsContent>
@@ -326,7 +369,7 @@ onUnmounted(() => {
       <span v-else class="hidden min-w-0 flex-1 text-xs text-muted-foreground sm:block">{{ dockTab === 'tty' ? '交互输入 · 实时输出' : problem ? `每点 ${problem.content.time_ms} ms` : `${timeMs / 1000}s 时限 · ${checker === 'tokens' ? '忽略空白比较' : '逐字比较'}` }}</span>
       <Button v-if="busy" variant="outline" class="ml-auto" @click="stop"><Square class="mr-2 h-3.5 w-3.5" />停止</Button>
       <Button v-else variant="outline" :disabled="!canRunActive" :title="runDisabledReason || 'Ctrl / ⌘ + Enter'" class="ml-auto" @click="runActive"><Play class="mr-2 h-3.5 w-3.5" />{{ dockTab === 'tty' ? '运行终端' : '运行测试' }}<kbd aria-hidden="true" class="ml-3 hidden text-[10px] opacity-50 lg:inline">⌘ ↵</kbd></Button>
-      <Button v-if="problem" :disabled="!canRun" title="Ctrl / ⌘ + Shift + Enter" @click="execute('submit')"><Send class="mr-2 h-3.5 w-3.5" />提交代码</Button>
+      <Button v-if="problem" :disabled="!canSubmit" :title="pendingRecord ? '请先同步上次提交记录' : 'Ctrl / ⌘ + Shift + Enter'" @click="execute('submit')"><Send class="mr-2 h-3.5 w-3.5" />提交代码</Button>
     </div>
     <WorkspaceDialog v-model:open="settingsOpen" title="编辑器设置与文件" description="设置自动保存在此浏览器，对云端 IDE 和做题页同时生效。">
       <div class="space-y-6">
