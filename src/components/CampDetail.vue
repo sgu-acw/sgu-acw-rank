@@ -102,7 +102,7 @@ onUnmounted(() => { disposed = true; clearInterval(timer); document.removeEventL
       <Card v-else-if="!camp.registered">
 <CardContent class="space-y-3 py-5">
         <template v-if="!camp.ended">
-          <p v-if="camp.platforms.length" class="text-sm">至少绑定并验证一个集训平台的账号：</p>
+          <p v-if="camp.platforms.length" class="text-sm">外部平台成绩需绑定并验证对应账号后同步：</p>
           <div class="flex flex-wrap gap-2"><span v-for="p in camp.platforms" :key="p" class="rounded-md bg-muted px-2 py-1 text-xs">{{ PLATFORM_META[p]?.label || p }}</span></div>
         </template>
         <p v-if="camp.register_reason" class="text-sm text-muted-foreground">{{ camp.register_reason }}</p>

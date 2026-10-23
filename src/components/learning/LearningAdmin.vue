@@ -22,7 +22,7 @@ const adminTab = ref<'basic' | 'statement' | 'tests' | 'publish'>('basic')
 /** 超长测试数据只显示开头。 */
 const showText = (text: string, limit = 4096) =>
   text.length > limit ? `${text.slice(0, limit)}\n…（共 ${text.length} 字符，已截断显示）` : text, baseline = ref('')
-const busy = ref(''), loading = ref(false), error = ref(''), notice = ref(''), progress = ref<Progress | null>(null)
+const busy = ref(''), loading = ref(false), error = ref(''), notice = ref(''), noticeVariant = ref<'success' | 'info'>('success'), progress = ref<Progress | null>(null)
 let engine: LearningEngine | undefined, controller: AbortController | undefined, serial = 0, alive = true, creationRequest = ''
 const tagsText = ref('')
 const fileInput = ref<HTMLInputElement | null>(null)
@@ -38,7 +38,16 @@ const signature = () => form.value ? JSON.stringify([form.value.title, form.valu
 const dirty = computed(() => !!form.value && signature() !== baseline.value)
 const validationKey = () => signature() + refLanguages.value.map(e => `${e}:${refSources.value[e] ?? ''}`).join('|')
 const validationFresh = computed(() => !!validation.value && validation.value.key === validationKey())
-const allPassed = computed(() => validationFresh.value && refLanguages.value.every(e => validation.value?.results[e] === 'AC'))
+const allPassed = computed(() => validationFresh.value && refLanguages.value.length > 0 && refLanguages.value.every(e => form.value?.environments.includes(e) && validation.value?.results[e] === 'AC'))
+watch(() => form.value?.environments.slice(), allowed => {
+  if (!allowed) return
+  refLanguages.value = refLanguages.value.filter(e => allowed.includes(e))
+  if (!refLanguages.value.length && allowed.length) {
+    const env = allowed[0]!
+    refLanguages.value = [env]
+    refSources.value[env] ??= starter[env]
+  }
+})
 const canPublish = computed(() => allPassed.value)
 
 function setForm(draft: Draft | null) {
@@ -76,7 +85,7 @@ function applyTags() {
 }
 function toggle(env: Environment) { if (!form.value || busy.value) return; form.value.environments = form.value.environments.includes(env) ? form.value.environments.filter(e => e !== env) : [...form.value.environments, env] }
 function toggleLanguage(env: Environment) {
-  if (busy.value) return
+  if (busy.value || !form.value?.environments.includes(env)) return
   refLanguages.value = refLanguages.value.includes(env) ? refLanguages.value.filter(e => e !== env) : [...refLanguages.value, env]
   if (!refSources.value[env]) refSources.value[env] = starter[env]
   if (!refLanguages.value.length) refLanguages.value = [env]
@@ -87,25 +96,31 @@ async function importFiles(event: Event) {
   const input = event.target as HTMLInputElement
   const files = [...(input.files ?? [])]
   input.value = ''
-  if (!form.value || !files.length) return
+  if (!form.value || !files.length || busy.value) return
+  const target = form.value
+  busy.value = 'import'; error.value = ''; notice.value = ''
   try {
     const read: UploadFile[] = []
     for (const file of files) {
       if (/\.zip$/i.test(file.name)) read.push(...await readZip(await file.arrayBuffer()))
       else read.push({ name: file.name, text: await file.text() })
     }
+    if (!alive || form.value !== target) return
     const { tests, skipped } = pairTests(read)
     if (!tests.length) throw new Error('没有找到成对的 .in/.out（或 .ans）文件')
-    form.value.tests = [...form.value.tests.filter(t => t.input || t.output), ...tests.map(t => ({ ...t, sample: false }))]
-    renumber(form.value.tests)
-    notice.value = `导入 ${tests.length} 个测试点。${skipped.length ? `跳过 ${skipped.length} 个无法配对的文件。` : ''}`
-  } catch (e) { error.value = String(e) }
+    if (target.tests.length + tests.length > 100) throw new Error('测试点总数不能超过 100 个，未导入新数据。')
+    target.tests = [...target.tests, ...tests.map(t => ({ ...t, sample: false }))]
+    renumber(target.tests)
+    noticeVariant.value = skipped.length ? 'info' : 'success'
+    notice.value = `导入 ${tests.length} 个测试点。${skipped.length ? `未导入的文件：${skipped.join('、')}` : ''}`
+  } catch (e) { if (alive) error.value = String(e) }
+  finally { if (alive) busy.value = '' }
 }
 
 async function save() {
   if (busy.value || !form.value) return
   applyTags()
-  busy.value = 'save'; error.value = ''; notice.value = ''
+  busy.value = 'save'; error.value = ''; notice.value = ''; noticeVariant.value = 'success'
   try {
     const saved = selected.value ? await learningApi.save(selected.value.id, selected.value.revision, form.value) : await learningApi.create(creationRequest, form.value)
     if (!alive) return
@@ -118,8 +133,8 @@ async function save() {
 }
 
 async function validate() {
-  if (busy.value || !form.value || !engine) return
-  busy.value = 'validate'; error.value = ''; notice.value = ''; validation.value = null; controller = new AbortController()
+  if (busy.value || !form.value || !engine || !refLanguages.value.length || refLanguages.value.some(e => !form.value!.environments.includes(e))) return
+  busy.value = 'validate'; error.value = ''; notice.value = ''; noticeVariant.value = 'success'; validation.value = null; controller = new AbortController()
   const key = validationKey(), results: Partial<Record<Environment, string>> = {}, points: Partial<Record<Environment, PointResult[]>> = {}
   try {
     for (const env of refLanguages.value) {
@@ -147,7 +162,7 @@ async function publish() {
   const id = selected.value.id, revision = selected.value.revision
   if (!await confirmAction('发布当前版本？以后修改题面或测试点将产生新版本。', '发布题目')) return
   if (busy.value || selected.value?.id !== id || selected.value.revision !== revision || dirty.value || !canPublish.value) return
-  busy.value = 'publish'; error.value = ''
+  busy.value = 'publish'; error.value = ''; noticeVariant.value = 'success'
   try {
     await learningApi.publish(id, revision)
     if (selected.value?.id === id) { selected.value.published_revision = revision; notice.value = '此版本已发布。' }
@@ -168,7 +183,7 @@ onUnmounted(() => { alive = false; serial++; controller?.abort(); engine?.dispos
     </AdminWorkspaceNav>
     <p v-if="authReady && !isAdmin" class="text-sm text-muted-foreground">请先登录本地测试管理员。</p>
     <template v-else-if="isAdmin">
-      <ActionNotice :message="error" variant="error" /><ActionNotice :message="notice" variant="info" />
+      <ActionNotice :message="error" variant="error" /><ActionNotice :message="notice" :variant="noticeVariant" />
       <div class="flex flex-wrap items-center justify-between gap-3"><h2 class="font-medium">题目 {{ rows.length }} 道</h2><Button :disabled="!!busy" @click="choose(null)"><Plus class="mr-2 h-4 w-4" />新建题目</Button></div>
       <div class="grid min-w-0 gap-5 lg:grid-cols-[260px_minmax(0,1fr)]">
         <aside class="min-w-0" :class="showing && 'hidden lg:block'"><div class="divide-y rounded-lg border"><button v-for="draft in rows" :key="draft.id" type="button" class="block min-h-11 w-full px-4 py-3 text-left hover:bg-muted/50" :class="selected?.id === draft.id && 'bg-muted'" :disabled="!!busy" @click="choose(draft)"><span class="block break-words text-sm font-medium">{{ draft.content.title }}</span><span class="text-xs text-muted-foreground">草稿 {{ draft.revision }} · {{ draft.published_revision ? `已发布 ${draft.published_revision}` : '未发布' }}</span></button></div></aside>

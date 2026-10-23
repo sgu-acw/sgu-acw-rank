@@ -47,7 +47,7 @@ async function load() {
     rows.value = data
     await ensureLoaded()
     if (user.value) {
-      try { const runs = await learningApi.runs(); if (request === serial) solved.value = new Set(runs.filter(r => r.verdict === 'AC').map(r => r.problem_id)) }
+      try { const progress = await learningApi.progress(); if (request === serial) solved.value = new Set(progress.solved_problem_ids) }
       catch { if (request === serial) progressError.value = '完成记录读取失败，可刷新重试。' }
     } else solved.value = new Set()
   } catch (e) { if (request === serial) error.value = e instanceof Error ? e.message : String(e) }

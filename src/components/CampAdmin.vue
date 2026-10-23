@@ -55,12 +55,20 @@ const editVisAt = ref('')
 const newPlatform = ref<Platform | 'learn'>('luogu')
 const learnProblems = ref<ProblemSummary[]>([])
 const learnProblemId = ref<number | null>(null)
+const learnProblemsLoading = ref(false)
+let learnRequestId = 0
 async function loadLearnProblems() {
-  if (learnProblems.value.length) return
-  learnProblems.value = await learningApi.list()
-  learnProblemId.value = learnProblems.value[0]?.id ?? null
+  const token = ++learnRequestId
+  learnProblemsLoading.value = true
+  try {
+    const data = await learningApi.list()
+    if (disposed || token !== learnRequestId) return
+    learnProblems.value = data
+    if (!data.some(p => p.id === learnProblemId.value)) learnProblemId.value = data[0]?.id ?? null
+  } catch (e) { if (!disposed && token === learnRequestId) error.value = message(e) }
+  finally { if (!disposed && token === learnRequestId) learnProblemsLoading.value = false }
 }
-watch(newPlatform, v => { if (v === LEARN_PLATFORM) void loadLearnProblems().catch(e => { error.value = String(e) }) })
+watch(newPlatform, v => { if (v === LEARN_PLATFORM) void loadLearnProblems() })
 const newKey = ref('')
 const lookup = ref('')
 const memberQuery = ref('')
@@ -174,6 +182,7 @@ async function refresh() {
   busy.value = true; error.value = ''
   try {
     await loadList()
+    if (newPlatform.value === LEARN_PLATFORM) await loadLearnProblems()
     if (activeId.value) await loadDetail(activeId.value, !dirty.value)
   } catch (err) { error.value = message(err) }
   finally { loading.value = false; busy.value = false }
@@ -249,7 +258,7 @@ async function removeCamp() {
   await mutate(async () => { await campAdminApi.remove(id); activeId.value = null; detail.value = null; updateUrl() }, '集训已删除')
 }
 async function addProblem() {
-  if (!detail.value || locked.value || busy.value) return
+  if (!detail.value || locked.value || busy.value || (newPlatform.value === LEARN_PLATFORM && learnProblemsLoading.value)) return
   const id = detail.value.id
   const platform = newPlatform.value
   if (platform === LEARN_PLATFORM) {
@@ -615,11 +624,11 @@ onUnmounted(() => { disposed = true; ++requestId; sortable?.destroy(); window.re
                   <label class="block text-sm font-medium">添加题目</label>
                   <div class="flex flex-wrap gap-2">
                     <select v-model="newPlatform" aria-label="题目平台" class="form-select w-auto" :disabled="busy"><option v-for="p in PLATFORMS" :key="p" :value="p">{{ PLATFORM_META[p].label }}</option><option v-if="LEARN_LOCAL" value="learn">题库</option></select>
-                    <select v-if="newPlatform === LEARN_PLATFORM" v-model="learnProblemId" aria-label="题库题目" class="form-select min-w-0 flex-1" :disabled="busy">
+                    <select v-if="newPlatform === LEARN_PLATFORM" v-model="learnProblemId" aria-label="题库题目" class="form-select min-w-0 flex-1" :disabled="busy || learnProblemsLoading">
                       <option v-for="lp in learnProblems" :key="lp.id" :value="lp.id">{{ lp.id }}. {{ lp.title }}</option>
                     </select>
                     <Input v-else v-model="newKey" aria-label="题号" placeholder="题号，如 P1001" class="min-h-11 min-w-0 flex-1" :disabled="busy" />
-                    <Button type="submit" :disabled="busy || (newPlatform === LEARN_PLATFORM ? !learnProblemId : !newKey.trim())" class="w-full sm:w-auto"><Plus class="mr-1 h-4 w-4" />添加题目</Button>
+                    <Button type="submit" :disabled="busy || (newPlatform === LEARN_PLATFORM ? learnProblemsLoading || !learnProblemId : !newKey.trim())" class="w-full sm:w-auto"><Plus class="mr-1 h-4 w-4" />添加题目</Button>
                   </div>
                   <p v-if="lookup" class="text-xs text-muted-foreground">最近添加：{{ lookup }}</p>
                 </form>

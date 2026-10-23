@@ -16,5 +16,6 @@ export const learningApi = {
   save: (id: number, revision: number, content: ProblemContent) => request<Draft>(`/admin/learning/problems/${id}`, 'PUT', { revision, content }),
   publish: (id: number, revision: number) => request<Problem>(`/admin/learning/problems/${id}/publish`, 'POST', { revision }),
   record: (body: { id: string; version_id: string; environment: Environment; runtime_version: string; source: string; verdict: string }) => request<{ id: string }>('/learning/runs', 'POST', body),
+  progress: () => request<{ solved_problem_ids: number[] }>('/learning/progress'),
   runs: () => request<{ id: string; version_id: string; problem_id: number; environment: Environment; verdict: string; created_at: string }[]>('/learning/runs'),
 }

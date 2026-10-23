@@ -116,8 +116,13 @@ async function syncRecord() {
   catch { if (alive && pendingRecord?.id === record.id) notice.value = '评测已完成，记录同步失败。可点击重试同步。' }
   finally { if (alive) syncing.value = false }
 }
+function codeWithinLimit() {
+  if (new Blob([source.value]).size <= 256000) return true
+  error.value = '源码不能超过 256,000 字节，请缩减内容后重试。'
+  return false
+}
 async function execute(mode: 'test' | 'submit', single?: WorkspaceCase) {
-  if (!canRun.value || !engine.value) return
+  if (!canRun.value || !engine.value || !codeWithinLimit()) return
   const selected = single ? [single] : tests.value
   if (mode === 'test' && !selected.length) return
   if (mode === 'submit' && !props.problem) return
@@ -173,17 +178,21 @@ async function execute(mode: 'test' | 'submit', single?: WorkspaceCase) {
   } finally { if (alive) { busy.value = null; controller = undefined; progress.value = null } }
 }
 function launchTerminal(onEvent: (e: TtyEvent) => void) {
-  const code = source.value, env = environment.value
+  const code = source.value, env = environment.value, sessionKey = ttyKey.value
   recordSnapshot(bucket, env, code, 'run'); historyRevision.value++
   return engine.value!.terminal(env, code, e => {
     onEvent(e)
-    if (e.event === 'exit' && alive) { busy.value = null; progress.value = null }
+    if (e.event === 'exit' && alive && busy.value === 'tty' && ttyKey.value === sessionKey) { busy.value = null; progress.value = null }
   })
 }
 function runActive() {
   if (!canRunActive.value) return
-  if (dockTab.value === 'tty') { error.value = ''; busy.value = 'tty'; ttyStarted.value = true; ttyKey.value++; dockCollapsed.value = false }
+  if (dockTab.value === 'tty') { if (!codeWithinLimit()) return; error.value = ''; busy.value = 'tty'; ttyStarted.value = true; ttyKey.value++; dockCollapsed.value = false }
   else void execute('test')
+}
+function closeTerminal() {
+  ttyStarted.value = false
+  if (busy.value === 'tty') { busy.value = null; progress.value = null }
 }
 function stop() { if (busy.value === 'tty') terminal.value?.stop(); else controller?.abort() }
 function shortcut(event: KeyboardEvent) {
@@ -212,7 +221,7 @@ async function copyCode() {
 async function importCode(event: Event) {
   const input = event.target as HTMLInputElement, file = input.files?.[0]; input.value = ''
   if (!file || busy.value) return
-  if (file.size > 512 * 1024) { error.value = '源码文件不能超过 512 KiB。'; return }
+  if (file.size > 256000) { error.value = '源码文件不能超过 256,000 字节。'; return }
   const env = environment.value
   try {
     const code = await file.text()
@@ -266,7 +275,8 @@ onUnmounted(() => {
       <a v-if="catalog && runtimePackage?.available" href="/learn/runtimes" class="min-h-11 shrink-0 content-center font-medium underline underline-offset-4">安装语言包</a>
     </div>
     <div ref="editorHost" class="workspace-code" :style="{ height: `${editorHeight}px` }">
-      <CodeEditor ref="editor" v-model="source" :environment="environment" :completion="completion" :diagnostics="diagnostics" :font-size="preferences.fontSize" :tab-size="preferences.tabSize" :wrap="preferences.wrap" @cursor="cursor = $event" />
+      <!-- 每种语言重建编辑状态，撤销不得恢复另一种语言的草稿。 -->
+      <CodeEditor :key="environment" ref="editor" v-model="source" :environment="environment" :completion="completion" :diagnostics="diagnostics" :font-size="preferences.fontSize" :tab-size="preferences.tabSize" :wrap="preferences.wrap" @cursor="cursor = $event" />
     </div>
     <div class="workspace-status">
       <span class="inline-flex items-center gap-1.5"><span class="h-1.5 w-1.5 rounded-full" :class="saveState === '草稿已保存' ? 'bg-emerald-500' : 'bg-amber-500'" />{{ saveState }}</span>
@@ -292,7 +302,7 @@ onUnmounted(() => {
           <p v-if="problem?.content.checker === 'spj'" class="px-4 pb-3 text-xs text-muted-foreground">题目样例使用 Special Judge；自定义样例按期望输出比较，留空则只运行。</p>
         </TabsContent>
         <TabsContent value="tty" class="outline-none" force-mount :hidden="dockTab !== 'tty'">
-          <TerminalPane v-if="ttyStarted" :key="ttyKey" ref="terminal" :launch="launchTerminal" @close="ttyStarted = false; busy = null" />
+          <TerminalPane v-if="ttyStarted" :key="ttyKey" ref="terminal" :launch="launchTerminal" @close="closeTerminal" />
           <div v-else class="flex flex-col items-center gap-3 px-5 py-9 text-center"><Terminal class="h-7 w-7 text-muted-foreground/60" stroke-width="1.5" /><p class="text-sm font-medium">交互终端</p><p class="max-w-md text-xs leading-6 text-muted-foreground">{{ ttyReason || '点击运行后，程序输出会实时显示。输入数据并按 Enter 发送，Ctrl+D 结束输入，Ctrl+C 停止程序。' }}</p></div>
         </TabsContent>
         <TabsContent value="history" class="outline-none"><SnapshotPane :bucket="bucket" :environment="environment" :current="source" :disabled="!!busy" :revision="historyRevision" @restore="restoreSource" /></TabsContent>
@@ -303,7 +313,7 @@ onUnmounted(() => {
               <div class="flex flex-wrap items-center gap-3"><CheckCircle2 v-if="submitted.verdict === 'AC'" class="h-6 w-6 text-emerald-500" /><p class="text-lg font-semibold" :class="submissionStatus.cls">{{ submissionStatus.text }}</p><span class="text-xs text-muted-foreground">{{ passed }} / {{ submitted.points.length }} 测试点通过</span></div>
               <p v-if="source !== submittedCode || environment !== submittedEnv" class="text-xs text-amber-600 dark:text-amber-400">代码或语言已修改，此结果对应上次提交。</p>
               <pre v-if="submitted.verdict === 'CE'" class="test-data text-destructive">{{ clipText(submitted.points[0]?.stderr || submitted.points[0]?.error || '请检查编译诊断。') }}</pre>
-              <p class="text-xs text-muted-foreground">{{ synced ? '本次提交已同步到练习记录。' : !user ? '登录后可同步本次提交记录。' : pendingRecord ? '本次提交尚未同步。' : '' }}</p>
+              <p class="text-xs text-muted-foreground">{{ synced ? '本次提交已同步到练习记录。' : !user ? '登录后重新提交，可保存练习记录。' : pendingRecord ? '本次提交尚未同步。' : '' }}</p>
               <Button v-if="pendingRecord && !synced && user" variant="outline" :disabled="syncing" @click="syncRecord">{{ syncing ? '同步中…' : '重试同步记录' }}</Button>
               <a v-if="!user && pendingRecord" href="/login" class="inline-flex min-h-11 items-center text-sm underline underline-offset-4">前往登录</a>
             </template>
