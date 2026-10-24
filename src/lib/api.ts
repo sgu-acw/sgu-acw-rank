@@ -1193,12 +1193,12 @@ export const campAdminApi = {
     api.post(`/admin/camps/${id}/problems`, { platform, key }),
   /**
    * 批量导入题目。items 和 problem_list_id 可以一起给，重复的跳过。
-   * 返回 added / skipped / failed。
+   * 返回 added / skipped / failed；洛谷 U/T 题单独列入 excluded。
    */
   importProblems: (
     id: number,
     payload: { items?: { platform: Platform | 'learn'; key: string }[]; problem_list_id?: number },
-  ) => api.post<{ added: number; skipped: number; failed: string[] }>(`/admin/camps/${id}/problems/import`, payload),
+  ) => api.post<{ added: number; skipped: number; failed: string[]; excluded?: string[] }>(`/admin/camps/${id}/problems/import`, payload),
   removeProblem: (id: number, problemId: number) =>
     api.delete(`/admin/camps/${id}/problems/${problemId}`),
   addMember: (id: number, userId: number) =>

@@ -272,6 +272,10 @@ async function addProblem() {
   }
   if (!newKey.value.trim()) return
   const key = newKey.value.trim()
+  if (platform === 'luogu' && /^[UT][0-9]+$/i.test(key)) {
+    error.value = '集训不支持添加洛谷 U/T 题'
+    return
+  }
   await mutate(async () => {
     const info = await problemListApi.lookup(platform, key)
     if (info.missing_reason) throw new ApiError(400, info.missing_reason)
@@ -291,11 +295,11 @@ const importListId = ref<number | null>(null)
 const importText = ref('')
 const importDefaultPlatform = ref<Platform>('luogu')
 const importResult = ref('')
-const importHadFailures = ref(false)
+const importHasWarnings = ref(false)
 const importListsLoading = ref(false)
 function resetImport() {
   importOpen.value = false; importListId.value = null; importText.value = ''
-  importResult.value = ''; importHadFailures.value = false
+  importResult.value = ''; importHasWarnings.value = false
 }
 
 const PLATFORM_PREFIXES: Record<string, Platform | 'learn'> = {
@@ -336,7 +340,7 @@ async function runImport(source: 'list' | 'text') {
   if (!detail.value || busy.value || locked.value) return
   const id = detail.value.id
   busy.value = true
-  error.value = ''; notice.value = ''; importResult.value = ''; importHadFailures.value = false
+  error.value = ''; notice.value = ''; importResult.value = ''; importHasWarnings.value = false
   try {
     const payload: Parameters<typeof campAdminApi.importProblems>[1] = {}
     let rejected: string[] = []
@@ -347,7 +351,7 @@ async function runImport(source: 'list' | 'text') {
       const { items, failed } = parseImportText()
       rejected = failed
       if (!items.length) {
-        importHadFailures.value = true
+        importHasWarnings.value = true
         importResult.value = failed.length ? `没有可导入的题，无法识别：\n${failed.join('\n')}` : '没有可导入的题'
         return
       }
@@ -355,9 +359,11 @@ async function runImport(source: 'list' | 'text') {
     }
     const r = await campAdminApi.importProblems(id, payload)
     rejected = [...rejected, ...r.failed]
-    importHadFailures.value = rejected.length > 0
+    const excluded = r.excluded ?? []
+    importHasWarnings.value = rejected.length > 0 || excluded.length > 0
     importResult.value = `导入 ${r.added} 道，跳过 ${r.skipped} 道重复题`
-      + (rejected.length ? `；${rejected.length} 行未导入：\n${rejected.join('\n')}` : '')
+      + (excluded.length ? `\n以下洛谷 U/T 题不会加入集训：\n${excluded.join('\n')}` : '')
+      + (rejected.length ? `\n${rejected.length} 行未导入：\n${rejected.join('\n')}` : '')
     if (source === 'text') importText.value = rejected.join('\n')
     await loadList()
     await loadDetail(id, false)
@@ -637,6 +643,7 @@ onUnmounted(() => { disposed = true; ++requestId; sortable?.destroy(); window.re
                     <ChevronRight class="mr-2 h-4 w-4" :class="{ 'rotate-90': importOpen }" />批量导入
                   </Button>
                   <div v-if="importOpen" id="camp-import" class="mt-4 space-y-4">
+                    <p class="text-sm text-muted-foreground">洛谷 U/T 题不会加入集训，其余有效题目照常导入。</p>
                     <form class="space-y-2" @submit.prevent="runImport('list')">
                       <label for="camp-import-list" class="text-sm font-medium">从题单导入</label>
                       <div class="flex flex-wrap gap-2">
@@ -656,7 +663,7 @@ onUnmounted(() => { disposed = true; ++requestId; sortable?.destroy(); window.re
                       <textarea id="camp-import-text" v-model="importText" rows="4" :placeholder="'luogu:P1000\ncf:1234A\nac:abc300_a\nP1002'" class="form-textarea font-mono" :disabled="busy" />
                       <Button type="submit" variant="outline" :disabled="busy || !importText.trim()">导入题号</Button>
                     </form>
-                    <ActionNotice :message="importResult" :variant="importHadFailures ? 'info' : 'success'" />
+                    <ActionNotice :message="importResult" :variant="importHasWarnings ? 'info' : 'success'" />
                   </div>
                 </div>
               </CardContent>
