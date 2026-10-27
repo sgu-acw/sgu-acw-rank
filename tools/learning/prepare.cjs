@@ -181,14 +181,11 @@ async function main() {
     ? [...javaShared, await asset('java8.jar', fs.readFileSync(path.join(javaRoot, 'java8.jar')), 'application/octet-stream')]
     : null
 
-  // 语言服务（可选附件）：只有打开智能提示才下载，单独成项。
+  // Pyright 每次重建，不能复用以前漏掉 typeshed 的不完整目录，也不能吞掉打包错误。
   const { packClangd, packPyright } = require('./prepare-lsp.cjs')
-  const lspRoots = { clangd: path.join(work, 'lsp/clangd'), pyright: path.join(work, 'lsp/pyright') }
-  for (const [kind, dir] of Object.entries(lspRoots)) {
-    if (!fs.existsSync(dir)) {
-      const build = kind === 'clangd' ? packClangd : packPyright
-      try { build() } catch (error) { console.warn(`跳过 ${kind} 语言服务：${error.message}`) }
-    }
+  const lspRoots = { clangd: path.join(work, 'lsp/clangd'), pyright: packPyright() }
+  if (!fs.existsSync(lspRoots.clangd)) {
+    try { packClangd() } catch (error) { console.warn(`跳过 clangd 语言服务：${error.message}`) }
   }
   // buildEngine 跑的时候 lsp/clangd 可能还不存在（首次构建），这里补一次。
   copyClangdIntoEngine()

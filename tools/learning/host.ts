@@ -1,6 +1,7 @@
 import type { Execution, JudgeRequest, JudgeResult, LspId, Manifest, PackageState, Progress, Runtime, RuntimeId, Verdict } from '../../src/lib/learning/types'
 import { checkPoint } from './checker'
 import { policy } from './policy'
+import { pyrightInitializationOptions } from './pyright'
 
 // 父域白名单在构建期写死，不从 URL 读——查询参数任何人都能改，
 // 读它等于让任意站点嵌进运行器。
@@ -136,7 +137,15 @@ async function lspStart(id: LspId, environment: string, code: string): Promise<v
     session.pending.set(n, { resolve, reject, timer })
     session.worker.postMessage({ jsonrpc: '2.0', id: n, method, params })
   })
+  let initializationOptions: unknown
   if (id === 'pyright') {
+    const stdlib = await lspAssetUrl('pyright', 'stdlib.json')
+    if (!stdlib) throw new Error('Python 语言包缺少类型声明，请更新 Python 语言包')
+    try {
+      initializationOptions = pyrightInitializationOptions(await (await fetch(stdlib)).json())
+    } finally {
+      URL.revokeObjectURL(stdlib)
+    }
     const entry = await lspAssetUrl('pyright', 'pyright.worker.js')
     if (!entry) throw new Error('缺少 pyright 运行时')
     session.worker = new Worker(entry, { type: 'classic' })
@@ -163,16 +172,6 @@ async function lspStart(id: LspId, environment: string, code: string): Promise<v
   }
   lspSessions.set(id, session)
 
-  let initializationOptions: unknown
-  // 只有 pyright 需要 typeshed；clangd 启动时不能去查 pyright 的资产。
-  if (id === 'pyright') {
-    const stdlib = await lspAssetUrl('pyright', 'stdlib.json')
-    if (stdlib) {
-      const files = JSON.parse(await (await fetch(stdlib)).text()) as Record<string, string>
-      files['/workspace/pyrightconfig.json'] = JSON.stringify({ pythonVersion: '3.11', pythonPlatform: 'Linux', typeCheckingMode: 'basic', typeshedPath: '/typeshed' })
-      initializationOptions = { files }
-    }
-  }
   await rpc('initialize', {
     processId: null, rootUri: 'file:///workspace',
     capabilities: {

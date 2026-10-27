@@ -63,7 +63,7 @@ importers:
         specifier: ^8.21.3
         version: 8.21.3(vue@3.5.29(typescript@6.0.3))
       '@typefox/pyright-browser':
-        specifier: ^1.1.299
+        specifier: 1.1.299
         version: 1.1.299
       astro:
         specifier: ^5.17.1
@@ -141,6 +141,9 @@ importers:
       eslint-plugin-vue:
         specifier: ^10.11.1
         version: 10.11.1(@typescript-eslint/parser@8.71.0(eslint@10.11.0(jiti@1.21.7))(typescript@6.0.3))(eslint@10.11.0(jiti@1.21.7))(vue-eslint-parser@10.4.1(eslint@10.11.0(jiti@1.21.7)))
+      pyright:
+        specifier: 1.1.299
+        version: 1.1.299
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
@@ -3418,6 +3421,11 @@ packages:
   punycode@2.3.1:
     resolution: {integrity: sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg==}
     engines: {node: '>=6'}
+
+  pyright@1.1.299:
+    resolution: {integrity: sha512-37agqu0oNRsftFHNyGtaN3SBJJ+Qe2pembdgIpif9iL0VNqCU7j3wauSm8j0peXg1uNHFcS8UMrft4hT7w2XvQ==}
+    engines: {node: '>=12.0.0'}
+    hasBin: true
 
   qified@0.10.1:
     resolution: {integrity: sha512-+Owyggi9IxT1ePKGafcI87ubSmxol6smwJ+RAHDQlx9+9cPwFWDiKFFCPuWhr9ignlGpZ9vDQLw67N4dcTVFEA==}
@@ -8123,6 +8131,8 @@ snapshots:
   punycode.js@2.3.1: {}
 
   punycode@2.3.1: {}
+
+  pyright@1.1.299: {}
 
   qified@0.10.1:
     dependencies:

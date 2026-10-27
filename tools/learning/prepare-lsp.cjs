@@ -1,23 +1,17 @@
 /**
- * 打包编辑器语言服务（clangd / pyright）为可选资源。
- *
- * 为什么单独拆：clangd 约 51 MiB、pyright + typeshed 约 4 MiB，只有开了
- * 智能提示才需要。绑进主评测包会让所有人多下几十兆，所以做成独立的
- * "lsp" 附件，在工作台按需下载。
+ * 打包随对应语言包分发的编辑器语言服务（clangd / Pyright）。
  *
  * 产物落到 .local/learning/lsp/<kind>/，由 prepare.cjs 收进 manifest。
  */
 const fs = require('node:fs')
 const path = require('node:path')
-const { createRequire } = require('node:module')
 
 const root = path.resolve(__dirname, '../..')
 const work = path.join(root, '.local/learning')
-const require_ = createRequire(path.join(root, 'package.json'))
 /** 有些包不在 exports 里暴露 package.json，直接按 node_modules 布局定位。 */
 function packageDir(...segments) {
-  const candidates = [path.join(root, 'node_modules', ...segments), path.join(root, '..', 'OJ-Plus-Plus', 'node_modules', ...segments)]
-  for (const dir of candidates) if (fs.existsSync(dir)) return dir
+  const dir = path.join(root, 'node_modules', ...segments)
+  if (fs.existsSync(dir)) return dir
   throw new Error(`找不到依赖：${segments.join('/')}`)
 }
 
@@ -87,10 +81,29 @@ function packClangd() {
   return out
 }
 
-/** pyright：worker + typeshed 标准库 + ruff（格式化/静态检查）。 */
-function packPyright() {
-  const pyright = packageDir('@typefox/pyright-browser')
-  const out = path.join(work, 'lsp/pyright')
+/** Pyright worker 与同版本的 typeshed 必须一起打包。 */
+function packPyright({ out = path.join(work, 'lsp/pyright'), resolvePackage = packageDir } = {}) {
+  const pyright = resolvePackage('@typefox/pyright-browser')
+  const stubs = resolvePackage('pyright')
+  const browserVersion = JSON.parse(fs.readFileSync(path.join(pyright, 'package.json'), 'utf8')).version
+  const stubsVersion = JSON.parse(fs.readFileSync(path.join(stubs, 'package.json'), 'utf8')).version
+  if (browserVersion !== stubsVersion) throw new Error(`Pyright worker 与 typeshed 版本不一致：${browserVersion} / ${stubsVersion}`)
+  const typeshedRoot = path.join(stubs, 'dist/typeshed-fallback')
+  for (const name of ['LICENSE', 'stdlib/VERSIONS', 'stdlib/builtins.pyi', 'stdlib/typing.pyi', 'stdlib/typing_extensions.pyi', 'stdlib/_typeshed/__init__.pyi']) {
+    if (!fs.existsSync(path.join(typeshedRoot, name))) throw new Error(`Pyright 类型声明缺失：${name}`)
+  }
+  const files = {}
+  const walk = (dir, prefix) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const rel = `${prefix}/${entry.name}`
+      if (entry.isDirectory()) walk(path.join(dir, entry.name), rel)
+      else if (entry.name.endsWith('.pyi') || entry.name === 'VERSIONS') {
+        files[rel] = fs.readFileSync(path.join(dir, entry.name), 'utf8')
+      }
+    }
+  }
+  walk(path.join(typeshedRoot, 'stdlib'), '/typeshed/stdlib')
+
   fs.rmSync(out, { recursive: true, force: true })
   fs.mkdirSync(out, { recursive: true })
   copy(path.join(pyright, 'dist/pyright.worker.js'), path.join(out, 'pyright.worker.js'))
@@ -98,26 +111,8 @@ function packPyright() {
   const workerLicense = path.join(pyright, 'dist/pyright.worker.js.LICENSE.txt')
   if (fs.existsSync(workerLicense)) copy(workerLicense, path.join(out, 'worker.LICENSE.txt'))
 
-  let typeshedRoot
-  try {
-    typeshedRoot = path.join(packageDir('pyright'), 'dist/typeshed-fallback')
-  } catch { /* 没有独立 pyright 包时只带 worker */ }
-  if (typeshedRoot && fs.existsSync(typeshedRoot)) {
-    const license = path.join(typeshedRoot, 'LICENSE')
-    if (fs.existsSync(license)) copy(license, path.join(out, 'typeshed.LICENSE'))
-    const files = {}
-    const walk = (dir, prefix) => {
-      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-        const rel = `${prefix}/${entry.name}`
-        if (entry.isDirectory()) walk(path.join(dir, entry.name), rel)
-        else if (entry.name.endsWith('.pyi') || entry.name === 'VERSIONS') {
-          files[rel] = fs.readFileSync(path.join(dir, entry.name), 'utf8')
-        }
-      }
-    }
-    walk(path.join(typeshedRoot, 'stdlib'), '/typeshed/stdlib')
-    fs.writeFileSync(path.join(out, 'stdlib.json'), JSON.stringify(files))
-  }
+  copy(path.join(typeshedRoot, 'LICENSE'), path.join(out, 'typeshed.LICENSE'))
+  fs.writeFileSync(path.join(out, 'stdlib.json'), JSON.stringify(files))
   return out
 }
 

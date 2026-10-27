@@ -18,6 +18,8 @@ on:
       - 'src/components/learning/**'
       - 'deploy/deploy-judge.sh'
       - 'deploy/judge.zh314.xyz.conf'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
       - '.github/workflows/deploy-judge.yml'
   workflow_dispatch:
 
@@ -50,6 +52,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Judge regressions
+        run: pnpm learning:test
 
       # Java 运行时（B-JVM + JDK 21 类库 + ECJ）需要 Emscripten 编译和大量
       # 本地补丁，CI 里重建不现实。改为复用服务器上预置的归档：
