@@ -14,6 +14,7 @@ const work = path.join(root, '.local/learning')
 // 以前依赖 OJ++ 的 dist-extension，但那份产物只是把这些件重新压了一遍。
 const { prepareSource } = require('./fetch-runtimes.cjs')
 const packages = path.join(work, 'packages')
+const forceBrotli = process.env.FORCE_BROTLI === '1'
 
 function command(args) {
   const result = spawnSync(args[0], args.slice(1), { stdio: 'inherit' })
@@ -111,6 +112,7 @@ async function asset(name, bytes, type) {
   fs.mkdirSync(path.dirname(raw), { recursive: true })
   if (!fs.existsSync(raw)) fs.writeFileSync(raw, bytes)
   else if (fs.statSync(raw).size !== bytes.length) fs.writeFileSync(raw, bytes)
+  if (forceBrotli && fs.existsSync(packed)) fs.rmSync(packed)
   if (!fs.existsSync(packed)) {
     console.log(`Brotli 11: ${name} (${(bytes.length / 1048576).toFixed(1)} MiB decoded)`)
     // 先写临时文件再改名；上次被中断的半成品 .br 会解压不全，必须重建。

@@ -28,8 +28,8 @@ fi
 
 log "上传 engine 与 packages（release $RELEASE_ID）"
 ssh "$HOST" "mkdir -p '$REMOTE_ROOT/releases/$RELEASE_ID' '$REMOTE_ROOT/log' '$REMOTE_ROOT/secret/tls.d'"
-# 传未压缩原件（约 750 MB）而不是 .br：压缩交给 Cloudflare。
-# 预压缩在 CDN 后面会被二次压缩且头错配，实测客户端解压失败。
+# 同步原件和 Brotli 预压缩文件。对象路径统一返回 Content-Encoding: br，
+# 避免 Cloudflare 把 .html 资源注入挑战页，也避免二进制语言包回退成原始体积。
 # 文件清单由 find 生成——macOS 自带的 bsdtar 不认 --wildcards/--no-anchored。
 file_list="$(mktemp)"
 (
@@ -38,11 +38,26 @@ file_list="$(mktemp)"
   find packages -maxdepth 1 -type f \( -name 'manifest.json' -o -name 'THIRD_PARTY_NOTICES.md' \)
   # 只传 manifest 引用的对象：objects/ 里可能残留旧版本的大文件。
   node -e '
+    const fs = require("node:fs")
     const m = require("./packages/manifest.json")
     const seen = new Set()
     for (const r of m.runtimes) for (const a of r.assets) {
       const p = a.path.replace(/^\//, "")
-      if (!seen.has(p)) { seen.add(p); console.log(p) }
+      if (!seen.has(p)) {
+        seen.add(p)
+        if (!fs.existsSync(p + ".br")) throw new Error(`缺少 Brotli 对象：${p}.br`)
+        console.log(p)
+        console.log(p + ".br")
+      }
+    }
+    for (const service of Object.values(m.services || {})) for (const a of service?.assets || []) {
+      const p = a.path.replace(/^\//, "")
+      if (!seen.has(p)) {
+        seen.add(p)
+        if (!fs.existsSync(p + ".br")) throw new Error(`缺少 Brotli 对象：${p}.br`)
+        console.log(p)
+        console.log(p + ".br")
+      }
     }
   '
 ) > "$file_list"

@@ -45,10 +45,16 @@ jobs:
           node-version: 24
           cache: pnpm
 
-      # brotli 统计 .br 传输量（压缩由 Cloudflare 做，源站存原件）；
+      # Brotli 1.2.1 生成 .br（1.2.0 及以前受 CVE-2026-111497 影响）；
       # zstd 解压服务器上预置的 Java 归档。
       - name: Install brotli and zstd
-        run: sudo apt-get update && sudo apt-get install -y brotli zstd
+        run: |
+          sudo apt-get update && sudo apt-get install -y cmake zstd
+          curl -fsSL https://github.com/google/brotli/archive/refs/tags/v1.2.1.tar.gz | tar -xz -C /tmp
+          cmake -S /tmp/brotli-1.2.1 -B /tmp/brotli-build -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF
+          cmake --build /tmp/brotli-build --parallel
+          sudo cmake --install /tmp/brotli-build
+          brotli --version
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -100,6 +106,7 @@ jobs:
       - name: Prepare runner packages
         env:
           LEARN_PARENT_ORIGIN: https://sgu-acw.zh314.xyz
+          FORCE_BROTLI: "1"
         run: pnpm learning:prepare
 
       - name: Upload and switch release
