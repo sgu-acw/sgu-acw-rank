@@ -1,3 +1,5 @@
+// @ts-nocheck
+// Node-only regression tests; the app's TypeScript config targets the browser.
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import { packageDownloadUrl } from './package-download.ts'
