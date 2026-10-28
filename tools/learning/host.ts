@@ -2,6 +2,7 @@ import type { Execution, JudgeRequest, JudgeResult, LspId, Manifest, PackageStat
 import { checkPoint } from './checker'
 import { policy } from './policy'
 import { pyrightInitializationOptions } from './pyright'
+import { packageDownloadUrl } from './package-download'
 
 // 父域白名单在构建期写死，不从 URL 读——查询参数任何人都能改，
 // 读它等于让任意站点嵌进运行器。
@@ -309,7 +310,7 @@ async function fetchAsset(asset: { path: string; bytes: number }, signal: AbortS
     try {
       const headers: Record<string, string> = {}
       if (buffer.length) headers.Range = `bytes=${buffer.length}-`
-      const response = await fetch(asset.path, { credentials: 'omit', signal, cache: 'no-cache', headers })
+      const response = await fetch(packageDownloadUrl(asset.path, location.origin), { credentials: 'omit', signal, cache: 'no-cache', headers })
       // 206 是续传；200 说明服务端忽略了 Range，只能从头收。
       if (response.status === 200 && buffer.length) { buffer = new Uint8Array(0); onProgress(0) }
       if (!response.ok || !response.body) throw new Error(`资源下载失败：${asset.path}`)
