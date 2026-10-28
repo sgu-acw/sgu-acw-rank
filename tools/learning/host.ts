@@ -286,6 +286,15 @@ const pause = (ms: number, signal: AbortSignal) => new Promise<void>((resolve, r
   signal.addEventListener('abort', () => { clearTimeout(timer); reject(new DOMException('已取消', 'AbortError')) }, { once: true })
 })
 
+function contentRange(response: Response): { start: number; end: number; total: number } | null {
+  const value = response.headers.get('content-range')
+  const match = value?.match(/^bytes (\d+)-(\d+)\/(\d+)$/)
+  if (!match) return null
+  const start = Number(match[1]), end = Number(match[2]), total = Number(match[3])
+  return Number.isSafeInteger(start) && Number.isSafeInteger(end) && Number.isSafeInteger(total)
+    ? { start, end, total } : null
+}
+
 /**
  * 把一个资产下载到内存，支持 Range 续传与指数退避重试。
  * 校验交给调用方——这里只负责把完整字节拿回来。
@@ -304,6 +313,19 @@ async function fetchAsset(asset: { path: string; bytes: number }, signal: AbortS
       // 206 是续传；200 说明服务端忽略了 Range，只能从头收。
       if (response.status === 200 && buffer.length) { buffer = new Uint8Array(0); onProgress(0) }
       if (!response.ok || !response.body) throw new Error(`资源下载失败：${asset.path}`)
+      // CDN 可能缓存一个与本次 Range 不对应的 206。不能把它直接接在断点后，
+      // 否则会重复拼接一段内容，直到超出清单大小才报错。清掉断点后从头取。
+      if (response.status === 206) {
+        const range = contentRange(response)
+        const expectedStart = buffer.length
+        if (!range || range.start !== expectedStart || range.total !== asset.bytes || range.end < range.start) {
+          await response.body.cancel()
+          buffer = new Uint8Array(0)
+          await clearPartial(asset.path)
+          onProgress(0)
+          throw new Error('资源范围不匹配')
+        }
+      }
       const reader = response.body.getReader()
       const pieces: Uint8Array[] = buffer.length ? [buffer] : []
       let received = buffer.length, checkpoint = buffer.length
@@ -312,7 +334,14 @@ async function fetchAsset(asset: { path: string; bytes: number }, signal: AbortS
         if (done) break
         pieces.push(value)
         received += value.length
-        if (received > asset.bytes) { await reader.cancel(); throw new Error('资源大小不匹配') }
+        if (received > asset.bytes) {
+          await reader.cancel()
+          // 这通常表示服务端返回了错误的 Range；下一轮从头下载，避免重复失败。
+          buffer = new Uint8Array(0)
+          await clearPartial(asset.path)
+          onProgress(0)
+          throw new Error('资源大小不匹配')
+        }
         onProgress(received)
         // 每 1 MiB 落一次断点，中断最多损失 1 MiB 进度。
         if (received - checkpoint >= 1 << 20) {
