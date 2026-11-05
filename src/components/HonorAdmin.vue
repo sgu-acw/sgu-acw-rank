@@ -13,6 +13,7 @@ import {
 } from '../lib/honors'
 import AdminWorkspaceNav from './AdminWorkspaceNav.vue'
 import UserHonorEditor from './UserHonorEditor.vue'
+import HonorMedal from './HonorMedal.vue'
 import ActionNotice from './ui/ActionNotice.vue'
 import RefreshButton from './ui/RefreshButton.vue'
 import { Button } from './ui/button'
@@ -28,6 +29,15 @@ const busy = ref(false)
 const error = ref('')
 const notice = ref('')
 const query = ref('')
+const reviewFilter = ref<'pending' | 'verified' | 'excluded'>('pending')
+const reviewTabs = [['pending', '待核实'], ['verified', '已核实'], ['excluded', '不计入']] as const
+const reviewCounts = computed(() => Object.fromEntries(reviewTabs.map(([key]) => [key, awards.value.filter((a) => a.status === key).length])))
+function switchReviewFilter(value: typeof reviewFilter.value) {
+  if (busy.value) return
+  reviewFilter.value = value
+  active.value = null
+  error.value = notice.value = ''
+}
 let sequence = 0
 const review = reactive({ status: 'pending', user_ids: [] as (number | null)[], revision: 0 })
 const eventDraft = reactive({
@@ -41,13 +51,12 @@ const importResult = ref<ImportResult | null>(null)
 const selectedAward = computed(() => awards.value.find((a) => a.id === active.value))
 const items = computed(() =>
   (section.value === 'users'
-    ? users.value.map((p) => ({ id: p.id, title: p.display_name, sub: `${p.student_id} · 曾用名：${p.former_names.join('、') || '无'}` }))
-    : awards.value.map((a) => ({
+    ? users.value.map((p) => ({ id: p.id, title: p.display_name, award: '', sub: `${p.student_id} · 曾用名：${p.former_names.join('、') || '无'}` }))
+    : awards.value.filter((a) => a.status === reviewFilter.value).map((a) => ({
         id: a.id,
         title: a.event.title,
-        sub: `${a.award} · ${
-          a.status === 'verified' ? '已核实' : a.status === 'excluded' ? '不计入' : '待核实'
-        } · ${a.recipients.map((p) => p.raw_name).join('、')}`,
+        award: a.award,
+        sub: a.recipients.map((p) => p.raw_name).join('、'),
       }))
   ).filter((r) => `${r.title} ${r.sub}`.includes(query.value.trim()))
 )
@@ -269,14 +278,23 @@ onUnmounted(() => {
           }`"
         />
       </section>
-      <div v-else class="grid min-w-0 gap-4 lg:grid-cols-[260px_minmax(0,1fr)]">
+      <div v-else class="min-w-0 space-y-4">
+        <div v-if="section === 'awards'" class="flex flex-wrap gap-2" aria-label="审核状态筛选">
+          <Button v-for="tab in reviewTabs" :key="tab[0]" variant="outline" class="choice-button gap-2"
+            :aria-pressed="reviewFilter === tab[0]" :disabled="busy" @click="switchReviewFilter(tab[0])">
+            {{ tab[1] }}<span class="tabular-nums text-muted-foreground">{{ reviewCounts[tab[0]] }}</span>
+          </Button>
+        </div>
+        <div class="grid min-w-0 gap-4 lg:grid-cols-[260px_minmax(0,1fr)]">
         <section class="min-w-0 space-y-3" :class="active !== null && 'hidden lg:block'">
           <div class="flex items-center justify-between gap-2">
             <h2 class="font-semibold">{{ section === 'users' ? '用户资料' : '获奖审核' }}</h2>
           </div>
           <Input v-model="query" aria-label="筛选当前列表" placeholder="筛选当前列表" />
           <p v-if="loading" class="text-sm text-muted-foreground">正在读取…</p>
-          <p v-else-if="!items.length" class="text-sm text-muted-foreground">暂无记录</p>
+          <p v-else-if="!items.length" class="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
+            {{ query ? '没有符合筛选条件的记录' : section === 'awards' && reviewFilter === 'pending' ? '待核实队列已清空' : '暂无记录' }}
+          </p>
           <div class="max-h-[65vh] space-y-1 overflow-y-auto">
             <button
               v-for="item in items"
@@ -287,10 +305,13 @@ onUnmounted(() => {
               :disabled="busy"
               @click="open(item.id)"
             >
-              <span class="block break-words text-sm font-medium">{{ item.title }}</span
-              ><span class="mt-1 block break-words text-xs text-muted-foreground">{{
-                item.sub
-              }}</span>
+              <div class="flex items-start gap-2">
+                <HonorMedal v-if="item.award" :award="item.award" compact />
+                <div class="min-w-0">
+                  <span class="block break-words text-sm font-medium">{{ item.title }}</span>
+                  <span class="mt-1 block break-words text-sm text-muted-foreground">{{ item.sub }}</span>
+                </div>
+              </div>
             </button>
           </div>
         </section>
@@ -308,7 +329,7 @@ onUnmounted(() => {
 返回列表
 </Button
           >
-          <p v-if="active === null" class="text-sm text-muted-foreground">选择一条记录开始核对</p>
+          <p v-if="active === null" class="text-sm text-muted-foreground">{{ section === 'awards' && reviewFilter === 'pending' && !reviewCounts.pending ? '后续新增记录会单独进入待核实队列' : '选择一条记录查看详情' }}</p>
           <UserHonorEditor
             v-else-if="section === 'users' && active !== null"
             :key="active"
@@ -411,6 +432,7 @@ onUnmounted(() => {
             </form>
           </div>
         </section>
+        </div>
       </div>
     </template>
   </div>
