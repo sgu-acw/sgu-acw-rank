@@ -8,8 +8,9 @@
  * 弹窗那条路径会传 ``entry`` 进来——榜单里已经有这个人的姓名、学院、每日
  * 明细了，没必要再拉一遍整个榜单。只有直接开页面时才需要自己取。
  */
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { AlertCircle, ExternalLink, Loader2 } from 'lucide-vue-next'
+import HonorArchive from './HonorArchive.vue'
 import AdminMemberPanel from './AdminMemberPanel.vue'
 import { Alert } from './ui/alert'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
@@ -77,7 +78,11 @@ function profileUrl(account: PlatformAccount): string | null {
   }
 }
 
+let memberRequest = 0
+onUnmounted(() => { memberRequest++ })
+
 async function load(id: number) {
+  const request = ++memberRequest
   if (!id) {
     error.value = '缺少成员编号'
     loading.value = false
@@ -93,17 +98,19 @@ async function load(id: number) {
       accountsApi.of(id),
     ]
     const [info, accountList] = await Promise.all(requests)
+    if (request !== memberRequest) return
     member.value = info
     accounts.value = accountList
 
     if (!props.entry) {
       const rank = await practiceApi.rank({ days: 30 })
+      if (request !== memberRequest) return
       fetchedEntry.value = rank.entries.find((e) => e.user_id === id) ?? null
     }
   } catch (err) {
-    error.value = err instanceof ApiError ? err.message : '加载失败'
+    if (request === memberRequest) error.value = err instanceof ApiError ? err.message : '加载失败'
   } finally {
-    loading.value = false
+    if (request === memberRequest) loading.value = false
   }
 }
 
@@ -146,6 +153,8 @@ onMounted(() => ensureLoaded())
         <!-- 班级简称里已含学院和专业，不再重复。 -->
         {{ member.class_label || [member.college_name, member.major_name].filter(Boolean).join(' · ') }}
       </p>
+
+      <div class="rounded-lg border bg-card p-4"><HonorArchive :user-id="member.id" /></div>
 
       <!-- 平台账号 -->
       <Card>

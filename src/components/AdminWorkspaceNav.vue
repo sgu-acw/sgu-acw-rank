@@ -10,10 +10,11 @@ import { Activity, BookOpen, ClipboardList, FileText, ListChecks, Terminal, Trop
 import { LEARN_LOCAL } from '../lib/api'
 
 defineProps<{
-  active: 'people' | 'problems' | 'learn' | 'editorials' | 'camps' | 'posts' | 'status' | 'signups'
+  active: 'people' | 'problems' | 'learn' | 'editorials' | 'camps' | 'posts' | 'status' | 'signups' | 'honors'
 }>()
 
 const TABS = [
+  { key: 'honors', href: '/admin/honors', label: '荣誉', icon: Trophy },
   { key: 'people', href: '/admin', label: '成员', icon: Users },
   { key: 'problems', href: '/problems/admin', label: '题单', icon: ListChecks },
   // 题库只在本地预览启用；生产构建里 /admin/learn 是 404。

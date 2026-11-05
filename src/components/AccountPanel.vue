@@ -9,6 +9,7 @@ import { computed, onMounted } from 'vue'
 import { LogOut, Loader2 } from 'lucide-vue-next'
 import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
+import HonorArchive from './HonorArchive.vue'
 import PushSettings from './PushSettings.vue'
 import SecuritySettings from './SecuritySettings.vue'
 import { Separator } from './ui/separator'
@@ -126,6 +127,10 @@ function go(path: string) {
       </div>
     </CardContent>
   </Card>
+
+  <div v-if="ready && user" class="mt-4 rounded-lg border bg-card p-4">
+    <HonorArchive :user-id="user.id" />
+  </div>
 
   <!-- 账号绑定只在已登录时显示，它需要会话。 -->
   <div v-if="ready && user" class="mt-4">

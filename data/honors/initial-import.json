@@ -1,0 +1,1790 @@
+{
+  "records": [
+    {
+      "source_key": "srk:ccpc2023guilin:184:series-0",
+      "event": {
+        "key": "ccpc2023guilin",
+        "title": "第 9 届 CCPC 中国大学生程序设计竞赛 桂林站",
+        "family": "ccpc",
+        "occurred_on": "2023-10-29",
+        "date_precision": "day",
+        "category": "#"
+      },
+      "team": "我看队友打代码",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2023/ccpc2023guilin.srk.json",
+      "recipients": [
+        "康丁魁",
+        "林日清",
+        "周亚男"
+      ],
+      "award": "铜奖",
+      "evidence": "SRK 0.3.13；series[0]，rank=117，segment=铜奖。按上游标准库 0.3.3 解析；待核实身份和在校时间。"
+    },
+    {
+      "source_key": "srk:ccpc2024ladies:114:series-0",
+      "event": {
+        "key": "ccpc2024ladies",
+        "title": "第十届中国大学生程序设计竞赛（女生专场）",
+        "family": "ccpc",
+        "occurred_on": "2024-11-03",
+        "date_precision": "day",
+        "category": "#"
+      },
+      "team": "因为晕3D不能玩黑神话来打A",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2024/ccpc2024ladies.srk.json",
+      "recipients": [
+        "何韵怡",
+        "李镔彬",
+        "周亚男"
+      ],
+      "award": "铜奖",
+      "evidence": "SRK 0.3.13；series[0]，rank=81，segment=Bronze Award。按上游标准库 0.3.3 解析；待核实身份和在校时间。"
+    },
+    {
+      "source_key": "srk:ccpc2025invitational-fujian:217:series-0",
+      "event": {
+        "key": "ccpc2025invitational-fujian",
+        "title": "第十二届福建省大学生程序设计竞赛暨2025年CCPC福建邀请赛",
+        "family": "ccpc",
+        "occurred_on": "2025-06-21",
+        "date_precision": "day",
+        "category": "#"
+      },
+      "team": "全队广东人,打a爆改自助餐",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2025/ccpc2025invitational-fujian.srk.json",
+      "recipients": [
+        "叶福都",
+        "谢泽栩",
+        "朱子睿"
+      ],
+      "award": "铜奖",
+      "evidence": "SRK 0.3.8；series[0]，rank=116，segment=Bronze Award。按上游标准库 0.3.3 解析；待核实身份和在校时间。"
+    },
+    {
+      "source_key": "srk:ccpc2025invitational-zhengzhou:A0702:series-0",
+      "event": {
+        "key": "ccpc2025invitational-zhengzhou",
+        "title": "2025CCPC全国邀请赛（郑州）暨第七届河南省赛",
+        "family": "ccpc",
+        "occurred_on": "2025-06-02",
+        "date_precision": "day",
+        "category": "#"
+      },
+      "team": "Ciallo World",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2025/ccpc2025invitational-zhengzhou.srk.json",
+      "recipients": [
+        "冯诺维",
+        "谢泽栩",
+        "朱子睿"
+      ],
+      "award": "铜奖",
+      "evidence": "SRK 0.3.13；series[0]，rank=161，segment=Bronze Award。按上游标准库 0.3.3 解析；待核实身份和在校时间。"
+    },
+    {
+      "source_key": "srk:ccpc2026invitational-fuzhou:42:series-0",
+      "event": {
+        "key": "ccpc2026invitational-fuzhou",
+        "title": "第十三届福建省大学生程序设计竞赛 暨2026年CCPC全国邀请赛（福州）",
+        "family": "ccpc",
+        "occurred_on": "2026-05-30",
+        "date_precision": "day",
+        "category": "邀请赛#"
+      },
+      "team": "輪符雨",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2026/ccpc2026invitational-fuzhou.srk.json",
+      "recipients": [
+        "叶福都",
+        "卢成洋",
+        "叶宇轩"
+      ],
+      "award": "铜奖",
+      "evidence": "SRK 0.3.13；series[0]，rank=178，segment=Bronze Award。按上游标准库 0.3.3 解析；待核实身份和在校时间。"
+    },
+    {
+      "source_key": "srk:ccpc2026invitational-nanchang:team067:series-0",
+      "event": {
+        "key": "ccpc2026invitational-nanchang",
+        "title": "2026年中国大学生程序设计竞赛-全国邀请赛（南昌）（南昌大学）",
+        "family": "ccpc",
+        "occurred_on": "2026-05-24",
+        "date_precision": "day",
+        "category": "邀请赛#"
+      },
+      "team": "派大星",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2026/ccpc2026invitational-nanchang.srk.json",
+      "recipients": [
+        "陈思琪",
+        "朱子睿",
+        "陈俊东"
+      ],
+      "award": "银奖",
+      "evidence": "SRK 0.3.13；series[0]，rank=84，segment=银奖。按上游标准库 0.3.3 解析；待核实身份和在校时间。"
+    },
+    {
+      "source_key": "srk:icpc2023jinan:228:series-0",
+      "event": {
+        "key": "icpc2023jinan",
+        "title": "第 48 届国际大学生程序设计竞赛亚洲区域赛济南站",
+        "family": "icpc",
+        "occurred_on": "2023-12-03",
+        "date_precision": "day",
+        "category": "#"
+      },
+      "team": "我看队友打代码",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2023/icpc2023jinan.srk.json",
+      "recipients": [
+        "康丁魁",
+        "林日清",
+        "周亚男"
+      ],
+      "award": "铜奖",
+      "evidence": "SRK 0.3.4；series[0]，rank=158，segment=铜奖。按上游标准库 0.3.3 解析；待核实身份和在校时间。"
+    },
+    {
+      "source_key": "srk:icpc2024hongkong:CD303-17:series-0",
+      "event": {
+        "key": "icpc2024hongkong",
+        "title": "第 49 届 ICPC 国际大学生程序设计竞赛区域赛香港站",
+        "family": "icpc",
+        "occurred_on": "2024-12-22",
+        "date_precision": "day",
+        "category": "#"
+      },
+      "team": "Man! What can I accept ",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2024/icpc2024hongkong.srk.json",
+      "recipients": [
+        "Nuowei Feng",
+        "Dingkui Kang",
+        "Xinghan Chen"
+      ],
+      "award": "银奖",
+      "evidence": "SRK 0.3.13；series[0]，rank=38，segment=银奖。按上游标准库 0.3.3 解析；待核实身份和在校时间。"
+    },
+    {
+      "source_key": "srk:icpc2024kunming:D1703:series-0",
+      "event": {
+        "key": "icpc2024kunming",
+        "title": "第 49 届 ICPC 国际大学生程序设计竞赛区域赛昆明站",
+        "family": "icpc",
+        "occurred_on": "2024-12-01",
+        "date_precision": "day",
+        "category": "#"
+      },
+      "team": "码农转生~到了区域赛就拿出真本事",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2024/icpc2024kunming.srk.json",
+      "recipients": [
+        "冯诺维",
+        "康丁魁",
+        "陈兴翰"
+      ],
+      "award": "铜奖",
+      "evidence": "SRK 0.3.13；series[0]，rank=242，segment=铜奖。按上游标准库 0.3.3 解析；待核实身份和在校时间。"
+    },
+    {
+      "source_key": "srk:icpc2025invitational-nanchang:268:series-0",
+      "event": {
+        "key": "icpc2025invitational-nanchang",
+        "title": "2025年icpc全国邀请赛（南昌）暨2025年（icpc）江西省大学生程序设计竞赛",
+        "family": "icpc",
+        "occurred_on": "2025-05-18",
+        "date_precision": "day",
+        "category": "ICPC#"
+      },
+      "team": "Ciallo World",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2025/icpc2025invitational-nanchang.srk.json",
+      "recipients": [
+        "冯诺维",
+        "朱子睿",
+        "谢泽栩"
+      ],
+      "award": "铜奖",
+      "evidence": "SRK 0.3.13；series[0]，rank=219，segment=铜奖。按上游标准库 0.3.3 解析；待核实身份和在校时间。"
+    },
+    {
+      "source_key": "srk:icpc2026invitational-nanchang:273:series-0",
+      "event": {
+        "key": "icpc2026invitational-nanchang",
+        "title": "2026 年 ICPC 国际大学生程序设计竞赛全国邀请赛（南昌）暨江西省赛",
+        "family": "icpc",
+        "occurred_on": "2026-05-17",
+        "date_precision": "day",
+        "category": "#"
+      },
+      "team": "这个队名放到校园网上影响不好",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2026/icpc2026invitational-nanchang.srk.json",
+      "recipients": [
+        "朱子睿",
+        "叶福都",
+        "谢泽栩"
+      ],
+      "award": "铜奖",
+      "evidence": "SRK 0.3.9；series[0]，rank=117，segment=铜奖。按上游标准库 0.3.3 解析；待核实身份和在校时间。"
+    },
+    {
+      "source_key": "srk:icpc2026invitational-xi_an:Team347:series-0",
+      "event": {
+        "key": "icpc2026invitational-xi_an",
+        "title": "第 51 届 ICPC 国际大学生程序设计竞赛邀请赛西安站 - 正式赛",
+        "family": "icpc",
+        "occurred_on": "2026-05-02",
+        "date_precision": "day",
+        "category": "#"
+      },
+      "team": "这个队名放到校园网上影响不好",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2026/icpc2026invitational-xi_an.srk.json",
+      "recipients": [
+        "朱子睿",
+        "谢泽栩",
+        "叶福都"
+      ],
+      "award": "银奖",
+      "evidence": "SRK 0.3.9；series[0]，rank=59，segment=银奖。按上游标准库 0.3.3 解析；待核实身份和在校时间。"
+    },
+    {
+      "source_key": "srk:icpc2026xi_an:Team291:series-0",
+      "event": {
+        "key": "icpc2026xi_an",
+        "title": "第 51 届 ICPC 国际大学生程序设计竞赛区域赛西安站 - 正式赛",
+        "family": "icpc",
+        "occurred_on": "2026-10-18",
+        "date_precision": "day",
+        "category": "#"
+      },
+      "team": "可是雾月真的好可爱",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2026/icpc2026xi_an.srk.json",
+      "recipients": [
+        "朱子睿",
+        "叶福都",
+        "谢泽栩"
+      ],
+      "award": "铜奖",
+      "evidence": "SRK 0.3.13；series[0]，rank=246，segment=铜奖。按上游标准库 0.3.3 解析；待核实身份和在校时间。"
+    },
+    {
+      "source_key": "srk:gdcpc20th:team032:series-0",
+      "event": {
+        "key": "gdcpc20th",
+        "title": "第二十届广东省大学生程序设计竞赛",
+        "family": "provincial",
+        "occurred_on": "2023-05-14",
+        "date_precision": "day",
+        "category": "#"
+      },
+      "team": "攻城狮",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/gd/gdcpc20th.srk.json",
+      "recipients": [
+        "刘庭权",
+        "罗凯鑫",
+        "林日清"
+      ],
+      "award": "铜奖",
+      "evidence": "SRK 0.3.13；series[0]，rank=128，segment=Bronze Award。按上游标准库 0.3.3 解析；待核实身份和在校时间。"
+    },
+    {
+      "source_key": "srk:gdcpc21st:team0238:series-0",
+      "event": {
+        "key": "gdcpc21st",
+        "title": "第二十一届广东省大学生程序设计竞赛",
+        "family": "provincial",
+        "occurred_on": "2024-05-26",
+        "date_precision": "day",
+        "category": "#"
+      },
+      "team": "我看队友打代码",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/gd/gdcpc21st.srk.json",
+      "recipients": [
+        "康丁魁",
+        "林日清",
+        "周亚男"
+      ],
+      "award": "铜奖",
+      "evidence": "SRK 0.3.8；series[0]，rank=94，segment=Bronze Award。按上游标准库 0.3.3 解析；待核实身份和在校时间。"
+    },
+    {
+      "source_key": "srk:gxcpc8th:1030014214:series-2",
+      "event": {
+        "key": "gxcpc8th",
+        "title": "第八届广西大学生程序设计大赛暨2025中国-东盟国际大学生程序设计大赛",
+        "family": "provincial",
+        "occurred_on": "2025-05-25",
+        "date_precision": "day",
+        "category": "邀请赛#"
+      },
+      "team": "这个队名, 挂到校园网上影响不好!",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/gx/gxcpc8th.srk.json",
+      "recipients": [
+        "朱子睿",
+        "谢泽栩",
+        "叶福都"
+      ],
+      "award": "银奖",
+      "evidence": "SRK 0.3.13；series[2]，rank=17，segment=Silver Award。按上游标准库 0.3.3 解析；待核实身份和在校时间。"
+    },
+    {
+      "source_key": "srk:gxcpc8th:1030014152:series-2",
+      "event": {
+        "key": "gxcpc8th",
+        "title": "第八届广西大学生程序设计大赛暨2025中国-东盟国际大学生程序设计大赛",
+        "family": "provincial",
+        "occurred_on": "2025-05-25",
+        "date_precision": "day",
+        "category": "邀请赛#"
+      },
+      "team": "灌注 hsn8086 谢谢喵!",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/gx/gxcpc8th.srk.json",
+      "recipients": [
+        "马嘉亮",
+        "陈思琪",
+        "李镔彬"
+      ],
+      "award": "铜奖",
+      "evidence": "SRK 0.3.13；series[2]，rank=45，segment=Bronze Award。按上游标准库 0.3.3 解析；待核实身份和在校时间。"
+    },
+    {
+      "source_key": "srk:gxcpc9th:1030015132:series-0",
+      "event": {
+        "key": "gxcpc9th",
+        "title": "第九届广西大学生程序设计大赛暨2026中国-东盟国际大学生程序设计大赛",
+        "family": "provincial",
+        "occurred_on": "2026-05-31",
+        "date_precision": "day",
+        "category": "邀请赛#"
+      },
+      "team": "这个队名放到校园网上影响不好",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/gx/gxcpc9th.srk.json",
+      "recipients": [
+        "朱子睿",
+        "谢泽栩",
+        "陈思琪"
+      ],
+      "award": "铜奖",
+      "evidence": "SRK 0.3.13；series[0]，rank=77，segment=Bronze Award。按上游标准库 0.3.3 解析；待核实身份和在校时间。"
+    },
+    {
+      "source_key": "srk:haccpc6th:G31N:series-0",
+      "event": {
+        "key": "haccpc6th",
+        "title": "第六届CCPC河南省大学生程序设计竞赛",
+        "family": "provincial",
+        "occurred_on": "2024-05-12",
+        "date_precision": "day",
+        "category": "#"
+      },
+      "team": "寻找ll之旅",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/ha/haccpc6th.srk.json",
+      "recipients": [
+        "康丁魁",
+        "周亚男",
+        "李镔彬"
+      ],
+      "award": "银奖",
+      "evidence": "SRK 0.3.13；series[0]，rank=90，segment=Silver Award。按上游标准库 0.3.3 解析；待核实身份和在校时间。"
+    },
+    {
+      "source_key": "srk:haccpc6th:I31N:series-0",
+      "event": {
+        "key": "haccpc6th",
+        "title": "第六届CCPC河南省大学生程序设计竞赛",
+        "family": "provincial",
+        "occurred_on": "2024-05-12",
+        "date_precision": "day",
+        "category": "#"
+      },
+      "team": "SGU-T1",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/ha/haccpc6th.srk.json",
+      "recipients": [
+        "冯诺维",
+        "许申浩",
+        "陈兴翰"
+      ],
+      "award": "铜奖",
+      "evidence": "SRK 0.3.13；series[0]，rank=235，segment=Bronze Award。按上游标准库 0.3.3 解析；待核实身份和在校时间。"
+    },
+    {
+      "source_key": "official:lanqiao12-final:12509384",
+      "event": {
+        "key": "lanqiao12-final-C/C++程序设计大学B组",
+        "title": "第12届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2021-01-01",
+        "date_precision": "year",
+        "category": "C/C++程序设计大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202110/courseimg/41147d63-c9bb-47d8-ae99-d5776a6c39f8.rar",
+      "evidence": "官方压缩包内 软件类-CC++程序设计大学B组总决赛获奖名单.pdf 第34页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "马欣鸿"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao12-final:12509388",
+      "event": {
+        "key": "lanqiao12-final-C/C++程序设计大学B组",
+        "title": "第12届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2021-01-01",
+        "date_precision": "year",
+        "category": "C/C++程序设计大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202110/courseimg/41147d63-c9bb-47d8-ae99-d5776a6c39f8.rar",
+      "evidence": "官方压缩包内 软件类-CC++程序设计大学B组总决赛获奖名单.pdf 第37页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "郑育濠"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao12-final:12509386",
+      "event": {
+        "key": "lanqiao12-final-C/C++程序设计大学B组",
+        "title": "第12届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2021-01-01",
+        "date_precision": "year",
+        "category": "C/C++程序设计大学B组"
+      },
+      "award": "优秀奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202110/courseimg/41147d63-c9bb-47d8-ae99-d5776a6c39f8.rar",
+      "evidence": "官方压缩包内 软件类-CC++程序设计大学B组总决赛获奖名单.pdf 第70页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "童浩轩"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao12-final:12509383",
+      "event": {
+        "key": "lanqiao12-final-Java软件开发大学B组",
+        "title": "第12届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2021-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "一等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202110/courseimg/41147d63-c9bb-47d8-ae99-d5776a6c39f8.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第1页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "林鸿涛"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao12-final:12509377",
+      "event": {
+        "key": "lanqiao12-final-Java软件开发大学B组",
+        "title": "第12届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2021-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "一等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202110/courseimg/41147d63-c9bb-47d8-ae99-d5776a6c39f8.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第1页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "郑晓帆"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao12-final:12509381",
+      "event": {
+        "key": "lanqiao12-final-Java软件开发大学B组",
+        "title": "第12届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2021-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "一等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202110/courseimg/41147d63-c9bb-47d8-ae99-d5776a6c39f8.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第1页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "翁耿鹏"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao12-final:12509379",
+      "event": {
+        "key": "lanqiao12-final-Java软件开发大学B组",
+        "title": "第12届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2021-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202110/courseimg/41147d63-c9bb-47d8-ae99-d5776a6c39f8.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第8页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "钟卓辉"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao12-final:12509387",
+      "event": {
+        "key": "lanqiao12-final-Java软件开发大学B组",
+        "title": "第12届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2021-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202110/courseimg/41147d63-c9bb-47d8-ae99-d5776a6c39f8.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第8页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "姚仁钊"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao12-final:12509389",
+      "event": {
+        "key": "lanqiao12-final-Java软件开发大学B组",
+        "title": "第12届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2021-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202110/courseimg/41147d63-c9bb-47d8-ae99-d5776a6c39f8.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第14页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "周泽晓"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao12-final:12509385",
+      "event": {
+        "key": "lanqiao12-final-Java软件开发大学B组",
+        "title": "第12届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2021-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "优秀奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202110/courseimg/41147d63-c9bb-47d8-ae99-d5776a6c39f8.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第19页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "黄志标"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao12-final:12509253",
+      "event": {
+        "key": "lanqiao12-final-Python程序设计大学组",
+        "title": "第12届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2021-01-01",
+        "date_precision": "year",
+        "category": "Python程序设计大学组"
+      },
+      "award": "优秀奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202110/courseimg/41147d63-c9bb-47d8-ae99-d5776a6c39f8.rar",
+      "evidence": "官方压缩包内 软件类-Python程序设计大学组总决赛获奖名单.pdf 第9页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "彭永源"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao12-final:12509255",
+      "event": {
+        "key": "lanqiao12-final-Python程序设计大学组",
+        "title": "第12届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2021-01-01",
+        "date_precision": "year",
+        "category": "Python程序设计大学组"
+      },
+      "award": "优秀奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202110/courseimg/41147d63-c9bb-47d8-ae99-d5776a6c39f8.rar",
+      "evidence": "官方压缩包内 软件类-Python程序设计大学组总决赛获奖名单.pdf 第13页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "麦志杰"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao13-final:13159976",
+      "event": {
+        "key": "lanqiao13-final-C/C++程序设计大学B组",
+        "title": "第13届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2022-01-01",
+        "date_precision": "year",
+        "category": "C/C++程序设计大学B组"
+      },
+      "award": "二等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202210/courseimg/8044a2a8-df16-47b3-9055-7639605f65e7.rar",
+      "evidence": "官方压缩包内 软件类-CC++程序设计大学B组总决赛获奖名单.pdf 第21页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "汪浪峰"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao13-final:13159972",
+      "event": {
+        "key": "lanqiao13-final-C/C++程序设计大学B组",
+        "title": "第13届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2022-01-01",
+        "date_precision": "year",
+        "category": "C/C++程序设计大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202210/courseimg/8044a2a8-df16-47b3-9055-7639605f65e7.rar",
+      "evidence": "官方压缩包内 软件类-CC++程序设计大学B组总决赛获奖名单.pdf 第33页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "童浩轩"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao13-final:13159982",
+      "event": {
+        "key": "lanqiao13-final-C/C++程序设计大学B组",
+        "title": "第13届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2022-01-01",
+        "date_precision": "year",
+        "category": "C/C++程序设计大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202210/courseimg/8044a2a8-df16-47b3-9055-7639605f65e7.rar",
+      "evidence": "官方压缩包内 软件类-CC++程序设计大学B组总决赛获奖名单.pdf 第34页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "康丁魁"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao13-final:13159980",
+      "event": {
+        "key": "lanqiao13-final-C/C++程序设计大学B组",
+        "title": "第13届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2022-01-01",
+        "date_precision": "year",
+        "category": "C/C++程序设计大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202210/courseimg/8044a2a8-df16-47b3-9055-7639605f65e7.rar",
+      "evidence": "官方压缩包内 软件类-CC++程序设计大学B组总决赛获奖名单.pdf 第42页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "吴浩颖"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao13-final:13159974",
+      "event": {
+        "key": "lanqiao13-final-C/C++程序设计大学B组",
+        "title": "第13届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2022-01-01",
+        "date_precision": "year",
+        "category": "C/C++程序设计大学B组"
+      },
+      "award": "优秀奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202210/courseimg/8044a2a8-df16-47b3-9055-7639605f65e7.rar",
+      "evidence": "官方压缩包内 软件类-CC++程序设计大学B组总决赛获奖名单.pdf 第78页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "冯明高"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao13-final:13159978",
+      "event": {
+        "key": "lanqiao13-final-C/C++程序设计大学B组",
+        "title": "第13届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2022-01-01",
+        "date_precision": "year",
+        "category": "C/C++程序设计大学B组"
+      },
+      "award": "优秀奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202210/courseimg/8044a2a8-df16-47b3-9055-7639605f65e7.rar",
+      "evidence": "官方压缩包内 软件类-CC++程序设计大学B组总决赛获奖名单.pdf 第79页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "李楠豪"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao13-final:13159966",
+      "event": {
+        "key": "lanqiao13-final-Java软件开发大学B组",
+        "title": "第13届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2022-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "一等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202210/courseimg/8044a2a8-df16-47b3-9055-7639605f65e7.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第2页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "盘炫铭"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao13-final:13159983",
+      "event": {
+        "key": "lanqiao13-final-Java软件开发大学B组",
+        "title": "第13届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2022-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "一等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202210/courseimg/8044a2a8-df16-47b3-9055-7639605f65e7.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第2页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "陈锦强"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao13-final:13159979",
+      "event": {
+        "key": "lanqiao13-final-Java软件开发大学B组",
+        "title": "第13届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2022-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "二等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202210/courseimg/8044a2a8-df16-47b3-9055-7639605f65e7.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第3页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "林鸿涛"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao13-final:13159964",
+      "event": {
+        "key": "lanqiao13-final-Java软件开发大学B组",
+        "title": "第13届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2022-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "二等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202210/courseimg/8044a2a8-df16-47b3-9055-7639605f65e7.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第5页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "陈锦程"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao13-final:13159967",
+      "event": {
+        "key": "lanqiao13-final-Java软件开发大学B组",
+        "title": "第13届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2022-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "二等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202210/courseimg/8044a2a8-df16-47b3-9055-7639605f65e7.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第5页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "钟卓辉"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao13-final:13159969",
+      "event": {
+        "key": "lanqiao13-final-Java软件开发大学B组",
+        "title": "第13届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2022-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202210/courseimg/8044a2a8-df16-47b3-9055-7639605f65e7.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第8页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "翁耿鹏"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao13-final:13159971",
+      "event": {
+        "key": "lanqiao13-final-Java软件开发大学B组",
+        "title": "第13届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2022-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202210/courseimg/8044a2a8-df16-47b3-9055-7639605f65e7.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第10页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "张梓楷"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao13-final:13159970",
+      "event": {
+        "key": "lanqiao13-final-Java软件开发大学B组",
+        "title": "第13届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2022-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "优秀奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202210/courseimg/8044a2a8-df16-47b3-9055-7639605f65e7.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第15页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "林敏娜"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao13-final:13159977",
+      "event": {
+        "key": "lanqiao13-final-Java软件开发大学B组",
+        "title": "第13届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2022-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "优秀奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202210/courseimg/8044a2a8-df16-47b3-9055-7639605f65e7.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第16页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "叶海鑫"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao13-final:13159975",
+      "event": {
+        "key": "lanqiao13-final-Java软件开发大学B组",
+        "title": "第13届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2022-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "优秀奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202210/courseimg/8044a2a8-df16-47b3-9055-7639605f65e7.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第17页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "郑晓帆"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao13-final:13159973",
+      "event": {
+        "key": "lanqiao13-final-Java软件开发大学B组",
+        "title": "第13届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2022-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "优秀奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202210/courseimg/8044a2a8-df16-47b3-9055-7639605f65e7.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第19页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "郑伙群"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao13-final:13159968",
+      "event": {
+        "key": "lanqiao13-final-Java软件开发大学B组",
+        "title": "第13届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2022-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "优秀奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202210/courseimg/8044a2a8-df16-47b3-9055-7639605f65e7.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第22页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "莫华棕"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao13-final:13159965",
+      "event": {
+        "key": "lanqiao13-final-Python程序设计大学B组",
+        "title": "第13届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2022-01-01",
+        "date_precision": "year",
+        "category": "Python程序设计大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202210/courseimg/8044a2a8-df16-47b3-9055-7639605f65e7.rar",
+      "evidence": "官方压缩包内 软件类-Python程序设计大学B组总决赛获奖名单.pdf 第7页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "郑梓澄"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao14-final:14442964",
+      "event": {
+        "key": "lanqiao14-final-C/C++程序设计大学B组",
+        "title": "第14届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2023-01-01",
+        "date_precision": "year",
+        "category": "C/C++程序设计大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202403/courseimg/ff620789-4672-404d-8fac-f3a166af880a.rar",
+      "evidence": "官方压缩包内 软件类-CC++程序设计大学B组总决赛获奖名单.pdf 第48页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "周俊颖"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao14-final:14442963",
+      "event": {
+        "key": "lanqiao14-final-C/C++程序设计大学B组",
+        "title": "第14届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2023-01-01",
+        "date_precision": "year",
+        "category": "C/C++程序设计大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202403/courseimg/ff620789-4672-404d-8fac-f3a166af880a.rar",
+      "evidence": "官方压缩包内 软件类-CC++程序设计大学B组总决赛获奖名单.pdf 第50页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "康丁魁"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao14-final:14442965",
+      "event": {
+        "key": "lanqiao14-final-C/C++程序设计大学B组",
+        "title": "第14届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2023-01-01",
+        "date_precision": "year",
+        "category": "C/C++程序设计大学B组"
+      },
+      "award": "优秀奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202403/courseimg/ff620789-4672-404d-8fac-f3a166af880a.rar",
+      "evidence": "官方压缩包内 软件类-CC++程序设计大学B组总决赛获奖名单.pdf 第90页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "罗程"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao14-final:14442966",
+      "event": {
+        "key": "lanqiao14-final-Java软件开发大学B组",
+        "title": "第14届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2023-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "一等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202403/courseimg/ff620789-4672-404d-8fac-f3a166af880a.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第1页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "林日清"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao14-final:14442967",
+      "event": {
+        "key": "lanqiao14-final-Java软件开发大学B组",
+        "title": "第14届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2023-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "二等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202403/courseimg/ff620789-4672-404d-8fac-f3a166af880a.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第4页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "陈锦程"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao14-final:14442969",
+      "event": {
+        "key": "lanqiao14-final-Java软件开发大学B组",
+        "title": "第14届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2023-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "二等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202403/courseimg/ff620789-4672-404d-8fac-f3a166af880a.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第6页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "何滨"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao14-final:14442972",
+      "event": {
+        "key": "lanqiao14-final-Java软件开发大学B组",
+        "title": "第14届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2023-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202403/courseimg/ff620789-4672-404d-8fac-f3a166af880a.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第10页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "彭宇轩"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao14-final:14442973",
+      "event": {
+        "key": "lanqiao14-final-Java软件开发大学B组",
+        "title": "第14届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2023-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202403/courseimg/ff620789-4672-404d-8fac-f3a166af880a.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第11页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "罗罡"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao14-final:14442970",
+      "event": {
+        "key": "lanqiao14-final-Java软件开发大学B组",
+        "title": "第14届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2023-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202403/courseimg/ff620789-4672-404d-8fac-f3a166af880a.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第17页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "冯明高"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao14-final:14442971",
+      "event": {
+        "key": "lanqiao14-final-Java软件开发大学B组",
+        "title": "第14届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2023-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202403/courseimg/ff620789-4672-404d-8fac-f3a166af880a.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第18页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "蔡振棋"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao14-final:14442968",
+      "event": {
+        "key": "lanqiao14-final-Java软件开发大学B组",
+        "title": "第14届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2023-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "优秀奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202403/courseimg/ff620789-4672-404d-8fac-f3a166af880a.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第22页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "梁文广"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao14-final:14442974",
+      "event": {
+        "key": "lanqiao14-final-Java软件开发大学B组",
+        "title": "第14届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2023-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "优秀奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202403/courseimg/ff620789-4672-404d-8fac-f3a166af880a.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第28页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "黄宇豪"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao14-final:14442975",
+      "event": {
+        "key": "lanqiao14-final-Python程序设计大学B组",
+        "title": "第14届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2023-01-01",
+        "date_precision": "year",
+        "category": "Python程序设计大学B组"
+      },
+      "award": "优秀奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202403/courseimg/ff620789-4672-404d-8fac-f3a166af880a.rar",
+      "evidence": "官方压缩包内 软件类-Python程序设计大学B组总决赛获奖名单.pdf 第10页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "郑梓澄"
+      ]
+    },
+    {
+      "source_key": "official:matibei-2026-pre2:（一）本科院校赛道:金奖:375",
+      "event": {
+        "key": "matibei-2026-pre2-undergraduate",
+        "title": "2026年第八届码蹄杯全国大学生程序设计大赛",
+        "family": "matibei",
+        "occurred_on": "2026-04-26",
+        "date_precision": "day",
+        "category": "省赛第2场 · 本科院校赛道"
+      },
+      "award": "金奖",
+      "team": "",
+      "source_url": "https://scdn.matiji.net/download/2026%E5%B9%B4%E7%AC%AC%E5%85%AB%E5%B1%8A%E7%A0%81%E8%B9%84%E6%9D%AF%E5%85%A8%E5%9B%BD%E5%A4%A7%E5%AD%A6%E7%94%9F%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1%E5%A4%A7%E8%B5%9B%E7%9C%81%E8%B5%9B%E7%AC%AC%E4%BA%8C%E5%9C%BA%E8%8E%B7%E5%A5%96%26%E6%99%8B%E7%BA%A7%E5%90%8D%E5%8D%95%E5%85%AC%E7%A4%BA.pdf?response-content-type=application/octet-stream",
+      "evidence": "官方公示PDF第17页，（一）本科院校赛道，金奖第375行。身份与在校时间待核实。",
+      "recipients": [
+        "谢泽栩"
+      ]
+    },
+    {
+      "source_key": "official:matibei-2026-pre2:（一）本科院校赛道:金奖:402",
+      "event": {
+        "key": "matibei-2026-pre2-undergraduate",
+        "title": "2026年第八届码蹄杯全国大学生程序设计大赛",
+        "family": "matibei",
+        "occurred_on": "2026-04-26",
+        "date_precision": "day",
+        "category": "省赛第2场 · 本科院校赛道"
+      },
+      "award": "金奖",
+      "team": "",
+      "source_url": "https://scdn.matiji.net/download/2026%E5%B9%B4%E7%AC%AC%E5%85%AB%E5%B1%8A%E7%A0%81%E8%B9%84%E6%9D%AF%E5%85%A8%E5%9B%BD%E5%A4%A7%E5%AD%A6%E7%94%9F%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1%E5%A4%A7%E8%B5%9B%E7%9C%81%E8%B5%9B%E7%AC%AC%E4%BA%8C%E5%9C%BA%E8%8E%B7%E5%A5%96%26%E6%99%8B%E7%BA%A7%E5%90%8D%E5%8D%95%E5%85%AC%E7%A4%BA.pdf?response-content-type=application/octet-stream",
+      "evidence": "官方公示PDF第18页，（一）本科院校赛道，金奖第402行。身份与在校时间待核实。",
+      "recipients": [
+        "叶福都"
+      ]
+    },
+    {
+      "source_key": "official:matibei-2026-pre2:（一）本科院校赛道:金奖:407",
+      "event": {
+        "key": "matibei-2026-pre2-undergraduate",
+        "title": "2026年第八届码蹄杯全国大学生程序设计大赛",
+        "family": "matibei",
+        "occurred_on": "2026-04-26",
+        "date_precision": "day",
+        "category": "省赛第2场 · 本科院校赛道"
+      },
+      "award": "金奖",
+      "team": "",
+      "source_url": "https://scdn.matiji.net/download/2026%E5%B9%B4%E7%AC%AC%E5%85%AB%E5%B1%8A%E7%A0%81%E8%B9%84%E6%9D%AF%E5%85%A8%E5%9B%BD%E5%A4%A7%E5%AD%A6%E7%94%9F%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1%E5%A4%A7%E8%B5%9B%E7%9C%81%E8%B5%9B%E7%AC%AC%E4%BA%8C%E5%9C%BA%E8%8E%B7%E5%A5%96%26%E6%99%8B%E7%BA%A7%E5%90%8D%E5%8D%95%E5%85%AC%E7%A4%BA.pdf?response-content-type=application/octet-stream",
+      "evidence": "官方公示PDF第18页，（一）本科院校赛道，金奖第407行。身份与在校时间待核实。",
+      "recipients": [
+        "陈思琪"
+      ]
+    },
+    {
+      "source_key": "official:matibei-2026-pre2:（一）本科院校赛道:金奖:415",
+      "event": {
+        "key": "matibei-2026-pre2-undergraduate",
+        "title": "2026年第八届码蹄杯全国大学生程序设计大赛",
+        "family": "matibei",
+        "occurred_on": "2026-04-26",
+        "date_precision": "day",
+        "category": "省赛第2场 · 本科院校赛道"
+      },
+      "award": "金奖",
+      "team": "",
+      "source_url": "https://scdn.matiji.net/download/2026%E5%B9%B4%E7%AC%AC%E5%85%AB%E5%B1%8A%E7%A0%81%E8%B9%84%E6%9D%AF%E5%85%A8%E5%9B%BD%E5%A4%A7%E5%AD%A6%E7%94%9F%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1%E5%A4%A7%E8%B5%9B%E7%9C%81%E8%B5%9B%E7%AC%AC%E4%BA%8C%E5%9C%BA%E8%8E%B7%E5%A5%96%26%E6%99%8B%E7%BA%A7%E5%90%8D%E5%8D%95%E5%85%AC%E7%A4%BA.pdf?response-content-type=application/octet-stream",
+      "evidence": "官方公示PDF第18页，（一）本科院校赛道，金奖第415行。身份与在校时间待核实。",
+      "recipients": [
+        "朱子睿"
+      ]
+    },
+    {
+      "source_key": "official:matibei-2026-pre2:（一）本科院校赛道:银奖:730",
+      "event": {
+        "key": "matibei-2026-pre2-undergraduate",
+        "title": "2026年第八届码蹄杯全国大学生程序设计大赛",
+        "family": "matibei",
+        "occurred_on": "2026-04-26",
+        "date_precision": "day",
+        "category": "省赛第2场 · 本科院校赛道"
+      },
+      "award": "银奖",
+      "team": "",
+      "source_url": "https://scdn.matiji.net/download/2026%E5%B9%B4%E7%AC%AC%E5%85%AB%E5%B1%8A%E7%A0%81%E8%B9%84%E6%9D%AF%E5%85%A8%E5%9B%BD%E5%A4%A7%E5%AD%A6%E7%94%9F%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1%E5%A4%A7%E8%B5%9B%E7%9C%81%E8%B5%9B%E7%AC%AC%E4%BA%8C%E5%9C%BA%E8%8E%B7%E5%A5%96%26%E6%99%8B%E7%BA%A7%E5%90%8D%E5%8D%95%E5%85%AC%E7%A4%BA.pdf?response-content-type=application/octet-stream",
+      "evidence": "官方公示PDF第51页，（一）本科院校赛道，银奖第730行。身份与在校时间待核实。",
+      "recipients": [
+        "陈俊东"
+      ]
+    },
+    {
+      "source_key": "official:matibei-2026-pre2:（一）本科院校赛道:银奖:745",
+      "event": {
+        "key": "matibei-2026-pre2-undergraduate",
+        "title": "2026年第八届码蹄杯全国大学生程序设计大赛",
+        "family": "matibei",
+        "occurred_on": "2026-04-26",
+        "date_precision": "day",
+        "category": "省赛第2场 · 本科院校赛道"
+      },
+      "award": "银奖",
+      "team": "",
+      "source_url": "https://scdn.matiji.net/download/2026%E5%B9%B4%E7%AC%AC%E5%85%AB%E5%B1%8A%E7%A0%81%E8%B9%84%E6%9D%AF%E5%85%A8%E5%9B%BD%E5%A4%A7%E5%AD%A6%E7%94%9F%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1%E5%A4%A7%E8%B5%9B%E7%9C%81%E8%B5%9B%E7%AC%AC%E4%BA%8C%E5%9C%BA%E8%8E%B7%E5%A5%96%26%E6%99%8B%E7%BA%A7%E5%90%8D%E5%8D%95%E5%85%AC%E7%A4%BA.pdf?response-content-type=application/octet-stream",
+      "evidence": "官方公示PDF第52页，（一）本科院校赛道，银奖第745行。身份与在校时间待核实。",
+      "recipients": [
+        "卢成洋"
+      ]
+    },
+    {
+      "source_key": "official:matibei-2026-pre2:（一）本科院校赛道:银奖:759",
+      "event": {
+        "key": "matibei-2026-pre2-undergraduate",
+        "title": "2026年第八届码蹄杯全国大学生程序设计大赛",
+        "family": "matibei",
+        "occurred_on": "2026-04-26",
+        "date_precision": "day",
+        "category": "省赛第2场 · 本科院校赛道"
+      },
+      "award": "银奖",
+      "team": "",
+      "source_url": "https://scdn.matiji.net/download/2026%E5%B9%B4%E7%AC%AC%E5%85%AB%E5%B1%8A%E7%A0%81%E8%B9%84%E6%9D%AF%E5%85%A8%E5%9B%BD%E5%A4%A7%E5%AD%A6%E7%94%9F%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1%E5%A4%A7%E8%B5%9B%E7%9C%81%E8%B5%9B%E7%AC%AC%E4%BA%8C%E5%9C%BA%E8%8E%B7%E5%A5%96%26%E6%99%8B%E7%BA%A7%E5%90%8D%E5%8D%95%E5%85%AC%E7%A4%BA.pdf?response-content-type=application/octet-stream",
+      "evidence": "官方公示PDF第52页，（一）本科院校赛道，银奖第759行。身份与在校时间待核实。",
+      "recipients": [
+        "黄家宝"
+      ]
+    },
+    {
+      "source_key": "official:matibei-2026-pre2:（一）本科院校赛道:铜奖:636",
+      "event": {
+        "key": "matibei-2026-pre2-undergraduate",
+        "title": "2026年第八届码蹄杯全国大学生程序设计大赛",
+        "family": "matibei",
+        "occurred_on": "2026-04-26",
+        "date_precision": "day",
+        "category": "省赛第2场 · 本科院校赛道"
+      },
+      "award": "铜奖",
+      "team": "",
+      "source_url": "https://scdn.matiji.net/download/2026%E5%B9%B4%E7%AC%AC%E5%85%AB%E5%B1%8A%E7%A0%81%E8%B9%84%E6%9D%AF%E5%85%A8%E5%9B%BD%E5%A4%A7%E5%AD%A6%E7%94%9F%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1%E5%A4%A7%E8%B5%9B%E7%9C%81%E8%B5%9B%E7%AC%AC%E4%BA%8C%E5%9C%BA%E8%8E%B7%E5%A5%96%26%E6%99%8B%E7%BA%A7%E5%90%8D%E5%8D%95%E5%85%AC%E7%A4%BA.pdf?response-content-type=application/octet-stream",
+      "evidence": "官方公示PDF第87页，（一）本科院校赛道，铜奖第636行。身份与在校时间待核实。",
+      "recipients": [
+        "叶丹萍"
+      ]
+    },
+    {
+      "source_key": "official:matibei-2026-pre2:（一）本科院校赛道:铜奖:678",
+      "event": {
+        "key": "matibei-2026-pre2-undergraduate",
+        "title": "2026年第八届码蹄杯全国大学生程序设计大赛",
+        "family": "matibei",
+        "occurred_on": "2026-04-26",
+        "date_precision": "day",
+        "category": "省赛第2场 · 本科院校赛道"
+      },
+      "award": "铜奖",
+      "team": "",
+      "source_url": "https://scdn.matiji.net/download/2026%E5%B9%B4%E7%AC%AC%E5%85%AB%E5%B1%8A%E7%A0%81%E8%B9%84%E6%9D%AF%E5%85%A8%E5%9B%BD%E5%A4%A7%E5%AD%A6%E7%94%9F%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1%E5%A4%A7%E8%B5%9B%E7%9C%81%E8%B5%9B%E7%AC%AC%E4%BA%8C%E5%9C%BA%E8%8E%B7%E5%A5%96%26%E6%99%8B%E7%BA%A7%E5%90%8D%E5%8D%95%E5%85%AC%E7%A4%BA.pdf?response-content-type=application/octet-stream",
+      "evidence": "官方公示PDF第89页，（一）本科院校赛道，铜奖第678行。身份与在校时间待核实。",
+      "recipients": [
+        "洪瑜徽"
+      ]
+    },
+    {
+      "source_key": "official:matibei-2026-pre2:（一）本科院校赛道:铜奖:698",
+      "event": {
+        "key": "matibei-2026-pre2-undergraduate",
+        "title": "2026年第八届码蹄杯全国大学生程序设计大赛",
+        "family": "matibei",
+        "occurred_on": "2026-04-26",
+        "date_precision": "day",
+        "category": "省赛第2场 · 本科院校赛道"
+      },
+      "award": "铜奖",
+      "team": "",
+      "source_url": "https://scdn.matiji.net/download/2026%E5%B9%B4%E7%AC%AC%E5%85%AB%E5%B1%8A%E7%A0%81%E8%B9%84%E6%9D%AF%E5%85%A8%E5%9B%BD%E5%A4%A7%E5%AD%A6%E7%94%9F%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1%E5%A4%A7%E8%B5%9B%E7%9C%81%E8%B5%9B%E7%AC%AC%E4%BA%8C%E5%9C%BA%E8%8E%B7%E5%A5%96%26%E6%99%8B%E7%BA%A7%E5%90%8D%E5%8D%95%E5%85%AC%E7%A4%BA.pdf?response-content-type=application/octet-stream",
+      "evidence": "官方公示PDF第89页，（一）本科院校赛道，铜奖第698行。身份与在校时间待核实。",
+      "recipients": [
+        "叶宇轩"
+      ]
+    },
+    {
+      "source_key": "official:matibei-2026-pre3:（一）本科院校赛道:银奖:1377",
+      "event": {
+        "key": "matibei-2026-pre3-undergraduate",
+        "title": "2026年第八届码蹄杯全国大学生程序设计大赛",
+        "family": "matibei",
+        "occurred_on": "2026-05-24",
+        "date_precision": "day",
+        "category": "省赛第3场 · 本科院校赛道"
+      },
+      "award": "银奖",
+      "team": "",
+      "source_url": "https://scdn.matiji.net/download/2026%E5%B9%B4%E7%AC%AC%E5%85%AB%E5%B1%8A%E7%A0%81%E8%B9%84%E6%9D%AF%E5%85%A8%E5%9B%BD%E5%A4%A7%E5%AD%A6%E7%94%9F%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1%E5%A4%A7%E8%B5%9B%E7%9C%81%E8%B5%9B%E7%AC%AC%E4%B8%89%E5%9C%BA%E8%8E%B7%E5%A5%96%26%E6%99%8B%E7%BA%A7%E5%90%8D%E5%8D%95%E5%85%AC%E7%A4%BA.pdf?response-content-type=application/octet-stream",
+      "evidence": "官方公示PDF第96页，（一）本科院校赛道，银奖第1377行。身份与在校时间待核实。",
+      "recipients": [
+        "叶宇轩"
+      ]
+    },
+    {
+      "source_key": "official:matibei-2026-pre3:（一）本科院校赛道:银奖:1394",
+      "event": {
+        "key": "matibei-2026-pre3-undergraduate",
+        "title": "2026年第八届码蹄杯全国大学生程序设计大赛",
+        "family": "matibei",
+        "occurred_on": "2026-05-24",
+        "date_precision": "day",
+        "category": "省赛第3场 · 本科院校赛道"
+      },
+      "award": "银奖",
+      "team": "",
+      "source_url": "https://scdn.matiji.net/download/2026%E5%B9%B4%E7%AC%AC%E5%85%AB%E5%B1%8A%E7%A0%81%E8%B9%84%E6%9D%AF%E5%85%A8%E5%9B%BD%E5%A4%A7%E5%AD%A6%E7%94%9F%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1%E5%A4%A7%E8%B5%9B%E7%9C%81%E8%B5%9B%E7%AC%AC%E4%B8%89%E5%9C%BA%E8%8E%B7%E5%A5%96%26%E6%99%8B%E7%BA%A7%E5%90%8D%E5%8D%95%E5%85%AC%E7%A4%BA.pdf?response-content-type=application/octet-stream",
+      "evidence": "官方公示PDF第96页，（一）本科院校赛道，银奖第1394行。身份与在校时间待核实。",
+      "recipients": [
+        "黄恒炫"
+      ]
+    },
+    {
+      "source_key": "official:matibei-2026-pre3:（一）本科院校赛道:银奖:1423",
+      "event": {
+        "key": "matibei-2026-pre3-undergraduate",
+        "title": "2026年第八届码蹄杯全国大学生程序设计大赛",
+        "family": "matibei",
+        "occurred_on": "2026-05-24",
+        "date_precision": "day",
+        "category": "省赛第3场 · 本科院校赛道"
+      },
+      "award": "银奖",
+      "team": "",
+      "source_url": "https://scdn.matiji.net/download/2026%E5%B9%B4%E7%AC%AC%E5%85%AB%E5%B1%8A%E7%A0%81%E8%B9%84%E6%9D%AF%E5%85%A8%E5%9B%BD%E5%A4%A7%E5%AD%A6%E7%94%9F%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1%E5%A4%A7%E8%B5%9B%E7%9C%81%E8%B5%9B%E7%AC%AC%E4%B8%89%E5%9C%BA%E8%8E%B7%E5%A5%96%26%E6%99%8B%E7%BA%A7%E5%90%8D%E5%8D%95%E5%85%AC%E7%A4%BA.pdf?response-content-type=application/octet-stream",
+      "evidence": "官方公示PDF第97页，（一）本科院校赛道，银奖第1423行。身份与在校时间待核实。",
+      "recipients": [
+        "杨壹锋"
+      ]
+    },
+    {
+      "source_key": "official:matibei-2026-pre3:（一）本科院校赛道:银奖:1428",
+      "event": {
+        "key": "matibei-2026-pre3-undergraduate",
+        "title": "2026年第八届码蹄杯全国大学生程序设计大赛",
+        "family": "matibei",
+        "occurred_on": "2026-05-24",
+        "date_precision": "day",
+        "category": "省赛第3场 · 本科院校赛道"
+      },
+      "award": "银奖",
+      "team": "",
+      "source_url": "https://scdn.matiji.net/download/2026%E5%B9%B4%E7%AC%AC%E5%85%AB%E5%B1%8A%E7%A0%81%E8%B9%84%E6%9D%AF%E5%85%A8%E5%9B%BD%E5%A4%A7%E5%AD%A6%E7%94%9F%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1%E5%A4%A7%E8%B5%9B%E7%9C%81%E8%B5%9B%E7%AC%AC%E4%B8%89%E5%9C%BA%E8%8E%B7%E5%A5%96%26%E6%99%8B%E7%BA%A7%E5%90%8D%E5%8D%95%E5%85%AC%E7%A4%BA.pdf?response-content-type=application/octet-stream",
+      "evidence": "官方公示PDF第98页，（一）本科院校赛道，银奖第1428行。身份与在校时间待核实。",
+      "recipients": [
+        "陶健"
+      ]
+    },
+    {
+      "source_key": "official:matibei-2026-pre3:（一）本科院校赛道:铜奖:1341",
+      "event": {
+        "key": "matibei-2026-pre3-undergraduate",
+        "title": "2026年第八届码蹄杯全国大学生程序设计大赛",
+        "family": "matibei",
+        "occurred_on": "2026-05-24",
+        "date_precision": "day",
+        "category": "省赛第3场 · 本科院校赛道"
+      },
+      "award": "铜奖",
+      "team": "",
+      "source_url": "https://scdn.matiji.net/download/2026%E5%B9%B4%E7%AC%AC%E5%85%AB%E5%B1%8A%E7%A0%81%E8%B9%84%E6%9D%AF%E5%85%A8%E5%9B%BD%E5%A4%A7%E5%AD%A6%E7%94%9F%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1%E5%A4%A7%E8%B5%9B%E7%9C%81%E8%B5%9B%E7%AC%AC%E4%B8%89%E5%9C%BA%E8%8E%B7%E5%A5%96%26%E6%99%8B%E7%BA%A7%E5%90%8D%E5%8D%95%E5%85%AC%E7%A4%BA.pdf?response-content-type=application/octet-stream",
+      "evidence": "官方公示PDF第172页，（一）本科院校赛道，铜奖第1341行。身份与在校时间待核实。",
+      "recipients": [
+        "洪瑜徽"
+      ]
+    },
+    {
+      "source_key": "official:matibei-2026-pre3:（一）本科院校赛道:铜奖:1356",
+      "event": {
+        "key": "matibei-2026-pre3-undergraduate",
+        "title": "2026年第八届码蹄杯全国大学生程序设计大赛",
+        "family": "matibei",
+        "occurred_on": "2026-05-24",
+        "date_precision": "day",
+        "category": "省赛第3场 · 本科院校赛道"
+      },
+      "award": "铜奖",
+      "team": "",
+      "source_url": "https://scdn.matiji.net/download/2026%E5%B9%B4%E7%AC%AC%E5%85%AB%E5%B1%8A%E7%A0%81%E8%B9%84%E6%9D%AF%E5%85%A8%E5%9B%BD%E5%A4%A7%E5%AD%A6%E7%94%9F%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1%E5%A4%A7%E8%B5%9B%E7%9C%81%E8%B5%9B%E7%AC%AC%E4%B8%89%E5%9C%BA%E8%8E%B7%E5%A5%96%26%E6%99%8B%E7%BA%A7%E5%90%8D%E5%8D%95%E5%85%AC%E7%A4%BA.pdf?response-content-type=application/octet-stream",
+      "evidence": "官方公示PDF第173页，（一）本科院校赛道，铜奖第1356行。身份与在校时间待核实。",
+      "recipients": [
+        "林浩荣"
+      ]
+    },
+    {
+      "source_key": "official:matibei-2026-pre3:（一）本科院校赛道:铜奖:1408",
+      "event": {
+        "key": "matibei-2026-pre3-undergraduate",
+        "title": "2026年第八届码蹄杯全国大学生程序设计大赛",
+        "family": "matibei",
+        "occurred_on": "2026-05-24",
+        "date_precision": "day",
+        "category": "省赛第3场 · 本科院校赛道"
+      },
+      "award": "铜奖",
+      "team": "",
+      "source_url": "https://scdn.matiji.net/download/2026%E5%B9%B4%E7%AC%AC%E5%85%AB%E5%B1%8A%E7%A0%81%E8%B9%84%E6%9D%AF%E5%85%A8%E5%9B%BD%E5%A4%A7%E5%AD%A6%E7%94%9F%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1%E5%A4%A7%E8%B5%9B%E7%9C%81%E8%B5%9B%E7%AC%AC%E4%B8%89%E5%9C%BA%E8%8E%B7%E5%A5%96%26%E6%99%8B%E7%BA%A7%E5%90%8D%E5%8D%95%E5%85%AC%E7%A4%BA.pdf?response-content-type=application/octet-stream",
+      "evidence": "官方公示PDF第175页，（一）本科院校赛道，铜奖第1408行。身份与在校时间待核实。",
+      "recipients": [
+        "刘恩平"
+      ]
+    },
+    {
+      "source_key": "official:matibei-2026-pre3:（一）本科院校赛道:铜奖:1411",
+      "event": {
+        "key": "matibei-2026-pre3-undergraduate",
+        "title": "2026年第八届码蹄杯全国大学生程序设计大赛",
+        "family": "matibei",
+        "occurred_on": "2026-05-24",
+        "date_precision": "day",
+        "category": "省赛第3场 · 本科院校赛道"
+      },
+      "award": "铜奖",
+      "team": "",
+      "source_url": "https://scdn.matiji.net/download/2026%E5%B9%B4%E7%AC%AC%E5%85%AB%E5%B1%8A%E7%A0%81%E8%B9%84%E6%9D%AF%E5%85%A8%E5%9B%BD%E5%A4%A7%E5%AD%A6%E7%94%9F%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1%E5%A4%A7%E8%B5%9B%E7%9C%81%E8%B5%9B%E7%AC%AC%E4%B8%89%E5%9C%BA%E8%8E%B7%E5%A5%96%26%E6%99%8B%E7%BA%A7%E5%90%8D%E5%8D%95%E5%85%AC%E7%A4%BA.pdf?response-content-type=application/octet-stream",
+      "evidence": "官方公示PDF第175页，（一）本科院校赛道，铜奖第1411行。身份与在校时间待核实。",
+      "recipients": [
+        "刘翠婷"
+      ]
+    },
+    {
+      "source_key": "official:matibei-2026-final:（一）本科院校赛道:金奖:445",
+      "event": {
+        "key": "matibei-2026-final-undergraduate",
+        "title": "2026年第八届码蹄杯全国大学生程序设计大赛",
+        "family": "matibei",
+        "occurred_on": null,
+        "date_precision": "day",
+        "category": "全国决赛 · 本科院校赛道"
+      },
+      "award": "金奖",
+      "team": "",
+      "source_url": "https://scdn.matiji.net/download/2026%E5%B9%B4%E7%AC%AC%E5%85%AB%E5%B1%8A%E7%A0%81%E8%B9%84%E6%9D%AF%E5%85%A8%E5%9B%BD%E5%A4%A7%E5%AD%A6%E7%94%9F%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1%E5%A4%A7%E8%B5%9B%E5%9B%BD%E8%B5%9B%E8%8E%B7%E5%A5%96%E5%90%8D%E5%8D%95%E5%85%AC%E7%A4%BA.pdf?response-content-type=application/octet-stream",
+      "evidence": "官方公示PDF第19页，（一）本科院校赛道，金奖第445行。决赛日期待核实。身份与在校时间待核实。",
+      "recipients": [
+        "谢泽栩"
+      ]
+    },
+    {
+      "source_key": "official:matibei-2026-final:（一）本科院校赛道:银奖:370",
+      "event": {
+        "key": "matibei-2026-final-undergraduate",
+        "title": "2026年第八届码蹄杯全国大学生程序设计大赛",
+        "family": "matibei",
+        "occurred_on": null,
+        "date_precision": "day",
+        "category": "全国决赛 · 本科院校赛道"
+      },
+      "award": "银奖",
+      "team": "",
+      "source_url": "https://scdn.matiji.net/download/2026%E5%B9%B4%E7%AC%AC%E5%85%AB%E5%B1%8A%E7%A0%81%E8%B9%84%E6%9D%AF%E5%85%A8%E5%9B%BD%E5%A4%A7%E5%AD%A6%E7%94%9F%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1%E5%A4%A7%E8%B5%9B%E5%9B%BD%E8%B5%9B%E8%8E%B7%E5%A5%96%E5%90%8D%E5%8D%95%E5%85%AC%E7%A4%BA.pdf?response-content-type=application/octet-stream",
+      "evidence": "官方公示PDF第34页，（一）本科院校赛道，银奖第370行。决赛日期待核实。身份与在校时间待核实。",
+      "recipients": [
+        "陈思琪"
+      ]
+    },
+    {
+      "source_key": "official:matibei-2026-final:（一）本科院校赛道:银奖:484",
+      "event": {
+        "key": "matibei-2026-final-undergraduate",
+        "title": "2026年第八届码蹄杯全国大学生程序设计大赛",
+        "family": "matibei",
+        "occurred_on": null,
+        "date_precision": "day",
+        "category": "全国决赛 · 本科院校赛道"
+      },
+      "award": "银奖",
+      "team": "",
+      "source_url": "https://scdn.matiji.net/download/2026%E5%B9%B4%E7%AC%AC%E5%85%AB%E5%B1%8A%E7%A0%81%E8%B9%84%E6%9D%AF%E5%85%A8%E5%9B%BD%E5%A4%A7%E5%AD%A6%E7%94%9F%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1%E5%A4%A7%E8%B5%9B%E5%9B%BD%E8%B5%9B%E8%8E%B7%E5%A5%96%E5%90%8D%E5%8D%95%E5%85%AC%E7%A4%BA.pdf?response-content-type=application/octet-stream",
+      "evidence": "官方公示PDF第38页，（一）本科院校赛道，银奖第484行。决赛日期待核实。身份与在校时间待核实。",
+      "recipients": [
+        "卢成洋"
+      ]
+    },
+    {
+      "source_key": "official:matibei-2026-final:（一）本科院校赛道:银奖:594",
+      "event": {
+        "key": "matibei-2026-final-undergraduate",
+        "title": "2026年第八届码蹄杯全国大学生程序设计大赛",
+        "family": "matibei",
+        "occurred_on": null,
+        "date_precision": "day",
+        "category": "全国决赛 · 本科院校赛道"
+      },
+      "award": "银奖",
+      "team": "",
+      "source_url": "https://scdn.matiji.net/download/2026%E5%B9%B4%E7%AC%AC%E5%85%AB%E5%B1%8A%E7%A0%81%E8%B9%84%E6%9D%AF%E5%85%A8%E5%9B%BD%E5%A4%A7%E5%AD%A6%E7%94%9F%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1%E5%A4%A7%E8%B5%9B%E5%9B%BD%E8%B5%9B%E8%8E%B7%E5%A5%96%E5%90%8D%E5%8D%95%E5%85%AC%E7%A4%BA.pdf?response-content-type=application/octet-stream",
+      "evidence": "官方公示PDF第42页，（一）本科院校赛道，银奖第594行。决赛日期待核实。身份与在校时间待核实。",
+      "recipients": [
+        "陈俊东"
+      ]
+    },
+    {
+      "source_key": "official:matibei-2026-final:（一）本科院校赛道:银奖:843",
+      "event": {
+        "key": "matibei-2026-final-undergraduate",
+        "title": "2026年第八届码蹄杯全国大学生程序设计大赛",
+        "family": "matibei",
+        "occurred_on": null,
+        "date_precision": "day",
+        "category": "全国决赛 · 本科院校赛道"
+      },
+      "award": "银奖",
+      "team": "",
+      "source_url": "https://scdn.matiji.net/download/2026%E5%B9%B4%E7%AC%AC%E5%85%AB%E5%B1%8A%E7%A0%81%E8%B9%84%E6%9D%AF%E5%85%A8%E5%9B%BD%E5%A4%A7%E5%AD%A6%E7%94%9F%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1%E5%A4%A7%E8%B5%9B%E5%9B%BD%E8%B5%9B%E8%8E%B7%E5%A5%96%E5%90%8D%E5%8D%95%E5%85%AC%E7%A4%BA.pdf?response-content-type=application/octet-stream",
+      "evidence": "官方公示PDF第52页，（一）本科院校赛道，银奖第843行。决赛日期待核实。身份与在校时间待核实。",
+      "recipients": [
+        "叶福都"
+      ]
+    },
+    {
+      "source_key": "official:matibei-2026-final:（一）本科院校赛道:铜奖:225",
+      "event": {
+        "key": "matibei-2026-final-undergraduate",
+        "title": "2026年第八届码蹄杯全国大学生程序设计大赛",
+        "family": "matibei",
+        "occurred_on": null,
+        "date_precision": "day",
+        "category": "全国决赛 · 本科院校赛道"
+      },
+      "award": "铜奖",
+      "team": "",
+      "source_url": "https://scdn.matiji.net/download/2026%E5%B9%B4%E7%AC%AC%E5%85%AB%E5%B1%8A%E7%A0%81%E8%B9%84%E6%9D%AF%E5%85%A8%E5%9B%BD%E5%A4%A7%E5%AD%A6%E7%94%9F%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1%E5%A4%A7%E8%B5%9B%E5%9B%BD%E8%B5%9B%E8%8E%B7%E5%A5%96%E5%90%8D%E5%8D%95%E5%85%AC%E7%A4%BA.pdf?response-content-type=application/octet-stream",
+      "evidence": "官方公示PDF第64页，（一）本科院校赛道，铜奖第225行。决赛日期待核实。身份与在校时间待核实。",
+      "recipients": [
+        "洪瑜徽"
+      ]
+    },
+    {
+      "source_key": "official:matibei-2026-final:（一）本科院校赛道:铜奖:290",
+      "event": {
+        "key": "matibei-2026-final-undergraduate",
+        "title": "2026年第八届码蹄杯全国大学生程序设计大赛",
+        "family": "matibei",
+        "occurred_on": null,
+        "date_precision": "day",
+        "category": "全国决赛 · 本科院校赛道"
+      },
+      "award": "铜奖",
+      "team": "",
+      "source_url": "https://scdn.matiji.net/download/2026%E5%B9%B4%E7%AC%AC%E5%85%AB%E5%B1%8A%E7%A0%81%E8%B9%84%E6%9D%AF%E5%85%A8%E5%9B%BD%E5%A4%A7%E5%AD%A6%E7%94%9F%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1%E5%A4%A7%E8%B5%9B%E5%9B%BD%E8%B5%9B%E8%8E%B7%E5%A5%96%E5%90%8D%E5%8D%95%E5%85%AC%E7%A4%BA.pdf?response-content-type=application/octet-stream",
+      "evidence": "官方公示PDF第66页，（一）本科院校赛道，铜奖第290行。决赛日期待核实。身份与在校时间待核实。",
+      "recipients": [
+        "陶健"
+      ]
+    },
+    {
+      "source_key": "official:matibei-2026-final:（一）本科院校赛道:铜奖:444",
+      "event": {
+        "key": "matibei-2026-final-undergraduate",
+        "title": "2026年第八届码蹄杯全国大学生程序设计大赛",
+        "family": "matibei",
+        "occurred_on": null,
+        "date_precision": "day",
+        "category": "全国决赛 · 本科院校赛道"
+      },
+      "award": "铜奖",
+      "team": "",
+      "source_url": "https://scdn.matiji.net/download/2026%E5%B9%B4%E7%AC%AC%E5%85%AB%E5%B1%8A%E7%A0%81%E8%B9%84%E6%9D%AF%E5%85%A8%E5%9B%BD%E5%A4%A7%E5%AD%A6%E7%94%9F%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1%E5%A4%A7%E8%B5%9B%E5%9B%BD%E8%B5%9B%E8%8E%B7%E5%A5%96%E5%90%8D%E5%8D%95%E5%85%AC%E7%A4%BA.pdf?response-content-type=application/octet-stream",
+      "evidence": "官方公示PDF第72页，（一）本科院校赛道，铜奖第444行。决赛日期待核实。身份与在校时间待核实。",
+      "recipients": [
+        "叶宇轩"
+      ]
+    },
+    {
+      "source_key": "official:matibei-2026-final:（一）本科院校赛道:铜奖:1106",
+      "event": {
+        "key": "matibei-2026-final-undergraduate",
+        "title": "2026年第八届码蹄杯全国大学生程序设计大赛",
+        "family": "matibei",
+        "occurred_on": null,
+        "date_precision": "day",
+        "category": "全国决赛 · 本科院校赛道"
+      },
+      "award": "铜奖",
+      "team": "",
+      "source_url": "https://scdn.matiji.net/download/2026%E5%B9%B4%E7%AC%AC%E5%85%AB%E5%B1%8A%E7%A0%81%E8%B9%84%E6%9D%AF%E5%85%A8%E5%9B%BD%E5%A4%A7%E5%AD%A6%E7%94%9F%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1%E5%A4%A7%E8%B5%9B%E5%9B%BD%E8%B5%9B%E8%8E%B7%E5%A5%96%E5%90%8D%E5%8D%95%E5%85%AC%E7%A4%BA.pdf?response-content-type=application/octet-stream",
+      "evidence": "官方公示PDF第97页，（一）本科院校赛道，铜奖第1106行。决赛日期待核实。身份与在校时间待核实。",
+      "recipients": [
+        "朱子睿"
+      ]
+    },
+    {
+      "source_key": "official:matibei-2026-final:（一）本科院校赛道:铜奖:1112",
+      "event": {
+        "key": "matibei-2026-final-undergraduate",
+        "title": "2026年第八届码蹄杯全国大学生程序设计大赛",
+        "family": "matibei",
+        "occurred_on": null,
+        "date_precision": "day",
+        "category": "全国决赛 · 本科院校赛道"
+      },
+      "award": "铜奖",
+      "team": "",
+      "source_url": "https://scdn.matiji.net/download/2026%E5%B9%B4%E7%AC%AC%E5%85%AB%E5%B1%8A%E7%A0%81%E8%B9%84%E6%9D%AF%E5%85%A8%E5%9B%BD%E5%A4%A7%E5%AD%A6%E7%94%9F%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1%E5%A4%A7%E8%B5%9B%E5%9B%BD%E8%B5%9B%E8%8E%B7%E5%A5%96%E5%90%8D%E5%8D%95%E5%85%AC%E7%A4%BA.pdf?response-content-type=application/octet-stream",
+      "evidence": "官方公示PDF第98页，（一）本科院校赛道，铜奖第1112行。决赛日期待核实。身份与在校时间待核实。",
+      "recipients": [
+        "黄恒炫"
+      ]
+    },
+    {
+      "source_key": "official:astar2026-pre2:109",
+      "event": {
+        "key": "astar2026-pre2",
+        "title": "2026年百度之星程序设计大赛第二场初赛",
+        "family": "astar",
+        "occurred_on": "2026-01-01",
+        "date_precision": "year",
+        "category": "省赛第二场"
+      },
+      "award": "金奖",
+      "team": "",
+      "source_url": "https://base.cdn.bcebos.com/2026_astar_second_huojiang_new.pdf",
+      "evidence": "公示后最终版名单第7页，第109行；比赛日期暂仅精确到年份（公示为2026-09-30）。身份与在校区间待核实。",
+      "recipients": [
+        "卢成洋"
+      ]
+    },
+    {
+      "source_key": "official:astar2026-pre2:125",
+      "event": {
+        "key": "astar2026-pre2",
+        "title": "2026年百度之星程序设计大赛第二场初赛",
+        "family": "astar",
+        "occurred_on": "2026-01-01",
+        "date_precision": "year",
+        "category": "省赛第二场"
+      },
+      "award": "金奖",
+      "team": "",
+      "source_url": "https://base.cdn.bcebos.com/2026_astar_second_huojiang_new.pdf",
+      "evidence": "公示后最终版名单第8页，第125行；比赛日期暂仅精确到年份（公示为2026-09-30）。身份与在校区间待核实。",
+      "recipients": [
+        "陈俊东"
+      ]
+    },
+    {
+      "source_key": "official:astar2026-pre2:515",
+      "event": {
+        "key": "astar2026-pre2",
+        "title": "2026年百度之星程序设计大赛第二场初赛",
+        "family": "astar",
+        "occurred_on": "2026-01-01",
+        "date_precision": "year",
+        "category": "省赛第二场"
+      },
+      "award": "铜奖",
+      "team": "",
+      "source_url": "https://base.cdn.bcebos.com/2026_astar_second_huojiang_new.pdf",
+      "evidence": "公示后最终版名单第27页，第515行；比赛日期暂仅精确到年份（公示为2026-09-30）。身份与在校区间待核实。",
+      "recipients": [
+        "叶宇轩"
+      ]
+    },
+    {
+      "source_key": "official:astar2026-pre2:552",
+      "event": {
+        "key": "astar2026-pre2",
+        "title": "2026年百度之星程序设计大赛第二场初赛",
+        "family": "astar",
+        "occurred_on": "2026-01-01",
+        "date_precision": "year",
+        "category": "省赛第二场"
+      },
+      "award": "铜奖",
+      "team": "",
+      "source_url": "https://base.cdn.bcebos.com/2026_astar_second_huojiang_new.pdf",
+      "evidence": "公示后最终版名单第29页，第552行；比赛日期暂仅精确到年份（公示为2026-09-30）。身份与在校区间待核实。",
+      "recipients": [
+        "黄恒炫"
+      ]
+    },
+    {
+      "source_key": "official:astar2026-pre2:581",
+      "event": {
+        "key": "astar2026-pre2",
+        "title": "2026年百度之星程序设计大赛第二场初赛",
+        "family": "astar",
+        "occurred_on": "2026-01-01",
+        "date_precision": "year",
+        "category": "省赛第二场"
+      },
+      "award": "铜奖",
+      "team": "",
+      "source_url": "https://base.cdn.bcebos.com/2026_astar_second_huojiang_new.pdf",
+      "evidence": "公示后最终版名单第30页，第581行；比赛日期暂仅精确到年份（公示为2026-09-30）。身份与在校区间待核实。",
+      "recipients": [
+        "林浩荣"
+      ]
+    }
+  ]
+}

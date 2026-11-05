@@ -63,6 +63,7 @@ const navGroups = [
   {
     label: '工作坊',
     items: [
+      { title: '荣誉殿堂', route: '/honors', icon: Trophy },
       { title: '工作坊状态', route: '/status', icon: Activity },
       { title: '线下赛报名', route: '/signups', icon: ClipboardList },
       { title: '博客', route: '/blog', icon: BookOpen },

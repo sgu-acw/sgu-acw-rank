@@ -1,0 +1,94 @@
+{
+  "records": [
+    {
+      "source_key": "official:astar2026-pre2:109",
+      "event": {
+        "key": "astar2026-pre2",
+        "title": "2026年百度之星程序设计大赛第二场初赛",
+        "family": "astar",
+        "occurred_on": "2026-01-01",
+        "date_precision": "year",
+        "category": "省赛第二场"
+      },
+      "award": "金奖",
+      "team": "",
+      "source_url": "https://base.cdn.bcebos.com/2026_astar_second_huojiang_new.pdf",
+      "evidence": "公示后最终版名单第7页，第109行；比赛日期暂仅精确到年份（公示为2026-09-30）。身份与在校区间待核实。",
+      "recipients": [
+        "卢成洋"
+      ]
+    },
+    {
+      "source_key": "official:astar2026-pre2:125",
+      "event": {
+        "key": "astar2026-pre2",
+        "title": "2026年百度之星程序设计大赛第二场初赛",
+        "family": "astar",
+        "occurred_on": "2026-01-01",
+        "date_precision": "year",
+        "category": "省赛第二场"
+      },
+      "award": "金奖",
+      "team": "",
+      "source_url": "https://base.cdn.bcebos.com/2026_astar_second_huojiang_new.pdf",
+      "evidence": "公示后最终版名单第8页，第125行；比赛日期暂仅精确到年份（公示为2026-09-30）。身份与在校区间待核实。",
+      "recipients": [
+        "陈俊东"
+      ]
+    },
+    {
+      "source_key": "official:astar2026-pre2:515",
+      "event": {
+        "key": "astar2026-pre2",
+        "title": "2026年百度之星程序设计大赛第二场初赛",
+        "family": "astar",
+        "occurred_on": "2026-01-01",
+        "date_precision": "year",
+        "category": "省赛第二场"
+      },
+      "award": "铜奖",
+      "team": "",
+      "source_url": "https://base.cdn.bcebos.com/2026_astar_second_huojiang_new.pdf",
+      "evidence": "公示后最终版名单第27页，第515行；比赛日期暂仅精确到年份（公示为2026-09-30）。身份与在校区间待核实。",
+      "recipients": [
+        "叶宇轩"
+      ]
+    },
+    {
+      "source_key": "official:astar2026-pre2:552",
+      "event": {
+        "key": "astar2026-pre2",
+        "title": "2026年百度之星程序设计大赛第二场初赛",
+        "family": "astar",
+        "occurred_on": "2026-01-01",
+        "date_precision": "year",
+        "category": "省赛第二场"
+      },
+      "award": "铜奖",
+      "team": "",
+      "source_url": "https://base.cdn.bcebos.com/2026_astar_second_huojiang_new.pdf",
+      "evidence": "公示后最终版名单第29页，第552行；比赛日期暂仅精确到年份（公示为2026-09-30）。身份与在校区间待核实。",
+      "recipients": [
+        "黄恒炫"
+      ]
+    },
+    {
+      "source_key": "official:astar2026-pre2:581",
+      "event": {
+        "key": "astar2026-pre2",
+        "title": "2026年百度之星程序设计大赛第二场初赛",
+        "family": "astar",
+        "occurred_on": "2026-01-01",
+        "date_precision": "year",
+        "category": "省赛第二场"
+      },
+      "award": "铜奖",
+      "team": "",
+      "source_url": "https://base.cdn.bcebos.com/2026_astar_second_huojiang_new.pdf",
+      "evidence": "公示后最终版名单第30页，第581行；比赛日期暂仅精确到年份（公示为2026-09-30）。身份与在校区间待核实。",
+      "recipients": [
+        "林浩荣"
+      ]
+    }
+  ]
+}

@@ -39,6 +39,7 @@ const extraLinks = [
     { title: '题库', route: '/learn', icon: Terminal },
     { title: '云端 IDE', route: '/ide', icon: SquareTerminal },
   ] : []),
+  { title: '荣誉殿堂', route: '/honors', icon: Trophy },
   { title: '集训', route: '/camps', icon: Trophy },
   { title: '工作坊状态', route: '/status', icon: Activity },
   { title: '线下赛报名', route: '/signups', icon: ClipboardList },
@@ -65,7 +66,7 @@ const isAdminRoute = () =>
   currentPath.value.startsWith('/editorials/admin')
 
 const moreActive = () =>
-  ['/camps', '/status', '/blog', '/nav', '/codeforces/profile', '/me'].some((route) =>
+  ['/honors', '/camps', '/status', '/blog', '/nav', '/codeforces/profile', '/me'].some((route) =>
     isActive(route),
   ) || isAdminRoute()
 

@@ -1,0 +1,38 @@
+[
+  {
+    "key": "astar-2026-final",
+    "url": "https://base.cdn.bcebos.com/2026_astar_juesai_huojiang.pdf",
+    "page": "https://astar.baidu.com/#/news-info?tab=3&id=A5FB5152F0C65E0B2B1E885E4F0BB407",
+    "sha256": "9b15aa3a72028c3a6d180a1aecc987f44015514a410b1656937347a66b537bb7"
+  },
+  {
+    "key": "matibei-2026-pre1",
+    "url": "https://scdn.matiji.net/download/2026%E5%B9%B4%E7%AC%AC%E5%85%AB%E5%B1%8A%E7%A0%81%E8%B9%84%E6%9D%AF%E5%85%A8%E5%9B%BD%E5%A4%A7%E5%AD%A6%E7%94%9F%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1%E5%A4%A7%E8%B5%9B%E7%9C%81%E8%B5%9B%E7%AC%AC%E4%B8%80%E5%9C%BA%E8%8E%B7%E5%A5%96%26%E6%99%8B%E7%BA%A7%E5%90%8D%E5%8D%95%E5%85%AC%E7%A4%BA.pdf?response-content-type=application/octet-stream",
+    "page": "https://www.matiji.net/exam/contest/topic2026?id=68",
+    "sha256": "0d4dddcd7771b5242b53fa5cdbb3ef5b456b36bcdc3879dac40cde132b04c393"
+  },
+  {
+    "key": "matibei-2026-pre2",
+    "url": "https://scdn.matiji.net/download/2026%E5%B9%B4%E7%AC%AC%E5%85%AB%E5%B1%8A%E7%A0%81%E8%B9%84%E6%9D%AF%E5%85%A8%E5%9B%BD%E5%A4%A7%E5%AD%A6%E7%94%9F%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1%E5%A4%A7%E8%B5%9B%E7%9C%81%E8%B5%9B%E7%AC%AC%E4%BA%8C%E5%9C%BA%E8%8E%B7%E5%A5%96%26%E6%99%8B%E7%BA%A7%E5%90%8D%E5%8D%95%E5%85%AC%E7%A4%BA.pdf?response-content-type=application/octet-stream",
+    "page": "https://www.matiji.net/exam/contest/topic2026?id=68",
+    "sha256": "ee5e2fa196d4b24f47d389346ac63e1282f9f999f160305a4b790a123e2d7c87"
+  },
+  {
+    "key": "matibei-2026-pre3",
+    "url": "https://scdn.matiji.net/download/2026%E5%B9%B4%E7%AC%AC%E5%85%AB%E5%B1%8A%E7%A0%81%E8%B9%84%E6%9D%AF%E5%85%A8%E5%9B%BD%E5%A4%A7%E5%AD%A6%E7%94%9F%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1%E5%A4%A7%E8%B5%9B%E7%9C%81%E8%B5%9B%E7%AC%AC%E4%B8%89%E5%9C%BA%E8%8E%B7%E5%A5%96%26%E6%99%8B%E7%BA%A7%E5%90%8D%E5%8D%95%E5%85%AC%E7%A4%BA.pdf?response-content-type=application/octet-stream",
+    "page": "https://www.matiji.net/exam/contest/topic2026?id=68",
+    "sha256": "0d5b0e267fbf506c05f85d1064d09c27023c52a92e2bb32aa970d31b74d0e904"
+  },
+  {
+    "key": "matibei-2026-final",
+    "url": "https://scdn.matiji.net/download/2026%E5%B9%B4%E7%AC%AC%E5%85%AB%E5%B1%8A%E7%A0%81%E8%B9%84%E6%9D%AF%E5%85%A8%E5%9B%BD%E5%A4%A7%E5%AD%A6%E7%94%9F%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1%E5%A4%A7%E8%B5%9B%E5%9B%BD%E8%B5%9B%E8%8E%B7%E5%A5%96%E5%90%8D%E5%8D%95%E5%85%AC%E7%A4%BA.pdf?response-content-type=application/octet-stream",
+    "page": "https://www.matiji.net/exam/contest/topic2026?id=68",
+    "sha256": "6f736be5fe186392bef5450cc2f7cbf967de2122cddc7111cde4e15bb4c0d56a"
+  },
+  {
+    "key": "astar-2026-pre2",
+    "url": "https://base.cdn.bcebos.com/2026_astar_second_huojiang_new.pdf",
+    "page": "https://astar.baidu.com/#/news-info?tab=3&id=807608869C8B28E42BF022BFDDEAB401",
+    "sha256": "7cc706f08da2bdabb94118cafc728cbdaa6ae022b30e2d07e6ecc28fde96ffde"
+  }
+]

@@ -1,0 +1,335 @@
+{
+  "competition": "2041434074606342144",
+  "date": "2026-04-18",
+  "official_anchor_scores": {
+    "scores": [
+      252,
+      226,
+      175
+    ]
+  },
+  "sources": [
+    {
+      "url": "https://pintia.cn/api/competitions/2041434074606342144/gplt-anchor-scores",
+      "sha256": "1eb0ea2d0cbcdaf58a8c08e30355cad55d8275fc9a3053e17e5791cdbc405a33"
+    },
+    {
+      "url": "https://pintia.cn/api/competitions/2041434074606342144/gplt-team-rankings?filter=%7B%22groupFid%22%3A%222%22%2C%22provinceCode%22%3A%22GUANG_DONG%22%7D",
+      "sha256": "37c8287371bd1bc3e63960dc0a3c399dff60bc81898bd2f67523c9af5d9856db"
+    },
+    {
+      "url": "https://pintia.cn/api/competitions/2041434074606342144/gplt-team-ranking-scores?team_fid=617",
+      "sha256": "8ad762ddf6f92c736ba396aeca5d57f320b8f11a793b4296a2f0823a3a806dc2"
+    },
+    {
+      "url": "https://pintia.cn/api/competitions/2041434074606342144/gplt-team-ranking-scores?team_fid=618",
+      "sha256": "140d1da795a3271a5d5b01f234893c3e6828b2cbff8af482c3a1edf6f4b5e627"
+    },
+    {
+      "url": "https://pintia.cn/api/competitions/2041434074606342144/gplt-team-ranking-scores?team_fid=619",
+      "sha256": "db6d4f4427c6201fccd887b2424c80e2c604e01afb989458c6f4e59a81ddd881"
+    }
+  ],
+  "rows": [
+    {
+      "name": "谢泽栩",
+      "person_fid": "12104",
+      "team": "SGU-T1",
+      "score": 243,
+      "excluded": false,
+      "source_url": "https://pintia.cn/api/competitions/2041434074606342144/gplt-team-ranking-scores?team_fid=617",
+      "award": null,
+      "reason": "已取得官方成绩，待对照正式奖项口径"
+    },
+    {
+      "name": "朱子睿",
+      "person_fid": "12105",
+      "team": "SGU-T1",
+      "score": 241,
+      "excluded": false,
+      "source_url": "https://pintia.cn/api/competitions/2041434074606342144/gplt-team-ranking-scores?team_fid=617",
+      "award": null,
+      "reason": "已取得官方成绩，待对照正式奖项口径"
+    },
+    {
+      "name": "黄家宝",
+      "person_fid": "12106",
+      "team": "SGU-T1",
+      "score": 200,
+      "excluded": false,
+      "source_url": "https://pintia.cn/api/competitions/2041434074606342144/gplt-team-ranking-scores?team_fid=617",
+      "award": null,
+      "reason": "已取得官方成绩，待对照正式奖项口径"
+    },
+    {
+      "name": "洪瑜徽",
+      "person_fid": "12107",
+      "team": "SGU-T1",
+      "score": 181,
+      "excluded": false,
+      "source_url": "https://pintia.cn/api/competitions/2041434074606342144/gplt-team-ranking-scores?team_fid=617",
+      "award": null,
+      "reason": "已取得官方成绩，待对照正式奖项口径"
+    },
+    {
+      "name": "叶福都",
+      "person_fid": "12108",
+      "team": "SGU-T1",
+      "score": 165,
+      "excluded": false,
+      "source_url": "https://pintia.cn/api/competitions/2041434074606342144/gplt-team-ranking-scores?team_fid=617",
+      "award": null,
+      "reason": "已取得官方成绩，待对照正式奖项口径"
+    },
+    {
+      "name": "卢成洋",
+      "person_fid": "12109",
+      "team": "SGU-T1",
+      "score": 216,
+      "excluded": false,
+      "source_url": "https://pintia.cn/api/competitions/2041434074606342144/gplt-team-ranking-scores?team_fid=617",
+      "award": null,
+      "reason": "已取得官方成绩，待对照正式奖项口径"
+    },
+    {
+      "name": "马嘉亮",
+      "person_fid": "12110",
+      "team": "SGU-T1",
+      "score": 151,
+      "excluded": false,
+      "source_url": "https://pintia.cn/api/competitions/2041434074606342144/gplt-team-ranking-scores?team_fid=617",
+      "award": null,
+      "reason": "已取得官方成绩，待对照正式奖项口径"
+    },
+    {
+      "name": "徐小雅",
+      "person_fid": "12111",
+      "team": "SGU-T1",
+      "score": 141,
+      "excluded": false,
+      "source_url": "https://pintia.cn/api/competitions/2041434074606342144/gplt-team-ranking-scores?team_fid=617",
+      "award": null,
+      "reason": "已取得官方成绩，待对照正式奖项口径"
+    },
+    {
+      "name": "叶宇轩",
+      "person_fid": "12112",
+      "team": "SGU-T1",
+      "score": 183,
+      "excluded": false,
+      "source_url": "https://pintia.cn/api/competitions/2041434074606342144/gplt-team-ranking-scores?team_fid=617",
+      "award": null,
+      "reason": "已取得官方成绩，待对照正式奖项口径"
+    },
+    {
+      "name": "赖佳淇",
+      "person_fid": "12113",
+      "team": "SGU-T1",
+      "score": 134,
+      "excluded": false,
+      "source_url": "https://pintia.cn/api/competitions/2041434074606342144/gplt-team-ranking-scores?team_fid=617",
+      "award": null,
+      "reason": "已取得官方成绩，待对照正式奖项口径"
+    },
+    {
+      "name": "王鹏凯",
+      "person_fid": "12094",
+      "team": "SGU-T2",
+      "score": 136,
+      "excluded": false,
+      "source_url": "https://pintia.cn/api/competitions/2041434074606342144/gplt-team-ranking-scores?team_fid=618",
+      "award": null,
+      "reason": "已取得官方成绩，待对照正式奖项口径"
+    },
+    {
+      "name": "黄炜骅",
+      "person_fid": "12095",
+      "team": "SGU-T2",
+      "score": 68,
+      "excluded": false,
+      "source_url": "https://pintia.cn/api/competitions/2041434074606342144/gplt-team-ranking-scores?team_fid=618",
+      "award": null,
+      "reason": "已取得官方成绩，待对照正式奖项口径"
+    },
+    {
+      "name": "陶健",
+      "person_fid": "12096",
+      "team": "SGU-T2",
+      "score": 181,
+      "excluded": false,
+      "source_url": "https://pintia.cn/api/competitions/2041434074606342144/gplt-team-ranking-scores?team_fid=618",
+      "award": null,
+      "reason": "已取得官方成绩，待对照正式奖项口径"
+    },
+    {
+      "name": "董学文",
+      "person_fid": "12097",
+      "team": "SGU-T2",
+      "score": 169,
+      "excluded": false,
+      "source_url": "https://pintia.cn/api/competitions/2041434074606342144/gplt-team-ranking-scores?team_fid=618",
+      "award": null,
+      "reason": "已取得官方成绩，待对照正式奖项口径"
+    },
+    {
+      "name": "陈思琪",
+      "person_fid": "12098",
+      "team": "SGU-T2",
+      "score": 223,
+      "excluded": false,
+      "source_url": "https://pintia.cn/api/competitions/2041434074606342144/gplt-team-ranking-scores?team_fid=618",
+      "award": null,
+      "reason": "已取得官方成绩，待对照正式奖项口径"
+    },
+    {
+      "name": "赖朝顺",
+      "person_fid": "12099",
+      "team": "SGU-T2",
+      "score": 135,
+      "excluded": false,
+      "source_url": "https://pintia.cn/api/competitions/2041434074606342144/gplt-team-ranking-scores?team_fid=618",
+      "award": null,
+      "reason": "已取得官方成绩，待对照正式奖项口径"
+    },
+    {
+      "name": "叶丹萍",
+      "person_fid": "12100",
+      "team": "SGU-T2",
+      "score": 173,
+      "excluded": false,
+      "source_url": "https://pintia.cn/api/competitions/2041434074606342144/gplt-team-ranking-scores?team_fid=618",
+      "award": null,
+      "reason": "已取得官方成绩，待对照正式奖项口径"
+    },
+    {
+      "name": "梁炜蜃",
+      "person_fid": "12101",
+      "team": "SGU-T2",
+      "score": 150,
+      "excluded": false,
+      "source_url": "https://pintia.cn/api/competitions/2041434074606342144/gplt-team-ranking-scores?team_fid=618",
+      "award": null,
+      "reason": "已取得官方成绩，待对照正式奖项口径"
+    },
+    {
+      "name": "黄恒炫",
+      "person_fid": "12102",
+      "team": "SGU-T2",
+      "score": 158,
+      "excluded": false,
+      "source_url": "https://pintia.cn/api/competitions/2041434074606342144/gplt-team-ranking-scores?team_fid=618",
+      "award": null,
+      "reason": "已取得官方成绩，待对照正式奖项口径"
+    },
+    {
+      "name": "杨壹锋",
+      "person_fid": "12103",
+      "team": "SGU-T2",
+      "score": 114,
+      "excluded": false,
+      "source_url": "https://pintia.cn/api/competitions/2041434074606342144/gplt-team-ranking-scores?team_fid=618",
+      "award": null,
+      "reason": "已取得官方成绩，待对照正式奖项口径"
+    },
+    {
+      "name": "覃健企",
+      "person_fid": "12084",
+      "team": "SGU-T3",
+      "score": 141,
+      "excluded": false,
+      "source_url": "https://pintia.cn/api/competitions/2041434074606342144/gplt-team-ranking-scores?team_fid=619",
+      "award": null,
+      "reason": "已取得官方成绩，待对照正式奖项口径"
+    },
+    {
+      "name": "杨文辉",
+      "person_fid": "12085",
+      "team": "SGU-T3",
+      "score": 171,
+      "excluded": false,
+      "source_url": "https://pintia.cn/api/competitions/2041434074606342144/gplt-team-ranking-scores?team_fid=619",
+      "award": null,
+      "reason": "已取得官方成绩，待对照正式奖项口径"
+    },
+    {
+      "name": "李育键",
+      "person_fid": "12086",
+      "team": "SGU-T3",
+      "score": 105,
+      "excluded": false,
+      "source_url": "https://pintia.cn/api/competitions/2041434074606342144/gplt-team-ranking-scores?team_fid=619",
+      "award": null,
+      "reason": "已取得官方成绩，待对照正式奖项口径"
+    },
+    {
+      "name": "陈俊东",
+      "person_fid": "12087",
+      "team": "SGU-T3",
+      "score": 183,
+      "excluded": false,
+      "source_url": "https://pintia.cn/api/competitions/2041434074606342144/gplt-team-ranking-scores?team_fid=619",
+      "award": null,
+      "reason": "已取得官方成绩，待对照正式奖项口径"
+    },
+    {
+      "name": "张信言",
+      "person_fid": "12088",
+      "team": "SGU-T3",
+      "score": 80,
+      "excluded": false,
+      "source_url": "https://pintia.cn/api/competitions/2041434074606342144/gplt-team-ranking-scores?team_fid=619",
+      "award": null,
+      "reason": "已取得官方成绩，待对照正式奖项口径"
+    },
+    {
+      "name": "刘恩平",
+      "person_fid": "12089",
+      "team": "SGU-T3",
+      "score": 136,
+      "excluded": false,
+      "source_url": "https://pintia.cn/api/competitions/2041434074606342144/gplt-team-ranking-scores?team_fid=619",
+      "award": null,
+      "reason": "已取得官方成绩，待对照正式奖项口径"
+    },
+    {
+      "name": "蒋鑫",
+      "person_fid": "12090",
+      "team": "SGU-T3",
+      "score": 116,
+      "excluded": false,
+      "source_url": "https://pintia.cn/api/competitions/2041434074606342144/gplt-team-ranking-scores?team_fid=619",
+      "award": null,
+      "reason": "已取得官方成绩，待对照正式奖项口径"
+    },
+    {
+      "name": "林浩荣",
+      "person_fid": "12091",
+      "team": "SGU-T3",
+      "score": 92,
+      "excluded": false,
+      "source_url": "https://pintia.cn/api/competitions/2041434074606342144/gplt-team-ranking-scores?team_fid=619",
+      "award": null,
+      "reason": "已取得官方成绩，待对照正式奖项口径"
+    },
+    {
+      "name": "林羿安",
+      "person_fid": "12092",
+      "team": "SGU-T3",
+      "score": 108,
+      "excluded": false,
+      "source_url": "https://pintia.cn/api/competitions/2041434074606342144/gplt-team-ranking-scores?team_fid=619",
+      "award": null,
+      "reason": "已取得官方成绩，待对照正式奖项口径"
+    },
+    {
+      "name": "林沐怀",
+      "person_fid": "12093",
+      "team": "SGU-T3",
+      "score": 90,
+      "excluded": false,
+      "source_url": "https://pintia.cn/api/competitions/2041434074606342144/gplt-team-ranking-scores?team_fid=619",
+      "award": null,
+      "reason": "已取得官方成绩，待对照正式奖项口径"
+    }
+  ]
+}

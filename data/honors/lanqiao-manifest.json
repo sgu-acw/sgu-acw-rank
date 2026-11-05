@@ -1,0 +1,17 @@
+[
+  {
+    "edition": 12,
+    "url": "https://x-static.lanqiao.cn/upload/202110/courseimg/41147d63-c9bb-47d8-ae99-d5776a6c39f8.rar",
+    "sha256": "ce0a3f1d68581138b5bcd8aae1d5d8624a5644068754ac1af0474d423fbcc933"
+  },
+  {
+    "edition": 13,
+    "url": "https://x-static.lanqiao.cn/upload/202210/courseimg/8044a2a8-df16-47b3-9055-7639605f65e7.rar",
+    "sha256": "e35522ff4be7bf522c010dc7dc2ed37f270804c8fa0ee70f1a9daefaf9fb380a"
+  },
+  {
+    "edition": 14,
+    "url": "https://x-static.lanqiao.cn/upload/202403/courseimg/ff620789-4672-404d-8fac-f3a166af880a.rar",
+    "sha256": "a35741489bc5e893cf2ffd4e26deabf584988005099a6890760744982fc02bc6"
+  }
+]

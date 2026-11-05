@@ -1,0 +1,796 @@
+{
+  "records": [
+    {
+      "source_key": "official:lanqiao12-final:12509384",
+      "event": {
+        "key": "lanqiao12-final-C/C++程序设计大学B组",
+        "title": "第12届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2021-01-01",
+        "date_precision": "year",
+        "category": "C/C++程序设计大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202110/courseimg/41147d63-c9bb-47d8-ae99-d5776a6c39f8.rar",
+      "evidence": "官方压缩包内 软件类-CC++程序设计大学B组总决赛获奖名单.pdf 第34页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "马欣鸿"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao12-final:12509388",
+      "event": {
+        "key": "lanqiao12-final-C/C++程序设计大学B组",
+        "title": "第12届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2021-01-01",
+        "date_precision": "year",
+        "category": "C/C++程序设计大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202110/courseimg/41147d63-c9bb-47d8-ae99-d5776a6c39f8.rar",
+      "evidence": "官方压缩包内 软件类-CC++程序设计大学B组总决赛获奖名单.pdf 第37页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "郑育濠"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao12-final:12509386",
+      "event": {
+        "key": "lanqiao12-final-C/C++程序设计大学B组",
+        "title": "第12届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2021-01-01",
+        "date_precision": "year",
+        "category": "C/C++程序设计大学B组"
+      },
+      "award": "优秀奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202110/courseimg/41147d63-c9bb-47d8-ae99-d5776a6c39f8.rar",
+      "evidence": "官方压缩包内 软件类-CC++程序设计大学B组总决赛获奖名单.pdf 第70页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "童浩轩"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao12-final:12509383",
+      "event": {
+        "key": "lanqiao12-final-Java软件开发大学B组",
+        "title": "第12届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2021-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "一等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202110/courseimg/41147d63-c9bb-47d8-ae99-d5776a6c39f8.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第1页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "林鸿涛"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao12-final:12509377",
+      "event": {
+        "key": "lanqiao12-final-Java软件开发大学B组",
+        "title": "第12届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2021-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "一等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202110/courseimg/41147d63-c9bb-47d8-ae99-d5776a6c39f8.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第1页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "郑晓帆"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao12-final:12509381",
+      "event": {
+        "key": "lanqiao12-final-Java软件开发大学B组",
+        "title": "第12届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2021-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "一等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202110/courseimg/41147d63-c9bb-47d8-ae99-d5776a6c39f8.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第1页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "翁耿鹏"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao12-final:12509379",
+      "event": {
+        "key": "lanqiao12-final-Java软件开发大学B组",
+        "title": "第12届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2021-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202110/courseimg/41147d63-c9bb-47d8-ae99-d5776a6c39f8.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第8页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "钟卓辉"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao12-final:12509387",
+      "event": {
+        "key": "lanqiao12-final-Java软件开发大学B组",
+        "title": "第12届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2021-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202110/courseimg/41147d63-c9bb-47d8-ae99-d5776a6c39f8.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第8页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "姚仁钊"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao12-final:12509389",
+      "event": {
+        "key": "lanqiao12-final-Java软件开发大学B组",
+        "title": "第12届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2021-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202110/courseimg/41147d63-c9bb-47d8-ae99-d5776a6c39f8.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第14页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "周泽晓"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao12-final:12509385",
+      "event": {
+        "key": "lanqiao12-final-Java软件开发大学B组",
+        "title": "第12届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2021-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "优秀奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202110/courseimg/41147d63-c9bb-47d8-ae99-d5776a6c39f8.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第19页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "黄志标"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao12-final:12509253",
+      "event": {
+        "key": "lanqiao12-final-Python程序设计大学组",
+        "title": "第12届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2021-01-01",
+        "date_precision": "year",
+        "category": "Python程序设计大学组"
+      },
+      "award": "优秀奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202110/courseimg/41147d63-c9bb-47d8-ae99-d5776a6c39f8.rar",
+      "evidence": "官方压缩包内 软件类-Python程序设计大学组总决赛获奖名单.pdf 第9页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "彭永源"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao12-final:12509255",
+      "event": {
+        "key": "lanqiao12-final-Python程序设计大学组",
+        "title": "第12届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2021-01-01",
+        "date_precision": "year",
+        "category": "Python程序设计大学组"
+      },
+      "award": "优秀奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202110/courseimg/41147d63-c9bb-47d8-ae99-d5776a6c39f8.rar",
+      "evidence": "官方压缩包内 软件类-Python程序设计大学组总决赛获奖名单.pdf 第13页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "麦志杰"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao13-final:13159976",
+      "event": {
+        "key": "lanqiao13-final-C/C++程序设计大学B组",
+        "title": "第13届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2022-01-01",
+        "date_precision": "year",
+        "category": "C/C++程序设计大学B组"
+      },
+      "award": "二等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202210/courseimg/8044a2a8-df16-47b3-9055-7639605f65e7.rar",
+      "evidence": "官方压缩包内 软件类-CC++程序设计大学B组总决赛获奖名单.pdf 第21页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "汪浪峰"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao13-final:13159972",
+      "event": {
+        "key": "lanqiao13-final-C/C++程序设计大学B组",
+        "title": "第13届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2022-01-01",
+        "date_precision": "year",
+        "category": "C/C++程序设计大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202210/courseimg/8044a2a8-df16-47b3-9055-7639605f65e7.rar",
+      "evidence": "官方压缩包内 软件类-CC++程序设计大学B组总决赛获奖名单.pdf 第33页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "童浩轩"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao13-final:13159982",
+      "event": {
+        "key": "lanqiao13-final-C/C++程序设计大学B组",
+        "title": "第13届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2022-01-01",
+        "date_precision": "year",
+        "category": "C/C++程序设计大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202210/courseimg/8044a2a8-df16-47b3-9055-7639605f65e7.rar",
+      "evidence": "官方压缩包内 软件类-CC++程序设计大学B组总决赛获奖名单.pdf 第34页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "康丁魁"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao13-final:13159980",
+      "event": {
+        "key": "lanqiao13-final-C/C++程序设计大学B组",
+        "title": "第13届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2022-01-01",
+        "date_precision": "year",
+        "category": "C/C++程序设计大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202210/courseimg/8044a2a8-df16-47b3-9055-7639605f65e7.rar",
+      "evidence": "官方压缩包内 软件类-CC++程序设计大学B组总决赛获奖名单.pdf 第42页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "吴浩颖"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao13-final:13159974",
+      "event": {
+        "key": "lanqiao13-final-C/C++程序设计大学B组",
+        "title": "第13届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2022-01-01",
+        "date_precision": "year",
+        "category": "C/C++程序设计大学B组"
+      },
+      "award": "优秀奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202210/courseimg/8044a2a8-df16-47b3-9055-7639605f65e7.rar",
+      "evidence": "官方压缩包内 软件类-CC++程序设计大学B组总决赛获奖名单.pdf 第78页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "冯明高"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao13-final:13159978",
+      "event": {
+        "key": "lanqiao13-final-C/C++程序设计大学B组",
+        "title": "第13届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2022-01-01",
+        "date_precision": "year",
+        "category": "C/C++程序设计大学B组"
+      },
+      "award": "优秀奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202210/courseimg/8044a2a8-df16-47b3-9055-7639605f65e7.rar",
+      "evidence": "官方压缩包内 软件类-CC++程序设计大学B组总决赛获奖名单.pdf 第79页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "李楠豪"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao13-final:13159966",
+      "event": {
+        "key": "lanqiao13-final-Java软件开发大学B组",
+        "title": "第13届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2022-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "一等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202210/courseimg/8044a2a8-df16-47b3-9055-7639605f65e7.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第2页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "盘炫铭"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao13-final:13159983",
+      "event": {
+        "key": "lanqiao13-final-Java软件开发大学B组",
+        "title": "第13届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2022-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "一等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202210/courseimg/8044a2a8-df16-47b3-9055-7639605f65e7.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第2页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "陈锦强"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao13-final:13159979",
+      "event": {
+        "key": "lanqiao13-final-Java软件开发大学B组",
+        "title": "第13届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2022-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "二等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202210/courseimg/8044a2a8-df16-47b3-9055-7639605f65e7.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第3页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "林鸿涛"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao13-final:13159964",
+      "event": {
+        "key": "lanqiao13-final-Java软件开发大学B组",
+        "title": "第13届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2022-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "二等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202210/courseimg/8044a2a8-df16-47b3-9055-7639605f65e7.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第5页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "陈锦程"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao13-final:13159967",
+      "event": {
+        "key": "lanqiao13-final-Java软件开发大学B组",
+        "title": "第13届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2022-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "二等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202210/courseimg/8044a2a8-df16-47b3-9055-7639605f65e7.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第5页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "钟卓辉"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao13-final:13159969",
+      "event": {
+        "key": "lanqiao13-final-Java软件开发大学B组",
+        "title": "第13届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2022-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202210/courseimg/8044a2a8-df16-47b3-9055-7639605f65e7.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第8页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "翁耿鹏"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao13-final:13159971",
+      "event": {
+        "key": "lanqiao13-final-Java软件开发大学B组",
+        "title": "第13届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2022-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202210/courseimg/8044a2a8-df16-47b3-9055-7639605f65e7.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第10页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "张梓楷"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao13-final:13159970",
+      "event": {
+        "key": "lanqiao13-final-Java软件开发大学B组",
+        "title": "第13届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2022-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "优秀奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202210/courseimg/8044a2a8-df16-47b3-9055-7639605f65e7.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第15页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "林敏娜"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao13-final:13159977",
+      "event": {
+        "key": "lanqiao13-final-Java软件开发大学B组",
+        "title": "第13届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2022-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "优秀奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202210/courseimg/8044a2a8-df16-47b3-9055-7639605f65e7.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第16页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "叶海鑫"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao13-final:13159975",
+      "event": {
+        "key": "lanqiao13-final-Java软件开发大学B组",
+        "title": "第13届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2022-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "优秀奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202210/courseimg/8044a2a8-df16-47b3-9055-7639605f65e7.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第17页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "郑晓帆"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao13-final:13159973",
+      "event": {
+        "key": "lanqiao13-final-Java软件开发大学B组",
+        "title": "第13届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2022-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "优秀奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202210/courseimg/8044a2a8-df16-47b3-9055-7639605f65e7.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第19页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "郑伙群"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao13-final:13159968",
+      "event": {
+        "key": "lanqiao13-final-Java软件开发大学B组",
+        "title": "第13届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2022-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "优秀奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202210/courseimg/8044a2a8-df16-47b3-9055-7639605f65e7.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第22页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "莫华棕"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao13-final:13159965",
+      "event": {
+        "key": "lanqiao13-final-Python程序设计大学B组",
+        "title": "第13届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2022-01-01",
+        "date_precision": "year",
+        "category": "Python程序设计大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202210/courseimg/8044a2a8-df16-47b3-9055-7639605f65e7.rar",
+      "evidence": "官方压缩包内 软件类-Python程序设计大学B组总决赛获奖名单.pdf 第7页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "郑梓澄"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao14-final:14442964",
+      "event": {
+        "key": "lanqiao14-final-C/C++程序设计大学B组",
+        "title": "第14届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2023-01-01",
+        "date_precision": "year",
+        "category": "C/C++程序设计大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202403/courseimg/ff620789-4672-404d-8fac-f3a166af880a.rar",
+      "evidence": "官方压缩包内 软件类-CC++程序设计大学B组总决赛获奖名单.pdf 第48页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "周俊颖"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao14-final:14442963",
+      "event": {
+        "key": "lanqiao14-final-C/C++程序设计大学B组",
+        "title": "第14届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2023-01-01",
+        "date_precision": "year",
+        "category": "C/C++程序设计大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202403/courseimg/ff620789-4672-404d-8fac-f3a166af880a.rar",
+      "evidence": "官方压缩包内 软件类-CC++程序设计大学B组总决赛获奖名单.pdf 第50页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "康丁魁"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao14-final:14442965",
+      "event": {
+        "key": "lanqiao14-final-C/C++程序设计大学B组",
+        "title": "第14届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2023-01-01",
+        "date_precision": "year",
+        "category": "C/C++程序设计大学B组"
+      },
+      "award": "优秀奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202403/courseimg/ff620789-4672-404d-8fac-f3a166af880a.rar",
+      "evidence": "官方压缩包内 软件类-CC++程序设计大学B组总决赛获奖名单.pdf 第90页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "罗程"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao14-final:14442966",
+      "event": {
+        "key": "lanqiao14-final-Java软件开发大学B组",
+        "title": "第14届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2023-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "一等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202403/courseimg/ff620789-4672-404d-8fac-f3a166af880a.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第1页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "林日清"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao14-final:14442967",
+      "event": {
+        "key": "lanqiao14-final-Java软件开发大学B组",
+        "title": "第14届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2023-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "二等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202403/courseimg/ff620789-4672-404d-8fac-f3a166af880a.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第4页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "陈锦程"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao14-final:14442969",
+      "event": {
+        "key": "lanqiao14-final-Java软件开发大学B组",
+        "title": "第14届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2023-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "二等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202403/courseimg/ff620789-4672-404d-8fac-f3a166af880a.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第6页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "何滨"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao14-final:14442972",
+      "event": {
+        "key": "lanqiao14-final-Java软件开发大学B组",
+        "title": "第14届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2023-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202403/courseimg/ff620789-4672-404d-8fac-f3a166af880a.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第10页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "彭宇轩"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao14-final:14442973",
+      "event": {
+        "key": "lanqiao14-final-Java软件开发大学B组",
+        "title": "第14届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2023-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202403/courseimg/ff620789-4672-404d-8fac-f3a166af880a.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第11页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "罗罡"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao14-final:14442970",
+      "event": {
+        "key": "lanqiao14-final-Java软件开发大学B组",
+        "title": "第14届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2023-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202403/courseimg/ff620789-4672-404d-8fac-f3a166af880a.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第17页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "冯明高"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao14-final:14442971",
+      "event": {
+        "key": "lanqiao14-final-Java软件开发大学B组",
+        "title": "第14届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2023-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202403/courseimg/ff620789-4672-404d-8fac-f3a166af880a.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第18页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "蔡振棋"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao14-final:14442968",
+      "event": {
+        "key": "lanqiao14-final-Java软件开发大学B组",
+        "title": "第14届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2023-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "优秀奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202403/courseimg/ff620789-4672-404d-8fac-f3a166af880a.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第22页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "梁文广"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao14-final:14442974",
+      "event": {
+        "key": "lanqiao14-final-Java软件开发大学B组",
+        "title": "第14届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2023-01-01",
+        "date_precision": "year",
+        "category": "Java软件开发大学B组"
+      },
+      "award": "优秀奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202403/courseimg/ff620789-4672-404d-8fac-f3a166af880a.rar",
+      "evidence": "官方压缩包内 软件类-Java软件开发大学B组总决赛获奖名单.pdf 第28页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "黄宇豪"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao14-final:14442975",
+      "event": {
+        "key": "lanqiao14-final-Python程序设计大学B组",
+        "title": "第14届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
+        "family": "lanqiao",
+        "occurred_on": "2023-01-01",
+        "date_precision": "year",
+        "category": "Python程序设计大学B组"
+      },
+      "award": "优秀奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202403/courseimg/ff620789-4672-404d-8fac-f3a166af880a.rar",
+      "evidence": "官方压缩包内 软件类-Python程序设计大学B组总决赛获奖名单.pdf 第10页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+      "recipients": [
+        "郑梓澄"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,5837 @@
+[
+  {
+    "source_key": "srk:ccpc2022preliminary:2065202209100055",
+    "event": {
+      "key": "ccpc2022preliminary",
+      "title": "2022 年中国大学生程序设计竞赛网络预选赛",
+      "family": "ccpc",
+      "occurred_on": "2022-09-11",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "美少女战士",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2022/ccpc2022preliminary.srk.json",
+    "recipients": [
+      "康丁魁",
+      "童浩轩",
+      "黎国雄"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 2,
+      "time": [
+        4620,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "康丁魁"
+      },
+      {
+        "name": "童浩轩"
+      },
+      {
+        "name": "黎国雄"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:ccpc2022preliminary:2065202209100058",
+    "event": {
+      "key": "ccpc2022preliminary",
+      "title": "2022 年中国大学生程序设计竞赛网络预选赛",
+      "family": "ccpc",
+      "occurred_on": "2022-09-11",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "这次不会卡题",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2022/ccpc2022preliminary.srk.json",
+    "recipients": [
+      "周俊颖",
+      "彭宇轩",
+      "蔡振棋"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 2,
+      "time": [
+        14460,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "周俊颖"
+      },
+      {
+        "name": "彭宇轩"
+      },
+      {
+        "name": "蔡振棋"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:ccpc2022preliminary:2065202209100049",
+    "event": {
+      "key": "ccpc2022preliminary",
+      "title": "2022 年中国大学生程序设计竞赛网络预选赛",
+      "family": "ccpc",
+      "occurred_on": "2022-09-11",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "Siege Lion",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2022/ccpc2022preliminary.srk.json",
+    "recipients": [
+      "刘庭权",
+      "杨慧滢",
+      "罗凯鑫"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 2,
+      "time": [
+        22200,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "刘庭权"
+      },
+      {
+        "name": "杨慧滢"
+      },
+      {
+        "name": "罗凯鑫"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:ccpc2022preliminary:2065202209100052",
+    "event": {
+      "key": "ccpc2022preliminary",
+      "title": "2022 年中国大学生程序设计竞赛网络预选赛",
+      "family": "ccpc",
+      "occurred_on": "2022-09-11",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "不敲代码",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2022/ccpc2022preliminary.srk.json",
+    "recipients": [
+      "杨扬",
+      "盘炫铭",
+      "陈锦程"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 2,
+      "time": [
+        30600,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "杨扬"
+      },
+      {
+        "name": "盘炫铭"
+      },
+      {
+        "name": "陈锦程"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:ccpc2022preliminary:2065202209100046",
+    "event": {
+      "key": "ccpc2022preliminary",
+      "title": "2022 年中国大学生程序设计竞赛网络预选赛",
+      "family": "ccpc",
+      "occurred_on": "2022-09-11",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "only ac one",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2022/ccpc2022preliminary.srk.json",
+    "recipients": [
+      "冯明高",
+      "张梓楷",
+      "李楠豪"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 1,
+      "time": [
+        7680,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "冯明高"
+      },
+      {
+        "name": "张梓楷"
+      },
+      {
+        "name": "李楠豪"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:ccpc2023guilin:184",
+    "event": {
+      "key": "ccpc2023guilin",
+      "title": "第 9 届 CCPC 中国大学生程序设计竞赛 桂林站",
+      "family": "ccpc",
+      "occurred_on": "2023-10-29",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "我看队友打代码",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2023/ccpc2023guilin.srk.json",
+    "recipients": [
+      "康丁魁",
+      "林日清",
+      "周亚男"
+    ],
+    "official": true,
+    "segments": [
+      {
+        "index": 0,
+        "rank": 117,
+        "style": "bronze",
+        "title": "铜奖",
+        "series": "#"
+      }
+    ],
+    "reason": null,
+    "score": {
+      "value": 4,
+      "time": [
+        59880,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "康丁魁"
+      },
+      {
+        "name": "林日清"
+      },
+      {
+        "name": "周亚男"
+      },
+      {
+        "name": "饶浩",
+        "role": "coach"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:ccpc2023guilin:185",
+    "event": {
+      "key": "ccpc2023guilin",
+      "title": "第 9 届 CCPC 中国大学生程序设计竞赛 桂林站",
+      "family": "ccpc",
+      "occurred_on": "2023-10-29",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "质疑懒羊羊，理解懒羊羊，成为沸羊羊",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2023/ccpc2023guilin.srk.json",
+    "recipients": [
+      "何滨",
+      "彭贞铭",
+      "林佳壕"
+    ],
+    "official": false,
+    "segments": [],
+    "reason": "非明确正式参赛队伍",
+    "score": {
+      "value": 0,
+      "time": [
+        0,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "何滨"
+      },
+      {
+        "name": "彭贞铭"
+      },
+      {
+        "name": "林佳壕"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:ccpc2023invitational-xiangtan:23082",
+    "event": {
+      "key": "ccpc2023invitational-xiangtan",
+      "title": "2023 年中国大学生程序设计竞赛全国邀请赛（湖南）（湘潭大学）",
+      "family": "ccpc",
+      "occurred_on": "2023-05-28",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "随便搞搞都对",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2023/ccpc2023invitational-xiangtan.srk.json",
+    "recipients": [
+      "康丁魁",
+      "童浩轩",
+      "周亚男"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 4,
+      "time": [
+        15420,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "康丁魁"
+      },
+      {
+        "name": "童浩轩"
+      },
+      {
+        "name": "周亚男"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:ccpc2023ladies:2000202310210170",
+    "event": {
+      "key": "ccpc2023ladies",
+      "title": "第 9 届 CCPC 中国大学生程序设计竞赛女生专场",
+      "family": "ccpc",
+      "occurred_on": "2023-10-21",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "藕see队友打代码",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2023/ccpc2023ladies.srk.json",
+    "recipients": [
+      "周亚男",
+      "杨扬",
+      "林思琪"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 4,
+      "time": [
+        38040,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "周亚男"
+      },
+      {
+        "name": "杨扬"
+      },
+      {
+        "name": "林思琪"
+      },
+      {
+        "name": "饶浩",
+        "role": "coach"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:ccpc2023preliminary:2034202308190097",
+    "event": {
+      "key": "ccpc2023preliminary",
+      "title": "第九届中国大学生程序设计竞赛网络预选赛",
+      "family": "ccpc",
+      "occurred_on": "2023-08-20",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "我看队友打代码",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2023/ccpc2023preliminary.srk.json",
+    "recipients": [
+      "周亚男",
+      "康丁魁",
+      "林日清"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 1,
+      "time": [
+        4080,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "周亚男"
+      },
+      {
+        "name": "康丁魁"
+      },
+      {
+        "name": "林日清"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:ccpc2023preliminary:2034202308190100",
+    "event": {
+      "key": "ccpc2023preliminary",
+      "title": "第九届中国大学生程序设计竞赛网络预选赛",
+      "family": "ccpc",
+      "occurred_on": "2023-08-20",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "质疑懒羊羊，理解懒羊羊，成为沸羊羊",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2023/ccpc2023preliminary.srk.json",
+    "recipients": [
+      "何滨",
+      "彭贞铭",
+      "林佳壕"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 0,
+      "time": [
+        0,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "何滨"
+      },
+      {
+        "name": "彭贞铭"
+      },
+      {
+        "name": "林佳壕"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:ccpc2023shenzhen:team075",
+    "event": {
+      "key": "ccpc2023shenzhen",
+      "title": "第 9 届 CCPC 中国大学生程序设计竞赛 深圳站",
+      "family": "ccpc",
+      "occurred_on": "2023-11-12",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "我看队友打代码",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2023/ccpc2023shenzhen.srk.json",
+    "recipients": [
+      "康丁魁",
+      "林日清",
+      "周亚男"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 3,
+      "time": [
+        37165000,
+        "ms"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "康丁魁"
+      },
+      {
+        "name": "林日清"
+      },
+      {
+        "name": "周亚男"
+      },
+      {
+        "name": "饶浩",
+        "role": "coach"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:ccpc2023shenzhen:team089",
+    "event": {
+      "key": "ccpc2023shenzhen",
+      "title": "第 9 届 CCPC 中国大学生程序设计竞赛 深圳站",
+      "family": "ccpc",
+      "occurred_on": "2023-11-12",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "十次提交一点绿",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2023/ccpc2023shenzhen.srk.json",
+    "recipients": [
+      "谢伟力",
+      "冯诺维",
+      "张皓然"
+    ],
+    "official": false,
+    "segments": [],
+    "reason": "非明确正式参赛队伍",
+    "score": {
+      "value": 0,
+      "time": [
+        0,
+        "ms"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "谢伟力"
+      },
+      {
+        "name": "冯诺维"
+      },
+      {
+        "name": "张皓然"
+      },
+      {
+        "name": "戴经国",
+        "role": "coach"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:ccpc2023shenzhen:team132",
+    "event": {
+      "key": "ccpc2023shenzhen",
+      "title": "第 9 届 CCPC 中国大学生程序设计竞赛 深圳站",
+      "family": "ccpc",
+      "occurred_on": "2023-11-12",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "质疑懒羊羊，理解懒羊羊，成为沸羊羊",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2023/ccpc2023shenzhen.srk.json",
+    "recipients": [
+      "何滨",
+      "彭贞铭",
+      "林佳壕"
+    ],
+    "official": false,
+    "segments": [],
+    "reason": "非明确正式参赛队伍",
+    "score": {
+      "value": 0,
+      "time": [
+        0,
+        "ms"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "何滨"
+      },
+      {
+        "name": "彭贞铭"
+      },
+      {
+        "name": "林佳壕"
+      },
+      {
+        "name": "苗德成",
+        "role": "coach"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:ccpc2023shenzhen:team137",
+    "event": {
+      "key": "ccpc2023shenzhen",
+      "title": "第 9 届 CCPC 中国大学生程序设计竞赛 深圳站",
+      "family": "ccpc",
+      "occurred_on": "2023-11-12",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "真不知道叫啥队",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2023/ccpc2023shenzhen.srk.json",
+    "recipients": [
+      "张立坤",
+      "林俊安",
+      "赖吉勇"
+    ],
+    "official": false,
+    "segments": [],
+    "reason": "非明确正式参赛队伍",
+    "score": {
+      "value": 0,
+      "time": [
+        0,
+        "ms"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "张立坤"
+      },
+      {
+        "name": "林俊安"
+      },
+      {
+        "name": "赖吉勇"
+      },
+      {
+        "name": "袁辉勇",
+        "role": "coach"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:ccpc2024chongqing:K709",
+    "event": {
+      "key": "ccpc2024chongqing",
+      "title": "第 10 届 CCPC 中国大学生程序设计竞赛 重庆站",
+      "family": "ccpc",
+      "occurred_on": "2024-11-10",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "码农转生~到了区域赛就拿出真本事",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2024/ccpc2024chongqing.srk.json",
+    "recipients": [
+      "冯诺维",
+      "康丁魁",
+      "陈兴翰"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 5,
+      "time": [
+        23109000,
+        "ms"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "冯诺维"
+      },
+      {
+        "name": "康丁魁"
+      },
+      {
+        "name": "陈兴翰"
+      },
+      {
+        "name": "饶浩",
+        "role": "coach"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:ccpc2024chongqing:J806",
+    "event": {
+      "key": "ccpc2024chongqing",
+      "title": "第 10 届 CCPC 中国大学生程序设计竞赛 重庆站",
+      "family": "ccpc",
+      "occurred_on": "2024-11-10",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "绿不了一点",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2024/ccpc2024chongqing.srk.json",
+    "recipients": [
+      "谢伟力",
+      "张皓然",
+      "朱子睿"
+    ],
+    "official": false,
+    "segments": [],
+    "reason": "非明确正式参赛队伍",
+    "score": {
+      "value": 3,
+      "time": [
+        14367000,
+        "ms"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "谢伟力"
+      },
+      {
+        "name": "张皓然"
+      },
+      {
+        "name": "朱子睿"
+      },
+      {
+        "name": "苗德成",
+        "role": "coach"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:ccpc2024chongqing:D201",
+    "event": {
+      "key": "ccpc2024chongqing",
+      "title": "第 10 届 CCPC 中国大学生程序设计竞赛 重庆站",
+      "family": "ccpc",
+      "occurred_on": "2024-11-10",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "说什么加综测就来了",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2024/ccpc2024chongqing.srk.json",
+    "recipients": [
+      "黄家宝",
+      "许申浩",
+      "梁炜蜃"
+    ],
+    "official": false,
+    "segments": [],
+    "reason": "非明确正式参赛队伍",
+    "score": {
+      "value": 3,
+      "time": [
+        15728000,
+        "ms"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "黄家宝"
+      },
+      {
+        "name": "许申浩"
+      },
+      {
+        "name": "梁炜蜃"
+      },
+      {
+        "name": "袁辉勇",
+        "role": "coach"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:ccpc2024ladies:114",
+    "event": {
+      "key": "ccpc2024ladies",
+      "title": "第十届中国大学生程序设计竞赛（女生专场）",
+      "family": "ccpc",
+      "occurred_on": "2024-11-03",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "因为晕3D不能玩黑神话来打A",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2024/ccpc2024ladies.srk.json",
+    "recipients": [
+      "何韵怡",
+      "李镔彬",
+      "周亚男"
+    ],
+    "official": true,
+    "segments": [
+      {
+        "index": 0,
+        "rank": 81,
+        "style": "bronze",
+        "title": "Bronze Award",
+        "series": "#"
+      }
+    ],
+    "reason": null,
+    "score": {
+      "value": 5,
+      "time": [
+        990,
+        "min"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "何韵怡"
+      },
+      {
+        "name": "李镔彬"
+      },
+      {
+        "name": "周亚男"
+      },
+      {
+        "name": "饶浩",
+        "role": "coach"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:ccpc2024ladies:113",
+    "event": {
+      "key": "ccpc2024ladies",
+      "title": "第十届中国大学生程序设计竞赛（女生专场）",
+      "family": "ccpc",
+      "occurred_on": "2024-11-03",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "汗流浃背了对不队",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2024/ccpc2024ladies.srk.json",
+    "recipients": [
+      "柯安鸿",
+      "钱玟如",
+      "魏露"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 3,
+      "time": [
+        196,
+        "min"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "柯安鸿"
+      },
+      {
+        "name": "钱玟如"
+      },
+      {
+        "name": "魏露"
+      },
+      {
+        "name": "朱伟浩",
+        "role": "coach"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:ccpc2024preliminary:1410",
+    "event": {
+      "key": "ccpc2024preliminary",
+      "title": "第十届中国大学生程序设计竞赛网络预选赛",
+      "family": "ccpc",
+      "occurred_on": "2024-09-08",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "我们打acm的要考虑的就多了",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2024/ccpc2024preliminary.srk.json",
+    "recipients": [
+      "冯诺维",
+      "陈兴翰",
+      "黄家宝"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 3,
+      "time": [
+        30180,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "冯诺维"
+      },
+      {
+        "name": "陈兴翰"
+      },
+      {
+        "name": "黄家宝"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:ccpc2024preliminary:1409",
+    "event": {
+      "key": "ccpc2024preliminary",
+      "title": "第十届中国大学生程序设计竞赛网络预选赛",
+      "family": "ccpc",
+      "occurred_on": "2024-09-08",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "我看队友打代码",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2024/ccpc2024preliminary.srk.json",
+    "recipients": [
+      "康丁魁",
+      "林日清",
+      "周亚男"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 0,
+      "time": [
+        0,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "康丁魁"
+      },
+      {
+        "name": "林日清"
+      },
+      {
+        "name": "周亚男"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:ccpc2024preliminary:1408",
+    "event": {
+      "key": "ccpc2024preliminary",
+      "title": "第十届中国大学生程序设计竞赛网络预选赛",
+      "family": "ccpc",
+      "occurred_on": "2024-09-08",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "过完签到就睡觉",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2024/ccpc2024preliminary.srk.json",
+    "recipients": [
+      "彭贞铭",
+      "李镔彬",
+      "许申浩"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 0,
+      "time": [
+        0,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "彭贞铭"
+      },
+      {
+        "name": "李镔彬"
+      },
+      {
+        "name": "许申浩"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:ccpc2025invitational-fujian:217",
+    "event": {
+      "key": "ccpc2025invitational-fujian",
+      "title": "第十二届福建省大学生程序设计竞赛暨2025年CCPC福建邀请赛",
+      "family": "ccpc",
+      "occurred_on": "2025-06-21",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "全队广东人,打a爆改自助餐",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2025/ccpc2025invitational-fujian.srk.json",
+    "recipients": [
+      "叶福都",
+      "谢泽栩",
+      "朱子睿"
+    ],
+    "official": true,
+    "segments": [
+      {
+        "index": 0,
+        "rank": 116,
+        "style": "bronze",
+        "title": "Bronze Award",
+        "series": "#"
+      }
+    ],
+    "reason": null,
+    "score": {
+      "value": 5,
+      "time": [
+        652,
+        "min"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "叶福都"
+      },
+      {
+        "name": "谢泽栩"
+      },
+      {
+        "name": "朱子睿"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:ccpc2025invitational-guangdong-preliminary:303",
+    "event": {
+      "key": "ccpc2025invitational-guangdong-preliminary",
+      "title": "2025 年（第二十二届）广东省大学生程序设计竞赛暨“汇丰科技（中国）”中国大学生程序设计竞赛邀请赛（广东）预赛",
+      "family": "ccpc",
+      "occurred_on": "2025-06-02",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "教练教练，我可以吃汉堡吗",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2025/ccpc2025invitational-guangdong-preliminary.srk.json",
+    "recipients": [
+      "叶福都",
+      "陈思琪",
+      "黄家宝"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 2,
+      "time": [
+        174,
+        "min"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "叶福都"
+      },
+      {
+        "name": "陈思琪"
+      },
+      {
+        "name": "黄家宝"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:ccpc2025invitational-guangdong-preliminary:301",
+    "event": {
+      "key": "ccpc2025invitational-guangdong-preliminary",
+      "title": "2025 年（第二十二届）广东省大学生程序设计竞赛暨“汇丰科技（中国）”中国大学生程序设计竞赛邀请赛（广东）预赛",
+      "family": "ccpc",
+      "occurred_on": "2025-06-02",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "随便打打",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2025/ccpc2025invitational-guangdong-preliminary.srk.json",
+    "recipients": [
+      "马嘉亮",
+      "李镔彬",
+      "陈兴翰"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 2,
+      "time": [
+        385,
+        "min"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "马嘉亮"
+      },
+      {
+        "name": "李镔彬"
+      },
+      {
+        "name": "陈兴翰"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:ccpc2025invitational-guangdong-preliminary:304",
+    "event": {
+      "key": "ccpc2025invitational-guangdong-preliminary",
+      "title": "2025 年（第二十二届）广东省大学生程序设计竞赛暨“汇丰科技（中国）”中国大学生程序设计竞赛邀请赛（广东）预赛",
+      "family": "ccpc",
+      "occurred_on": "2025-06-02",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "输了就怪领队",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2025/ccpc2025invitational-guangdong-preliminary.srk.json",
+    "recipients": [
+      "吴仁光",
+      "汪金力",
+      "柯安鸿"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 2,
+      "time": [
+        453,
+        "min"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "吴仁光"
+      },
+      {
+        "name": "汪金力"
+      },
+      {
+        "name": "柯安鸿"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:ccpc2025invitational-guangdong-preliminary:305",
+    "event": {
+      "key": "ccpc2025invitational-guangdong-preliminary",
+      "title": "2025 年（第二十二届）广东省大学生程序设计竞赛暨“汇丰科技（中国）”中国大学生程序设计竞赛邀请赛（广东）预赛",
+      "family": "ccpc",
+      "occurred_on": "2025-06-02",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "考的全会蒙德全队",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2025/ccpc2025invitational-guangdong-preliminary.srk.json",
+    "recipients": [
+      "王鹏凯",
+      "陈俊东",
+      "钱玟如"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 1,
+      "time": [
+        38,
+        "min"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "王鹏凯"
+      },
+      {
+        "name": "陈俊东"
+      },
+      {
+        "name": "钱玟如"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:ccpc2025invitational-zhengzhou:A0702",
+    "event": {
+      "key": "ccpc2025invitational-zhengzhou",
+      "title": "2025CCPC全国邀请赛（郑州）暨第七届河南省赛",
+      "family": "ccpc",
+      "occurred_on": "2025-06-02",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "Ciallo World",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2025/ccpc2025invitational-zhengzhou.srk.json",
+    "recipients": [
+      "冯诺维",
+      "谢泽栩",
+      "朱子睿"
+    ],
+    "official": true,
+    "segments": [
+      {
+        "index": 0,
+        "rank": 161,
+        "style": "bronze",
+        "title": "Bronze Award",
+        "series": "#"
+      }
+    ],
+    "reason": null,
+    "score": {
+      "value": 7,
+      "time": [
+        61777000,
+        "ms"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "冯诺维"
+      },
+      {
+        "name": "谢泽栩"
+      },
+      {
+        "name": "朱子睿"
+      },
+      {
+        "name": "饶浩",
+        "role": "coach"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:ccpc2025ladies:34",
+    "event": {
+      "key": "ccpc2025ladies",
+      "title": "第十一届中国大学生程序设计竞赛（女生专场）",
+      "family": "ccpc",
+      "occurred_on": "2025-10-26",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "痴情的xx啊请再等一世吧",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2025/ccpc2025ladies.srk.json",
+    "recipients": [
+      "陈思琪",
+      "李镔彬",
+      "叶丹萍"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 4,
+      "time": [
+        197,
+        "min"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "陈思琪"
+      },
+      {
+        "name": "李镔彬"
+      },
+      {
+        "name": "叶丹萍"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:ccpc2025preliminary:1734",
+    "event": {
+      "key": "ccpc2025preliminary",
+      "title": "2025年CCPC网络预选赛",
+      "family": "ccpc",
+      "occurred_on": "2025-09-20",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "上蓝 cos hsn",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2025/ccpc2025preliminary.srk.json",
+    "recipients": [
+      "冯诺维",
+      "谢泽栩",
+      "朱子睿"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 3,
+      "time": [
+        225,
+        "min"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "冯诺维"
+      },
+      {
+        "name": "谢泽栩"
+      },
+      {
+        "name": "朱子睿"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:ccpc2025zhengzhou:204",
+    "event": {
+      "key": "ccpc2025zhengzhou",
+      "title": "第 11 届 CCPC 中国大学生程序设计竞赛郑州站 - 正式赛",
+      "family": "ccpc",
+      "occurred_on": "2025-11-23",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "教练教练,我可以吃汉堡吗",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2025/ccpc2025zhengzhou.srk.json",
+    "recipients": [
+      "叶福都",
+      "杨壹锋",
+      "林沐怀"
+    ],
+    "official": false,
+    "segments": [],
+    "reason": "非明确正式参赛队伍",
+    "score": {
+      "value": 1,
+      "time": [
+        17220,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "叶福都"
+      },
+      {
+        "name": "杨壹锋"
+      },
+      {
+        "name": "林沐怀"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:ccpc2025zhengzhou:205",
+    "event": {
+      "key": "ccpc2025zhengzhou",
+      "title": "第 11 届 CCPC 中国大学生程序设计竞赛郑州站 - 正式赛",
+      "family": "ccpc",
+      "occurred_on": "2025-11-23",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "牛甲鸟",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2025/ccpc2025zhengzhou.srk.json",
+    "recipients": [
+      "陈俊东",
+      "卢成洋",
+      "叶宇轩"
+    ],
+    "official": false,
+    "segments": [],
+    "reason": "非明确正式参赛队伍",
+    "score": {
+      "value": 0,
+      "time": [
+        0,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "陈俊东"
+      },
+      {
+        "name": "卢成洋"
+      },
+      {
+        "name": "叶宇轩"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:ccpc2026invitational-fuzhou:42",
+    "event": {
+      "key": "ccpc2026invitational-fuzhou",
+      "title": "第十三届福建省大学生程序设计竞赛 暨2026年CCPC全国邀请赛（福州）",
+      "family": "ccpc",
+      "occurred_on": "2026-05-30",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "輪符雨",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2026/ccpc2026invitational-fuzhou.srk.json",
+    "recipients": [
+      "叶福都",
+      "卢成洋",
+      "叶宇轩"
+    ],
+    "official": true,
+    "segments": [
+      {
+        "index": 0,
+        "rank": 178,
+        "style": "bronze",
+        "title": "Bronze Award",
+        "series": "邀请赛#"
+      }
+    ],
+    "reason": null,
+    "score": {
+      "value": 4,
+      "time": [
+        175,
+        "min"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": {
+          "zh-CN": "叶福都",
+          "fallback": "Fudu Ye"
+        }
+      },
+      {
+        "name": {
+          "zh-CN": "卢成洋",
+          "fallback": "chengyang lu"
+        }
+      },
+      {
+        "name": {
+          "zh-CN": "叶宇轩",
+          "fallback": "yuxuan ye"
+        }
+      },
+      {
+        "name": {
+          "zh-CN": "饶浩",
+          "fallback": "Hao Rao"
+        },
+        "role": "coach"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:ccpc2026invitational-nanchang:team067",
+    "event": {
+      "key": "ccpc2026invitational-nanchang",
+      "title": "2026年中国大学生程序设计竞赛-全国邀请赛（南昌）（南昌大学）",
+      "family": "ccpc",
+      "occurred_on": "2026-05-24",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "派大星",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2026/ccpc2026invitational-nanchang.srk.json",
+    "recipients": [
+      "陈思琪",
+      "朱子睿",
+      "陈俊东"
+    ],
+    "official": true,
+    "segments": [
+      {
+        "index": 0,
+        "rank": 84,
+        "style": "silver",
+        "title": "银奖",
+        "series": "邀请赛#"
+      }
+    ],
+    "reason": null,
+    "score": {
+      "value": 6,
+      "time": [
+        50880,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "陈思琪"
+      },
+      {
+        "name": "朱子睿"
+      },
+      {
+        "name": "陈俊东"
+      },
+      {
+        "name": "饶浩",
+        "role": "coach"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:ccpc2026preliminary:1237",
+    "event": {
+      "key": "ccpc2026preliminary",
+      "title": "2026年CCPC网络预选赛",
+      "family": "ccpc",
+      "occurred_on": "2026-09-19",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "可是雾月真的好可爱",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2026/ccpc2026preliminary.srk.json",
+    "recipients": [
+      "朱子睿",
+      "叶福都",
+      "谢泽栩"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 7,
+      "time": [
+        861,
+        "min"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "朱子睿"
+      },
+      {
+        "name": "叶福都"
+      },
+      {
+        "name": "谢泽栩"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2011preliminary-fuzhou:team331",
+    "event": {
+      "key": "icpc2011preliminary-fuzhou",
+      "title": "ICPC 2011 福州赛区网络赛",
+      "family": "icpc",
+      "occurred_on": "2011-10-07",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "team331",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2011/icpc2011preliminary-fuzhou.srk.json",
+    "recipients": [],
+    "official": true,
+    "segments": [],
+    "reason": "缺少选手姓名",
+    "score": {
+      "value": 2,
+      "time": [
+        14700,
+        "s"
+      ]
+    },
+    "raw_members": []
+  },
+  {
+    "source_key": "srk:icpc2016preliminary-shenyang:team1516",
+    "event": {
+      "key": "icpc2016preliminary-shenyang",
+      "title": "ICPC 2016 沈阳赛区网络赛",
+      "family": "icpc",
+      "occurred_on": "2016-09-18",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "team1516",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2016/icpc2016preliminary-shenyang.srk.json",
+    "recipients": [],
+    "official": true,
+    "segments": [],
+    "reason": "缺少选手姓名",
+    "score": {
+      "value": 0,
+      "time": [
+        0,
+        "s"
+      ]
+    },
+    "raw_members": []
+  },
+  {
+    "source_key": "srk:icpc2016preliminary-shenyang:team1517",
+    "event": {
+      "key": "icpc2016preliminary-shenyang",
+      "title": "ICPC 2016 沈阳赛区网络赛",
+      "family": "icpc",
+      "occurred_on": "2016-09-18",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "team1517",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2016/icpc2016preliminary-shenyang.srk.json",
+    "recipients": [],
+    "official": true,
+    "segments": [],
+    "reason": "缺少选手姓名",
+    "score": {
+      "value": 0,
+      "time": [
+        0,
+        "s"
+      ]
+    },
+    "raw_members": []
+  },
+  {
+    "source_key": "srk:icpc2016preliminary-shenyang:team1518",
+    "event": {
+      "key": "icpc2016preliminary-shenyang",
+      "title": "ICPC 2016 沈阳赛区网络赛",
+      "family": "icpc",
+      "occurred_on": "2016-09-18",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "team1518",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2016/icpc2016preliminary-shenyang.srk.json",
+    "recipients": [],
+    "official": true,
+    "segments": [],
+    "reason": "缺少选手姓名",
+    "score": {
+      "value": 0,
+      "time": [
+        0,
+        "s"
+      ]
+    },
+    "raw_members": []
+  },
+  {
+    "source_key": "srk:icpc2016preliminary-shenyang:team1519",
+    "event": {
+      "key": "icpc2016preliminary-shenyang",
+      "title": "ICPC 2016 沈阳赛区网络赛",
+      "family": "icpc",
+      "occurred_on": "2016-09-18",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "team1519",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2016/icpc2016preliminary-shenyang.srk.json",
+    "recipients": [],
+    "official": true,
+    "segments": [],
+    "reason": "缺少选手姓名",
+    "score": {
+      "value": 0,
+      "time": [
+        0,
+        "s"
+      ]
+    },
+    "raw_members": []
+  },
+  {
+    "source_key": "srk:icpc2020preliminary-xiaomi-2:805021382",
+    "event": {
+      "key": "icpc2020preliminary-xiaomi-2",
+      "title": "ICPC2020-ICPC·小米 网络选拔赛第二场",
+      "family": "icpc",
+      "occurred_on": "2020-10-31",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "淡水鱼",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2020/icpc2020preliminary-xiaomi-2.srk.json",
+    "recipients": [],
+    "official": true,
+    "segments": [],
+    "reason": "缺少选手姓名",
+    "score": {
+      "value": 0,
+      "time": [
+        0,
+        "s"
+      ]
+    },
+    "raw_members": []
+  },
+  {
+    "source_key": "srk:icpc2021kunming:1030007905",
+    "event": {
+      "key": "icpc2021kunming",
+      "title": "第 46 届 ICPC 亚洲区域赛（昆明）",
+      "family": "icpc",
+      "occurred_on": "2022-04-17",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "追梦者",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2021/icpc2021kunming.srk.json",
+    "recipients": [],
+    "official": true,
+    "segments": [],
+    "reason": "缺少选手姓名",
+    "score": {
+      "value": 1,
+      "time": [
+        5008,
+        "s"
+      ]
+    },
+    "raw_members": []
+  },
+  {
+    "source_key": "srk:icpc2021kunming:1030007904",
+    "event": {
+      "key": "icpc2021kunming",
+      "title": "第 46 届 ICPC 亚洲区域赛（昆明）",
+      "family": "icpc",
+      "occurred_on": "2022-04-17",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "多AC一题",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2021/icpc2021kunming.srk.json",
+    "recipients": [],
+    "official": true,
+    "segments": [],
+    "reason": "缺少选手姓名",
+    "score": {
+      "value": 1,
+      "time": [
+        7730,
+        "s"
+      ]
+    },
+    "raw_members": []
+  },
+  {
+    "source_key": "srk:icpc2021kunming:1030007903",
+    "event": {
+      "key": "icpc2021kunming",
+      "title": "第 46 届 ICPC 亚洲区域赛（昆明）",
+      "family": "icpc",
+      "occurred_on": "2022-04-17",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "SGU经验宝宝",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2021/icpc2021kunming.srk.json",
+    "recipients": [],
+    "official": true,
+    "segments": [],
+    "reason": "缺少选手姓名",
+    "score": {
+      "value": 1,
+      "time": [
+        19587,
+        "s"
+      ]
+    },
+    "raw_members": []
+  },
+  {
+    "source_key": "srk:icpc2021shanghai:1030006555",
+    "event": {
+      "key": "icpc2021shanghai",
+      "title": "第 46 届 ICPC 国际大学生程序设计竞赛亚洲区域赛 上海站",
+      "family": "icpc",
+      "occurred_on": "2021-11-28",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "极光算法蒟蒻小分队",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2021/icpc2021shanghai.srk.json",
+    "recipients": [],
+    "official": true,
+    "segments": [],
+    "reason": "缺少选手姓名",
+    "score": {
+      "value": 2,
+      "time": [
+        20358,
+        "s"
+      ]
+    },
+    "raw_members": []
+  },
+  {
+    "source_key": "srk:icpc2021shanghai:1030006554",
+    "event": {
+      "key": "icpc2021shanghai",
+      "title": "第 46 届 ICPC 国际大学生程序设计竞赛亚洲区域赛 上海站",
+      "family": "icpc",
+      "occurred_on": "2021-11-28",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "萌新的wa之路",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2021/icpc2021shanghai.srk.json",
+    "recipients": [],
+    "official": true,
+    "segments": [],
+    "reason": "缺少选手姓名",
+    "score": {
+      "value": 1,
+      "time": [
+        8048,
+        "s"
+      ]
+    },
+    "raw_members": []
+  },
+  {
+    "source_key": "srk:icpc2022hangzhou:2099202212040542",
+    "event": {
+      "key": "icpc2022hangzhou",
+      "title": "第 47 届国际大学生程序设计竞赛亚洲区域赛杭州站",
+      "family": "icpc",
+      "occurred_on": "2022-12-04",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "Siege lion",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2022/icpc2022hangzhou.srk.json",
+    "recipients": [
+      "刘庭权",
+      "林日清",
+      "罗凯鑫"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 2,
+      "time": [
+        8040,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "刘庭权"
+      },
+      {
+        "name": "林日清"
+      },
+      {
+        "name": "罗凯鑫"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2022hefei:2099202211200318",
+    "event": {
+      "key": "icpc2022hefei",
+      "title": "第 47 届国际大学生程序设计竞赛亚洲区域合肥站",
+      "family": "icpc",
+      "occurred_on": "2022-11-20",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "美少女战士",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2022/icpc2022hefei.srk.json",
+    "recipients": [
+      "康丁魁",
+      "童浩轩",
+      "黎国雄"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 3,
+      "time": [
+        25800,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "康丁魁"
+      },
+      {
+        "name": "童浩轩"
+      },
+      {
+        "name": "黎国雄"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2022jinan:2099202211270531",
+    "event": {
+      "key": "icpc2022jinan",
+      "title": "第 47 届国际大学生程序设计竞赛亚洲区域赛济南站",
+      "family": "icpc",
+      "occurred_on": "2022-11-27",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "AC 下一题",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2022/icpc2022jinan.srk.json",
+    "recipients": [
+      "杨扬",
+      "董滨豪",
+      "陈锦程"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 3,
+      "time": [
+        44760,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "杨扬"
+      },
+      {
+        "name": "董滨豪"
+      },
+      {
+        "name": "陈锦程"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2022nanjing:2024202212180001",
+    "event": {
+      "key": "icpc2022nanjing",
+      "title": "第 47 届国际大学生程序设计竞赛亚洲区域赛南京站",
+      "family": "icpc",
+      "occurred_on": "2022-12-18",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "韶关学院 5 队",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2022/icpc2022nanjing.srk.json",
+    "recipients": [
+      "周亚男",
+      "彭宇轩",
+      "朱昌威"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 1,
+      "time": [
+        660,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "周亚男"
+      },
+      {
+        "name": "彭宇轩"
+      },
+      {
+        "name": "朱昌威"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2022preliminary-1:2082202209170046",
+    "event": {
+      "key": "icpc2022preliminary-1",
+      "title": "The 2022 ICPC Asia Regionals Online Contest (I)",
+      "family": "icpc",
+      "occurred_on": "2022-09-17",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "美少女战士",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2022/icpc2022preliminary-1.srk.json",
+    "recipients": [
+      "康丁魁",
+      "童浩轩",
+      "黎国雄"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 3,
+      "time": [
+        24840,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "康丁魁"
+      },
+      {
+        "name": "童浩轩"
+      },
+      {
+        "name": "黎国雄"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2022preliminary-1:2082202209170035",
+    "event": {
+      "key": "icpc2022preliminary-1",
+      "title": "The 2022 ICPC Asia Regionals Online Contest (I)",
+      "family": "icpc",
+      "occurred_on": "2022-09-17",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "Siege lion",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2022/icpc2022preliminary-1.srk.json",
+    "recipients": [
+      "刘庭权",
+      "林日清",
+      "罗凯鑫"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 3,
+      "time": [
+        43440,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "刘庭权"
+      },
+      {
+        "name": "林日清"
+      },
+      {
+        "name": "罗凯鑫"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2022preliminary-1:2082202209170040",
+    "event": {
+      "key": "icpc2022preliminary-1",
+      "title": "The 2022 ICPC Asia Regionals Online Contest (I)",
+      "family": "icpc",
+      "occurred_on": "2022-09-17",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "不敲代码",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2022/icpc2022preliminary-1.srk.json",
+    "recipients": [
+      "杨扬",
+      "盘炫铭",
+      "陈锦程"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 2,
+      "time": [
+        23940,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "杨扬"
+      },
+      {
+        "name": "盘炫铭"
+      },
+      {
+        "name": "陈锦程"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2022preliminary-1:2082202209170049",
+    "event": {
+      "key": "icpc2022preliminary-1",
+      "title": "The 2022 ICPC Asia Regionals Online Contest (I)",
+      "family": "icpc",
+      "occurred_on": "2022-09-17",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "这一次不会卡题",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2022/icpc2022preliminary-1.srk.json",
+    "recipients": [
+      "周俊颖",
+      "彭宇轩",
+      "蔡振棋"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 2,
+      "time": [
+        27660,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "周俊颖"
+      },
+      {
+        "name": "彭宇轩"
+      },
+      {
+        "name": "蔡振棋"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2022preliminary-1:2082202209170038",
+    "event": {
+      "key": "icpc2022preliminary-1",
+      "title": "The 2022 ICPC Asia Regionals Online Contest (I)",
+      "family": "icpc",
+      "occurred_on": "2022-09-17",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "X源",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2022/icpc2022preliminary-1.srk.json",
+    "recipients": [
+      "李树亮",
+      "马秋林"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 0,
+      "time": [
+        0,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "李树亮"
+      },
+      {
+        "name": "马秋林"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2022preliminary-1:2082202209170043",
+    "event": {
+      "key": "icpc2022preliminary-1",
+      "title": "The 2022 ICPC Asia Regionals Online Contest (I)",
+      "family": "icpc",
+      "occurred_on": "2022-09-17",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "开心就好",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2022/icpc2022preliminary-1.srk.json",
+    "recipients": [
+      "温惟杭",
+      "王紫君",
+      "黄雪仪"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 0,
+      "time": [
+        0,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "温惟杭"
+      },
+      {
+        "name": "王紫君"
+      },
+      {
+        "name": "黄雪仪"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2022preliminary-2:2114202209250054",
+    "event": {
+      "key": "icpc2022preliminary-2",
+      "title": "The 2022 ICPC Asia Regionals Online Contest (II)",
+      "family": "icpc",
+      "occurred_on": "2022-09-25",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "美少女战士",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2022/icpc2022preliminary-2.srk.json",
+    "recipients": [
+      "康丁魁",
+      "童浩轩",
+      "黎国雄"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 2,
+      "time": [
+        7380,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "康丁魁"
+      },
+      {
+        "name": "童浩轩"
+      },
+      {
+        "name": "黎国雄"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2022preliminary-2:2114202209250057",
+    "event": {
+      "key": "icpc2022preliminary-2",
+      "title": "The 2022 ICPC Asia Regionals Online Contest (II)",
+      "family": "icpc",
+      "occurred_on": "2022-09-25",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "这一次不会卡题",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2022/icpc2022preliminary-2.srk.json",
+    "recipients": [
+      "周俊颖",
+      "彭宇轩",
+      "蔡振棋"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 2,
+      "time": [
+        13860,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "周俊颖"
+      },
+      {
+        "name": "彭宇轩"
+      },
+      {
+        "name": "蔡振棋"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2022preliminary-2:2114202209250051",
+    "event": {
+      "key": "icpc2022preliminary-2",
+      "title": "The 2022 ICPC Asia Regionals Online Contest (II)",
+      "family": "icpc",
+      "occurred_on": "2022-09-25",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "不敲代码",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2022/icpc2022preliminary-2.srk.json",
+    "recipients": [
+      "杨扬",
+      "盘炫铭",
+      "陈锦程"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 2,
+      "time": [
+        14160,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "杨扬"
+      },
+      {
+        "name": "盘炫铭"
+      },
+      {
+        "name": "陈锦程"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2022preliminary-2:2114202209250046",
+    "event": {
+      "key": "icpc2022preliminary-2",
+      "title": "The 2022 ICPC Asia Regionals Online Contest (II)",
+      "family": "icpc",
+      "occurred_on": "2022-09-25",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "Siege lion",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2022/icpc2022preliminary-2.srk.json",
+    "recipients": [
+      "刘庭权",
+      "林日清",
+      "罗凯鑫"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 0,
+      "time": [
+        0,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "刘庭权"
+      },
+      {
+        "name": "林日清"
+      },
+      {
+        "name": "罗凯鑫"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2022preliminary-2:2114202209250049",
+    "event": {
+      "key": "icpc2022preliminary-2",
+      "title": "The 2022 ICPC Asia Regionals Online Contest (II)",
+      "family": "icpc",
+      "occurred_on": "2022-09-25",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "X源",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2022/icpc2022preliminary-2.srk.json",
+    "recipients": [
+      "李树亮",
+      "马秋林"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 0,
+      "time": [
+        0,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "李树亮"
+      },
+      {
+        "name": "马秋林"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2022shenyang:2099202211060463",
+    "event": {
+      "key": "icpc2022shenyang",
+      "title": "第 47 届国际大学生程序设计竞赛亚洲区域赛沈阳站",
+      "family": "icpc",
+      "occurred_on": "2022-11-06",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "美少女战士",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2022/icpc2022shenyang.srk.json",
+    "recipients": [
+      "康丁魁",
+      "童浩轩",
+      "黎国雄"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 3,
+      "time": [
+        14340,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "康丁魁"
+      },
+      {
+        "name": "童浩轩"
+      },
+      {
+        "name": "黎国雄"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2022shenyang:2099202211060464",
+    "event": {
+      "key": "icpc2022shenyang",
+      "title": "第 47 届国际大学生程序设计竞赛亚洲区域赛沈阳站",
+      "family": "icpc",
+      "occurred_on": "2022-11-06",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "Siegelion",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2022/icpc2022shenyang.srk.json",
+    "recipients": [
+      "刘庭权",
+      "林日清",
+      "罗凯鑫"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 2,
+      "time": [
+        19080,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "刘庭权"
+      },
+      {
+        "name": "林日清"
+      },
+      {
+        "name": "罗凯鑫"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2022xi_an:2099202211130324",
+    "event": {
+      "key": "icpc2022xi_an",
+      "title": "第 47 届国际大学生程序设计竞赛亚洲区域西安站",
+      "family": "icpc",
+      "occurred_on": "2022-11-13",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "这一次不会卡题",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2022/icpc2022xi_an.srk.json",
+    "recipients": [
+      "周俊颖",
+      "彭宇轩",
+      "蔡振棋"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 4,
+      "time": [
+        40560,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "周俊颖"
+      },
+      {
+        "name": "彭宇轩"
+      },
+      {
+        "name": "蔡振棋"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2023hangzhou:2023-icpc-hz-311-team",
+    "event": {
+      "key": "icpc2023hangzhou",
+      "title": "第 48 届国际大学生程序设计竞赛亚洲区域赛杭州站",
+      "family": "icpc",
+      "occurred_on": "2023-12-10",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "我看队友打代码",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2023/icpc2023hangzhou.srk.json",
+    "recipients": [
+      "周亚男",
+      "康丁魁",
+      "林日清"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 2,
+      "time": [
+        14520,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "周亚男"
+      },
+      {
+        "name": "康丁魁"
+      },
+      {
+        "name": "林日清"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2023hefei:359",
+    "event": {
+      "key": "icpc2023hefei",
+      "title": "第 48 届国际大学生程序设计竞赛亚洲区域合肥站",
+      "family": "icpc",
+      "occurred_on": "2023-11-26",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "三个蒟蒻",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2023/icpc2023hefei.srk.json",
+    "recipients": [
+      "黄家宝",
+      "陈兴翰",
+      "戴军"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 1,
+      "time": [
+        1920,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "黄家宝"
+      },
+      {
+        "name": "陈兴翰"
+      },
+      {
+        "name": "戴军"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2023jinan:228",
+    "event": {
+      "key": "icpc2023jinan",
+      "title": "第 48 届国际大学生程序设计竞赛亚洲区域赛济南站",
+      "family": "icpc",
+      "occurred_on": "2023-12-03",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "我看队友打代码",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2023/icpc2023jinan.srk.json",
+    "recipients": [
+      "康丁魁",
+      "林日清",
+      "周亚男"
+    ],
+    "official": true,
+    "segments": [
+      {
+        "index": 0,
+        "rank": 158,
+        "style": "bronze",
+        "title": "铜奖",
+        "series": "#"
+      }
+    ],
+    "reason": null,
+    "score": {
+      "value": 4,
+      "time": [
+        28740,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "康丁魁"
+      },
+      {
+        "name": "林日清"
+      },
+      {
+        "name": "周亚男"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2023preliminary-1:2119202309170029",
+    "event": {
+      "key": "icpc2023preliminary-1",
+      "title": "The 2023 ICPC Asia Regionals Online Contest (I)",
+      "family": "icpc",
+      "occurred_on": "2023-09-17",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "我看队友打代码",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2023/icpc2023preliminary-1.srk.json",
+    "recipients": [
+      "周亚男",
+      "康丁魁",
+      "林日清"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 5,
+      "time": [
+        34320,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "周亚男"
+      },
+      {
+        "name": "康丁魁"
+      },
+      {
+        "name": "林日清"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2023preliminary-1:2119202309170026",
+    "event": {
+      "key": "icpc2023preliminary-1",
+      "title": "The 2023 ICPC Asia Regionals Online Contest (I)",
+      "family": "icpc",
+      "occurred_on": "2023-09-17",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "韶关学院信工队",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2023/icpc2023preliminary-1.srk.json",
+    "recipients": [
+      "司恩兴",
+      "董滨豪",
+      "赖长源"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 2,
+      "time": [
+        17160,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "司恩兴"
+      },
+      {
+        "name": "董滨豪"
+      },
+      {
+        "name": "赖长源"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2023preliminary-1:2119202309170023",
+    "event": {
+      "key": "icpc2023preliminary-1",
+      "title": "The 2023 ICPC Asia Regionals Online Contest (I)",
+      "family": "icpc",
+      "occurred_on": "2023-09-17",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "三人行队",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2023/icpc2023preliminary-1.srk.json",
+    "recipients": [
+      "卢星汜",
+      "林俊安",
+      "江华晋"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 0,
+      "time": [
+        0,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "卢星汜"
+      },
+      {
+        "name": "林俊安"
+      },
+      {
+        "name": "江华晋"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2023preliminary-2:2120202309230043",
+    "event": {
+      "key": "icpc2023preliminary-2",
+      "title": "The 2023 ICPC Asia Regionals Online Contest (II)",
+      "family": "icpc",
+      "occurred_on": "2023-09-23",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "我看队友打代码",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2023/icpc2023preliminary-2.srk.json",
+    "recipients": [
+      "周亚男",
+      "康丁魁",
+      "林日清"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 5,
+      "time": [
+        34440,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "周亚男"
+      },
+      {
+        "name": "康丁魁"
+      },
+      {
+        "name": "林日清"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2023preliminary-2:2120202309230040",
+    "event": {
+      "key": "icpc2023preliminary-2",
+      "title": "The 2023 ICPC Asia Regionals Online Contest (II)",
+      "family": "icpc",
+      "occurred_on": "2023-09-23",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "韶关学院信工队",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2023/icpc2023preliminary-2.srk.json",
+    "recipients": [
+      "司恩兴",
+      "董滨豪",
+      "赖长源"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 1,
+      "time": [
+        3300,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "司恩兴"
+      },
+      {
+        "name": "董滨豪"
+      },
+      {
+        "name": "赖长源"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2023preliminary-2:2120202309230037",
+    "event": {
+      "key": "icpc2023preliminary-2",
+      "title": "The 2023 ICPC Asia Regionals Online Contest (II)",
+      "family": "icpc",
+      "occurred_on": "2023-09-23",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "三人行队",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2023/icpc2023preliminary-2.srk.json",
+    "recipients": [
+      "卢星汜",
+      "林俊安",
+      "江华晋"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 0,
+      "time": [
+        0,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "卢星汜"
+      },
+      {
+        "name": "林俊安"
+      },
+      {
+        "name": "江华晋"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2023preliminary-2:2120202309230046",
+    "event": {
+      "key": "icpc2023preliminary-2",
+      "title": "The 2023 ICPC Asia Regionals Online Contest (II)",
+      "family": "icpc",
+      "occurred_on": "2023-09-23",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "这个解法不队",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2023/icpc2023preliminary-2.srk.json",
+    "recipients": [
+      "刘付杰师",
+      "吴捷达",
+      "黄政杰"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 0,
+      "time": [
+        0,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "刘付杰师"
+      },
+      {
+        "name": "吴捷达"
+      },
+      {
+        "name": "黄政杰"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2024hongkong:CD303-17",
+    "event": {
+      "key": "icpc2024hongkong",
+      "title": "第 49 届 ICPC 国际大学生程序设计竞赛区域赛香港站",
+      "family": "icpc",
+      "occurred_on": "2024-12-22",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "Man! What can I accept ",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2024/icpc2024hongkong.srk.json",
+    "recipients": [
+      "Nuowei Feng",
+      "Dingkui Kang",
+      "Xinghan Chen"
+    ],
+    "official": true,
+    "segments": [
+      {
+        "index": 0,
+        "rank": 38,
+        "style": "silver",
+        "title": "银奖",
+        "series": "#"
+      }
+    ],
+    "reason": null,
+    "score": {
+      "value": 3,
+      "time": [
+        22200,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "Nuowei Feng"
+      },
+      {
+        "name": "Dingkui Kang"
+      },
+      {
+        "name": "Xinghan Chen"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2024invitational-wuhan:150",
+    "event": {
+      "key": "icpc2024invitational-wuhan",
+      "title": "第 49 届 ICPC 国际大学生程序设计竞赛邀请赛武汉站",
+      "family": "icpc",
+      "occurred_on": "2024-05-02",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "我看队友打代码",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2024/icpc2024invitational-wuhan.srk.json",
+    "recipients": [
+      "康丁魁",
+      "林日清",
+      "周亚男"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 3,
+      "time": [
+        10380,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "康丁魁"
+      },
+      {
+        "name": "林日清"
+      },
+      {
+        "name": "周亚男"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2024kunming:D1703",
+    "event": {
+      "key": "icpc2024kunming",
+      "title": "第 49 届 ICPC 国际大学生程序设计竞赛区域赛昆明站",
+      "family": "icpc",
+      "occurred_on": "2024-12-01",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "码农转生~到了区域赛就拿出真本事",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2024/icpc2024kunming.srk.json",
+    "recipients": [
+      "冯诺维",
+      "康丁魁",
+      "陈兴翰"
+    ],
+    "official": true,
+    "segments": [
+      {
+        "index": 0,
+        "rank": 242,
+        "style": "bronze",
+        "title": "铜奖",
+        "series": "#"
+      }
+    ],
+    "reason": null,
+    "score": {
+      "value": 4,
+      "time": [
+        39660,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "冯诺维"
+      },
+      {
+        "name": "康丁魁"
+      },
+      {
+        "name": "陈兴翰"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2024kunming:D0706",
+    "event": {
+      "key": "icpc2024kunming",
+      "title": "第 49 届 ICPC 国际大学生程序设计竞赛区域赛昆明站",
+      "family": "icpc",
+      "occurred_on": "2024-12-01",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "公费打铁",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2024/icpc2024kunming.srk.json",
+    "recipients": [
+      "朱子睿",
+      "谢泽栩",
+      "马嘉亮"
+    ],
+    "official": false,
+    "segments": [],
+    "reason": "非明确正式参赛队伍",
+    "score": {
+      "value": 3,
+      "time": [
+        29340,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "朱子睿"
+      },
+      {
+        "name": "谢泽栩"
+      },
+      {
+        "name": "马嘉亮"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2024kunming:D1207",
+    "event": {
+      "key": "icpc2024kunming",
+      "title": "第 49 届 ICPC 国际大学生程序设计竞赛区域赛昆明站",
+      "family": "icpc",
+      "occurred_on": "2024-12-01",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "学不懂英语，也看不懂你",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2024/icpc2024kunming.srk.json",
+    "recipients": [
+      "叶福都",
+      "梁炜蜃",
+      "黄炜骅"
+    ],
+    "official": false,
+    "segments": [],
+    "reason": "非明确正式参赛队伍",
+    "score": {
+      "value": 0,
+      "time": [
+        0,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "叶福都"
+      },
+      {
+        "name": "梁炜蜃"
+      },
+      {
+        "name": "黄炜骅"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2024preliminary-1:1489",
+    "event": {
+      "key": "icpc2024preliminary-1",
+      "title": "The 49th ICPC Asia Regionals Online Contest (I)",
+      "family": "icpc",
+      "occurred_on": "2024-09-15",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "我们打acm的要考虑的就多了",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2024/icpc2024preliminary-1.srk.json",
+    "recipients": [
+      "冯诺维",
+      "黄家宝",
+      "陈兴翰"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 3,
+      "time": [
+        26400,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "冯诺维"
+      },
+      {
+        "name": "黄家宝"
+      },
+      {
+        "name": "陈兴翰"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2024preliminary-2:1613",
+    "event": {
+      "key": "icpc2024preliminary-2",
+      "title": "The 49th ICPC Asia Regionals Online Contest (II)",
+      "family": "icpc",
+      "occurred_on": "2024-09-21",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "双人coding",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2024/icpc2024preliminary-2.srk.json",
+    "recipients": [
+      "康丁魁",
+      "周亚男",
+      "林日清"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 4,
+      "time": [
+        24660,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "康丁魁"
+      },
+      {
+        "name": "周亚男"
+      },
+      {
+        "name": "林日清"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2024preliminary-2:1614",
+    "event": {
+      "key": "icpc2024preliminary-2",
+      "title": "The 49th ICPC Asia Regionals Online Contest (II)",
+      "family": "icpc",
+      "occurred_on": "2024-09-21",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "我们打acm的要考虑的就多了",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2024/icpc2024preliminary-2.srk.json",
+    "recipients": [
+      "冯诺维",
+      "陈兴翰",
+      "黄家宝"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 3,
+      "time": [
+        22920,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "冯诺维"
+      },
+      {
+        "name": "陈兴翰"
+      },
+      {
+        "name": "黄家宝"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2025invitational-nanchang:268",
+    "event": {
+      "key": "icpc2025invitational-nanchang",
+      "title": "2025年icpc全国邀请赛（南昌）暨2025年（icpc）江西省大学生程序设计竞赛",
+      "family": "icpc",
+      "occurred_on": "2025-05-18",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "Ciallo World",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2025/icpc2025invitational-nanchang.srk.json",
+    "recipients": [
+      "冯诺维",
+      "朱子睿",
+      "谢泽栩"
+    ],
+    "official": true,
+    "segments": [
+      {
+        "index": 0,
+        "rank": 219,
+        "style": "bronze",
+        "title": "铜奖",
+        "series": "ICPC#"
+      }
+    ],
+    "reason": null,
+    "score": {
+      "value": 5,
+      "time": [
+        40260,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "冯诺维"
+      },
+      {
+        "name": "朱子睿"
+      },
+      {
+        "name": "谢泽栩"
+      },
+      {
+        "name": "饶浩",
+        "role": "coach"
+      },
+      {
+        "name": "沈阳",
+        "role": "coach"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2025invitational-xi_an:韶关学院_关于我们guess超快却总是WA这件事",
+    "event": {
+      "key": "icpc2025invitational-xi_an",
+      "title": "2025 年 ICPC 国际大学生程序设计竞赛 全国邀请赛（陕西）（西北工业大学）",
+      "family": "icpc",
+      "occurred_on": "2025-05-04",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "关于我们guess超快却总是WA这件事",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2025/icpc2025invitational-xi_an.srk.json",
+    "recipients": [],
+    "official": true,
+    "segments": [],
+    "reason": "缺少选手姓名",
+    "score": {
+      "value": 2,
+      "time": [
+        274,
+        "min"
+      ]
+    },
+    "raw_members": []
+  },
+  {
+    "source_key": "srk:icpc2025preliminary-1:1053",
+    "event": {
+      "key": "icpc2025preliminary-1",
+      "title": "2025 ICPC Asia EC网络预选赛 - 第一场",
+      "family": "icpc",
+      "occurred_on": "2025-09-07",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "MyALGO!!!",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2025/icpc2025preliminary-1.srk.json",
+    "recipients": [
+      "陈思琪",
+      "叶福都",
+      "黄家宝"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 4,
+      "time": [
+        703,
+        "min"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "陈思琪"
+      },
+      {
+        "name": "叶福都"
+      },
+      {
+        "name": "黄家宝"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2025preliminary-1:1094",
+    "event": {
+      "key": "icpc2025preliminary-1",
+      "title": "2025 ICPC Asia EC网络预选赛 - 第一场",
+      "family": "icpc",
+      "occurred_on": "2025-09-07",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "灌注hsn8086",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2025/icpc2025preliminary-1.srk.json",
+    "recipients": [
+      "冯诺维",
+      "朱子睿",
+      "谢泽栩"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 3,
+      "time": [
+        262,
+        "min"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "冯诺维"
+      },
+      {
+        "name": "朱子睿"
+      },
+      {
+        "name": "谢泽栩"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2025preliminary-1:988",
+    "event": {
+      "key": "icpc2025preliminary-1",
+      "title": "2025 ICPC Asia EC网络预选赛 - 第一场",
+      "family": "icpc",
+      "occurred_on": "2025-09-07",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "icpc后援队",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2025/icpc2025preliminary-1.srk.json",
+    "recipients": [
+      "王鹏凯",
+      "马嘉亮",
+      "陈俊东"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 2,
+      "time": [
+        705,
+        "min"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "王鹏凯"
+      },
+      {
+        "name": "马嘉亮"
+      },
+      {
+        "name": "陈俊东"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2025preliminary-2:1011",
+    "event": {
+      "key": "icpc2025preliminary-2",
+      "title": "2025 ICPC Asia EC网络预选赛 - 第二场",
+      "family": "icpc",
+      "occurred_on": "2025-09-14",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "灌注hsn8086",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2025/icpc2025preliminary-2.srk.json",
+    "recipients": [
+      "冯诺维",
+      "谢泽栩",
+      "朱子睿"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 2,
+      "time": [
+        356,
+        "min"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "冯诺维"
+      },
+      {
+        "name": "谢泽栩"
+      },
+      {
+        "name": "朱子睿"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2025preliminary-2:1009",
+    "event": {
+      "key": "icpc2025preliminary-2",
+      "title": "2025 ICPC Asia EC网络预选赛 - 第二场",
+      "family": "icpc",
+      "occurred_on": "2025-09-14",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "icpc后援队",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2025/icpc2025preliminary-2.srk.json",
+    "recipients": [
+      "王鹏凯",
+      "陈俊东",
+      "马嘉亮"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 1,
+      "time": [
+        185,
+        "min"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "王鹏凯"
+      },
+      {
+        "name": "陈俊东"
+      },
+      {
+        "name": "马嘉亮"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2025preliminary-2:1010",
+    "event": {
+      "key": "icpc2025preliminary-2",
+      "title": "2025 ICPC Asia EC网络预选赛 - 第二场",
+      "family": "icpc",
+      "occurred_on": "2025-09-14",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "MyALGO!!!",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2025/icpc2025preliminary-2.srk.json",
+    "recipients": [
+      "叶福都",
+      "陈思琪",
+      "黄家宝"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 1,
+      "time": [
+        290,
+        "min"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "叶福都"
+      },
+      {
+        "name": "陈思琪"
+      },
+      {
+        "name": "黄家宝"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2025shanghai:A33",
+    "event": {
+      "key": "icpc2025shanghai",
+      "title": "「华为杯」第 50 届 ICPC 国际大学生程序设计竞赛区域赛上海站",
+      "family": "icpc",
+      "occurred_on": "2025-11-23",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "Ciallo World",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2025/icpc2025shanghai.srk.json",
+    "recipients": [
+      "朱子睿",
+      "谢泽栩",
+      "冯诺维"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 0,
+      "time": [
+        0,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "朱子睿"
+      },
+      {
+        "name": "谢泽栩"
+      },
+      {
+        "name": "冯诺维"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2026invitational-nanchang:273",
+    "event": {
+      "key": "icpc2026invitational-nanchang",
+      "title": "2026 年 ICPC 国际大学生程序设计竞赛全国邀请赛（南昌）暨江西省赛",
+      "family": "icpc",
+      "occurred_on": "2026-05-17",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "这个队名放到校园网上影响不好",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2026/icpc2026invitational-nanchang.srk.json",
+    "recipients": [
+      "朱子睿",
+      "叶福都",
+      "谢泽栩"
+    ],
+    "official": true,
+    "segments": [
+      {
+        "index": 0,
+        "rank": 117,
+        "style": "bronze",
+        "title": "铜奖",
+        "series": "#"
+      }
+    ],
+    "reason": null,
+    "score": {
+      "value": 4,
+      "time": [
+        14640,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "朱子睿"
+      },
+      {
+        "name": "叶福都"
+      },
+      {
+        "name": "谢泽栩"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2026invitational-shenyang:42",
+    "event": {
+      "key": "icpc2026invitational-shenyang",
+      "title": "2026 年 ICPC 国际大学生程序设计竞赛全国邀请赛（沈阳）",
+      "family": "icpc",
+      "occurred_on": "2026-07-29",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "輪符雨",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2026/icpc2026invitational-shenyang.srk.json",
+    "recipients": [
+      "叶福都",
+      "谢泽栩",
+      "卢成洋"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 3,
+      "time": [
+        15540,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "叶福都"
+      },
+      {
+        "name": "谢泽栩"
+      },
+      {
+        "name": "卢成洋"
+      },
+      {
+        "name": "饶浩",
+        "role": "coach"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2026invitational-shenzhen:C4-03",
+    "event": {
+      "key": "icpc2026invitational-shenzhen",
+      "title": "2026 年 ICPC 国际大学生程序设计竞赛全国邀请赛（深圳）",
+      "family": "icpc",
+      "occurred_on": "2026-04-11",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "这个队名放到校园网上影响不好",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2026/icpc2026invitational-shenzhen.srk.json",
+    "recipients": [
+      "朱子睿",
+      "谢泽栩",
+      "叶福都"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 3,
+      "time": [
+        31500,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "朱子睿"
+      },
+      {
+        "name": "谢泽栩"
+      },
+      {
+        "name": "叶福都"
+      },
+      {
+        "name": "饶浩",
+        "role": "coach"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2026invitational-shenzhen:A2-15",
+    "event": {
+      "key": "icpc2026invitational-shenzhen",
+      "title": "2026 年 ICPC 国际大学生程序设计竞赛全国邀请赛（深圳）",
+      "family": "icpc",
+      "occurred_on": "2026-04-11",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "海绵宝宝",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2026/icpc2026invitational-shenzhen.srk.json",
+    "recipients": [
+      "陈思琪",
+      "卢成洋",
+      "黄家宝"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 2,
+      "time": [
+        8460,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "陈思琪"
+      },
+      {
+        "name": "卢成洋"
+      },
+      {
+        "name": "黄家宝"
+      },
+      {
+        "name": "饶浩",
+        "role": "coach"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2026invitational-wuhan:team_119",
+    "event": {
+      "key": "icpc2026invitational-wuhan",
+      "title": "2026 年 ICPC 国际大学生程序设计竞赛全国邀请赛（武汉）暨湖北省赛",
+      "family": "icpc",
+      "occurred_on": "2026-05-17",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "怎么WA了",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2026/icpc2026invitational-wuhan.srk.json",
+    "recipients": [
+      "黄家宝",
+      "陈俊东",
+      "卢成洋"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 2,
+      "time": [
+        9540,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "黄家宝"
+      },
+      {
+        "name": "陈俊东"
+      },
+      {
+        "name": "卢成洋"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2026invitational-xi_an:Team347",
+    "event": {
+      "key": "icpc2026invitational-xi_an",
+      "title": "第 51 届 ICPC 国际大学生程序设计竞赛邀请赛西安站 - 正式赛",
+      "family": "icpc",
+      "occurred_on": "2026-05-02",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "这个队名放到校园网上影响不好",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2026/icpc2026invitational-xi_an.srk.json",
+    "recipients": [
+      "朱子睿",
+      "谢泽栩",
+      "叶福都"
+    ],
+    "official": true,
+    "segments": [
+      {
+        "index": 0,
+        "rank": 59,
+        "style": "silver",
+        "title": "银奖",
+        "series": "#"
+      }
+    ],
+    "reason": null,
+    "score": {
+      "value": 6,
+      "time": [
+        35520,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "朱子睿"
+      },
+      {
+        "name": "谢泽栩"
+      },
+      {
+        "name": "叶福都"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2026preliminary-1:896",
+    "event": {
+      "key": "icpc2026preliminary-1",
+      "title": "2026 ICPC Asia EC网络预选赛 - 第一场",
+      "family": "icpc",
+      "occurred_on": "2026-09-06",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "可是雾月真的好可爱",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2026/icpc2026preliminary-1.srk.json",
+    "recipients": [
+      "朱子睿",
+      "叶福都",
+      "谢泽栩"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 4,
+      "time": [
+        412,
+        "min"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "朱子睿"
+      },
+      {
+        "name": "叶福都"
+      },
+      {
+        "name": "谢泽栩"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2026preliminary-1:879",
+    "event": {
+      "key": "icpc2026preliminary-1",
+      "title": "2026 ICPC Asia EC网络预选赛 - 第一场",
+      "family": "icpc",
+      "occurred_on": "2026-09-06",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "这次有汉堡吃吗",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2026/icpc2026preliminary-1.srk.json",
+    "recipients": [
+      "卢成洋",
+      "陈俊东",
+      "叶宇轩"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 2,
+      "time": [
+        48,
+        "min"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "卢成洋"
+      },
+      {
+        "name": "陈俊东"
+      },
+      {
+        "name": "叶宇轩"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2026preliminary-1:801",
+    "event": {
+      "key": "icpc2026preliminary-1",
+      "title": "2026 ICPC Asia EC网络预选赛 - 第一场",
+      "family": "icpc",
+      "occurred_on": "2026-09-06",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "打表过样例，大力出奇迹",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2026/icpc2026preliminary-1.srk.json",
+    "recipients": [
+      "洪瑜徽",
+      "黄恒炫",
+      "董学文"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 2,
+      "time": [
+        63,
+        "min"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "洪瑜徽"
+      },
+      {
+        "name": "黄恒炫"
+      },
+      {
+        "name": "董学文"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2026preliminary-1:743",
+    "event": {
+      "key": "icpc2026preliminary-1",
+      "title": "2026 ICPC Asia EC网络预选赛 - 第一场",
+      "family": "icpc",
+      "occurred_on": "2026-09-06",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "三个打铁匠",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2026/icpc2026preliminary-1.srk.json",
+    "recipients": [
+      "林浩荣",
+      "方致远",
+      "杨壹锋"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 2,
+      "time": [
+        79,
+        "min"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "林浩荣"
+      },
+      {
+        "name": "方致远"
+      },
+      {
+        "name": "杨壹锋"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2026preliminary-2:574",
+    "event": {
+      "key": "icpc2026preliminary-2",
+      "title": "2026 ICPC Asia EC网络预选赛 - 第二场",
+      "family": "icpc",
+      "occurred_on": "2026-09-12",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "可是雾月真的好可爱",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2026/icpc2026preliminary-2.srk.json",
+    "recipients": [
+      "朱子睿",
+      "叶福都",
+      "谢泽栩"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 3,
+      "time": [
+        414,
+        "min"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "朱子睿"
+      },
+      {
+        "name": "叶福都"
+      },
+      {
+        "name": "谢泽栩"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2026preliminary-2:573",
+    "event": {
+      "key": "icpc2026preliminary-2",
+      "title": "2026 ICPC Asia EC网络预选赛 - 第二场",
+      "family": "icpc",
+      "occurred_on": "2026-09-12",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "这次有汉堡吃吗",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2026/icpc2026preliminary-2.srk.json",
+    "recipients": [
+      "卢成洋",
+      "陈俊东",
+      "叶宇轩"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 2,
+      "time": [
+        84,
+        "min"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "卢成洋"
+      },
+      {
+        "name": "陈俊东"
+      },
+      {
+        "name": "叶宇轩"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2026preliminary-2:572",
+    "event": {
+      "key": "icpc2026preliminary-2",
+      "title": "2026 ICPC Asia EC网络预选赛 - 第二场",
+      "family": "icpc",
+      "occurred_on": "2026-09-12",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "打表过样例，大力出奇迹",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2026/icpc2026preliminary-2.srk.json",
+    "recipients": [
+      "洪瑜徽",
+      "黄恒炫",
+      "董学文"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 2,
+      "time": [
+        199,
+        "min"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "洪瑜徽"
+      },
+      {
+        "name": "黄恒炫"
+      },
+      {
+        "name": "董学文"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2026preliminary-2:571",
+    "event": {
+      "key": "icpc2026preliminary-2",
+      "title": "2026 ICPC Asia EC网络预选赛 - 第二场",
+      "family": "icpc",
+      "occurred_on": "2026-09-12",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "三个打铁匠",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2026/icpc2026preliminary-2.srk.json",
+    "recipients": [
+      "林浩荣",
+      "方致远",
+      "杨壹锋"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 2,
+      "time": [
+        203,
+        "min"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "林浩荣"
+      },
+      {
+        "name": "方致远"
+      },
+      {
+        "name": "杨壹锋"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2026wuhan:B54",
+    "event": {
+      "key": "icpc2026wuhan",
+      "title": "「华为杯」第 51 届 ICPC 国际大学生程序设计竞赛区域赛武汉站",
+      "family": "icpc",
+      "occurred_on": "2026-11-01",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "老实骗分，很枯燥吧?",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2026/icpc2026wuhan.srk.json",
+    "recipients": [
+      "林浩荣",
+      "李睿",
+      "陈杰亮"
+    ],
+    "official": false,
+    "segments": [],
+    "reason": "非明确正式参赛队伍",
+    "score": {
+      "value": 1,
+      "time": [
+        900,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "林浩荣"
+      },
+      {
+        "name": "李睿"
+      },
+      {
+        "name": "陈杰亮"
+      },
+      {
+        "name": "饶浩",
+        "role": "coach"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2026wuhan:F24",
+    "event": {
+      "key": "icpc2026wuhan",
+      "title": "「华为杯」第 51 届 ICPC 国际大学生程序设计竞赛区域赛武汉站",
+      "family": "icpc",
+      "occurred_on": "2026-11-01",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "爆零了咋办",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2026/icpc2026wuhan.srk.json",
+    "recipients": [
+      "叶宇轩",
+      "柴多贵",
+      "张建尧"
+    ],
+    "official": false,
+    "segments": [],
+    "reason": "非明确正式参赛队伍",
+    "score": {
+      "value": 1,
+      "time": [
+        12600,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "叶宇轩"
+      },
+      {
+        "name": "柴多贵"
+      },
+      {
+        "name": "张建尧"
+      },
+      {
+        "name": "何常胜",
+        "role": "coach"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:icpc2026xi_an:Team291",
+    "event": {
+      "key": "icpc2026xi_an",
+      "title": "第 51 届 ICPC 国际大学生程序设计竞赛区域赛西安站 - 正式赛",
+      "family": "icpc",
+      "occurred_on": "2026-10-18",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "可是雾月真的好可爱",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2026/icpc2026xi_an.srk.json",
+    "recipients": [
+      "朱子睿",
+      "叶福都",
+      "谢泽栩"
+    ],
+    "official": true,
+    "segments": [
+      {
+        "index": 0,
+        "rank": 246,
+        "style": "bronze",
+        "title": "铜奖",
+        "series": "#"
+      }
+    ],
+    "reason": null,
+    "score": {
+      "value": 3,
+      "time": [
+        44160,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "朱子睿"
+      },
+      {
+        "name": "叶福都"
+      },
+      {
+        "name": "谢泽栩"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:fjcpc13th:42",
+    "event": {
+      "key": "fjcpc13th",
+      "title": "第十三届福建省大学生程序设计竞赛 暨2026年CCPC全国邀请赛（福州）",
+      "family": "provincial",
+      "occurred_on": "2026-05-30",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "輪符雨",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/fj/fjcpc13th.srk.json",
+    "recipients": [
+      "叶福都",
+      "卢成洋",
+      "叶宇轩"
+    ],
+    "official": true,
+    "segments": [
+      {
+        "index": 0,
+        "rank": 178,
+        "style": "bronze",
+        "title": "Bronze Award",
+        "series": "邀请赛#"
+      }
+    ],
+    "reason": null,
+    "score": {
+      "value": 4,
+      "time": [
+        175,
+        "min"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": {
+          "zh-CN": "叶福都",
+          "fallback": "Fudu Ye"
+        }
+      },
+      {
+        "name": {
+          "zh-CN": "卢成洋",
+          "fallback": "chengyang lu"
+        }
+      },
+      {
+        "name": {
+          "zh-CN": "叶宇轩",
+          "fallback": "yuxuan ye"
+        }
+      },
+      {
+        "name": {
+          "zh-CN": "饶浩",
+          "fallback": "Hao Rao"
+        },
+        "role": "coach"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:gdcpc19th:2010202206050021",
+    "event": {
+      "key": "gdcpc19th",
+      "title": "“小马智行杯”第十九届广东省大学生程序设计竞赛暨中国大学生程序设计大赛广东省赛（线上赛，华南师范大学）",
+      "family": "provincial",
+      "occurred_on": "2022-06-05",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "Black_hole",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/gd/gdcpc19th.srk.json",
+    "recipients": [
+      "吴浩颖",
+      "汪浪峰",
+      "陈锦强"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 3,
+      "time": [
+        19680,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "吴浩颖"
+      },
+      {
+        "name": "汪浪峰"
+      },
+      {
+        "name": "陈锦强"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:gdcpc19th:2010202206050024",
+    "event": {
+      "key": "gdcpc19th",
+      "title": "“小马智行杯”第十九届广东省大学生程序设计竞赛暨中国大学生程序设计大赛广东省赛（线上赛，华南师范大学）",
+      "family": "provincial",
+      "occurred_on": "2022-06-05",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "rand( );开题",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/gd/gdcpc19th.srk.json",
+    "recipients": [
+      "康丁魁",
+      "童浩轩",
+      "黎国雄"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 3,
+      "time": [
+        28620,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "康丁魁"
+      },
+      {
+        "name": "童浩轩"
+      },
+      {
+        "name": "黎国雄"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:gdcpc19th:2010202206050027",
+    "event": {
+      "key": "gdcpc19th",
+      "title": "“小马智行杯”第十九届广东省大学生程序设计竞赛暨中国大学生程序设计大赛广东省赛（线上赛，华南师范大学）",
+      "family": "provincial",
+      "occurred_on": "2022-06-05",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "只过一题",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/gd/gdcpc19th.srk.json",
+    "recipients": [
+      "冯明高",
+      "李楠豪",
+      "郑梓澄"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 3,
+      "time": [
+        43140,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "冯明高"
+      },
+      {
+        "name": "李楠豪"
+      },
+      {
+        "name": "郑梓澄"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:gdcpc19th:2010202206050033",
+    "event": {
+      "key": "gdcpc19th",
+      "title": "“小马智行杯”第十九届广东省大学生程序设计竞赛暨中国大学生程序设计大赛广东省赛（线上赛，华南师范大学）",
+      "family": "provincial",
+      "occurred_on": "2022-06-05",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "JG三人行",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/gd/gdcpc19th.srk.json",
+    "recipients": [
+      "盘炫铭",
+      "陈伟鑫",
+      "陈锦程"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 2,
+      "time": [
+        31740,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "盘炫铭"
+      },
+      {
+        "name": "陈伟鑫"
+      },
+      {
+        "name": "陈锦程"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:gdcpc19th:2010202206050036",
+    "event": {
+      "key": "gdcpc19th",
+      "title": "“小马智行杯”第十九届广东省大学生程序设计竞赛暨中国大学生程序设计大赛广东省赛（线上赛，华南师范大学）",
+      "family": "provincial",
+      "occurred_on": "2022-06-05",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "无尽夏",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/gd/gdcpc19th.srk.json",
+    "recipients": [
+      "梁丽妮",
+      "江萍",
+      "陈诗欣"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 1,
+      "time": [
+        15360,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "梁丽妮"
+      },
+      {
+        "name": "江萍"
+      },
+      {
+        "name": "陈诗欣"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:gdcpc19th:2010202206050030",
+    "event": {
+      "key": "gdcpc19th",
+      "title": "“小马智行杯”第十九届广东省大学生程序设计竞赛暨中国大学生程序设计大赛广东省赛（线上赛，华南师范大学）",
+      "family": "provincial",
+      "occurred_on": "2022-06-05",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "秃头老姐妹",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/gd/gdcpc19th.srk.json",
+    "recipients": [
+      "杨扬",
+      "陈晓琳",
+      "黄雪仪"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 1,
+      "time": [
+        22740,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "杨扬"
+      },
+      {
+        "name": "陈晓琳"
+      },
+      {
+        "name": "黄雪仪"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:gdcpc20th:team032",
+    "event": {
+      "key": "gdcpc20th",
+      "title": "第二十届广东省大学生程序设计竞赛",
+      "family": "provincial",
+      "occurred_on": "2023-05-14",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "攻城狮",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/gd/gdcpc20th.srk.json",
+    "recipients": [
+      "刘庭权",
+      "罗凯鑫",
+      "林日清"
+    ],
+    "official": true,
+    "segments": [
+      {
+        "index": 0,
+        "rank": 128,
+        "style": "bronze",
+        "title": "Bronze Award",
+        "series": "#"
+      }
+    ],
+    "reason": null,
+    "score": {
+      "value": 4,
+      "time": [
+        41644000,
+        "ms"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "刘庭权"
+      },
+      {
+        "name": "罗凯鑫"
+      },
+      {
+        "name": "林日清"
+      },
+      {
+        "name": "饶浩",
+        "role": "coach"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:gdcpc20th:team181",
+    "event": {
+      "key": "gdcpc20th",
+      "title": "第二十届广东省大学生程序设计竞赛",
+      "family": "provincial",
+      "occurred_on": "2023-05-14",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "随便搞搞都对",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/gd/gdcpc20th.srk.json",
+    "recipients": [
+      "康丁魁",
+      "周亚男",
+      "童浩轩"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 3,
+      "time": [
+        30677000,
+        "ms"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "康丁魁"
+      },
+      {
+        "name": "周亚男"
+      },
+      {
+        "name": "童浩轩"
+      },
+      {
+        "name": "饶浩",
+        "role": "coach"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:gdcpc20th:team190",
+    "event": {
+      "key": "gdcpc20th",
+      "title": "第二十届广东省大学生程序设计竞赛",
+      "family": "provincial",
+      "occurred_on": "2023-05-14",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "等爆米花花开富贵的XCPC爆米花小队",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/gd/gdcpc20th.srk.json",
+    "recipients": [
+      "彭宇轩",
+      "杨扬",
+      "林思琪"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 2,
+      "time": [
+        4941000,
+        "ms"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "彭宇轩"
+      },
+      {
+        "name": "杨扬"
+      },
+      {
+        "name": "林思琪"
+      },
+      {
+        "name": "戴经国",
+        "role": "coach"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:gdcpc20th:team134",
+    "event": {
+      "key": "gdcpc20th",
+      "title": "第二十届广东省大学生程序设计竞赛",
+      "family": "provincial",
+      "occurred_on": "2023-05-14",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "翻斗幼儿园霸王龙小分队",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/gd/gdcpc20th.srk.json",
+    "recipients": [
+      "何滨",
+      "彭贞铭",
+      "林俊安"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 0,
+      "time": [
+        0,
+        "ms"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "何滨"
+      },
+      {
+        "name": "彭贞铭"
+      },
+      {
+        "name": "林俊安"
+      },
+      {
+        "name": "袁辉勇",
+        "role": "coach"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:gdcpc21st:team0238",
+    "event": {
+      "key": "gdcpc21st",
+      "title": "第二十一届广东省大学生程序设计竞赛",
+      "family": "provincial",
+      "occurred_on": "2024-05-26",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "我看队友打代码",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/gd/gdcpc21st.srk.json",
+    "recipients": [
+      "康丁魁",
+      "林日清",
+      "周亚男"
+    ],
+    "official": true,
+    "segments": [
+      {
+        "index": 0,
+        "rank": 94,
+        "style": "bronze",
+        "title": "Bronze Award",
+        "series": "#"
+      }
+    ],
+    "reason": null,
+    "score": {
+      "value": 4,
+      "time": [
+        61760000,
+        "ms"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "康丁魁"
+      },
+      {
+        "name": "林日清"
+      },
+      {
+        "name": "周亚男"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:gdcpc21st:team0195",
+    "event": {
+      "key": "gdcpc21st",
+      "title": "第二十一届广东省大学生程序设计竞赛",
+      "family": "provincial",
+      "occurred_on": "2024-05-26",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "我有一个馊主意",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/gd/gdcpc21st.srk.json",
+    "recipients": [
+      "刘庭权",
+      "彭宇轩",
+      "冯诺维"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 1,
+      "time": [
+        14016000,
+        "ms"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "刘庭权"
+      },
+      {
+        "name": "彭宇轩"
+      },
+      {
+        "name": "冯诺维"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:gdcpc21st:team0234",
+    "event": {
+      "key": "gdcpc21st",
+      "title": "第二十一届广东省大学生程序设计竞赛",
+      "family": "provincial",
+      "occurred_on": "2024-05-26",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "A出一题直接回村办酒席",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/gd/gdcpc21st.srk.json",
+    "recipients": [
+      "郑志伟",
+      "李旭平",
+      "何韵怡"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 0,
+      "time": [
+        0,
+        "ms"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "郑志伟"
+      },
+      {
+        "name": "李旭平"
+      },
+      {
+        "name": "何韵怡"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:gdcpc21st:team0235",
+    "event": {
+      "key": "gdcpc21st",
+      "title": "第二十一届广东省大学生程序设计竞赛",
+      "family": "provincial",
+      "occurred_on": "2024-05-26",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "庆祝郑何下西洋",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/gd/gdcpc21st.srk.json",
+    "recipients": [
+      "郑铃玲",
+      "张庆琳",
+      "何敬仪"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 0,
+      "time": [
+        0,
+        "ms"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "郑铃玲"
+      },
+      {
+        "name": "张庆琳"
+      },
+      {
+        "name": "何敬仪"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:gdcpc21st:team0236",
+    "event": {
+      "key": "gdcpc21st",
+      "title": "第二十一届广东省大学生程序设计竞赛",
+      "family": "provincial",
+      "occurred_on": "2024-05-26",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "让我ac一个",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/gd/gdcpc21st.srk.json",
+    "recipients": [
+      "彭贞铭",
+      "庄炎鑫",
+      "李镔彬"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 0,
+      "time": [
+        0,
+        "ms"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "彭贞铭"
+      },
+      {
+        "name": "庄炎鑫"
+      },
+      {
+        "name": "李镔彬"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:gdcpc21st:team0237",
+    "event": {
+      "key": "gdcpc21st",
+      "title": "第二十一届广东省大学生程序设计竞赛",
+      "family": "provincial",
+      "occurred_on": "2024-05-26",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "难铜不想难铜",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/gd/gdcpc21st.srk.json",
+    "recipients": [
+      "陈兴翰",
+      "黄家宝",
+      "许申浩"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 0,
+      "time": [
+        0,
+        "ms"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "陈兴翰"
+      },
+      {
+        "name": "黄家宝"
+      },
+      {
+        "name": "许申浩"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:gdcpc22nd:303",
+    "event": {
+      "key": "gdcpc22nd",
+      "title": "2025 年（第二十二届）广东省大学生程序设计竞赛暨“汇丰科技（中国）”中国大学生程序设计竞赛邀请赛（广东）预赛",
+      "family": "provincial",
+      "occurred_on": "2025-06-02",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "教练教练，我可以吃汉堡吗",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/gd/gdcpc22nd.srk.json",
+    "recipients": [
+      "叶福都",
+      "陈思琪",
+      "黄家宝"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 2,
+      "time": [
+        174,
+        "min"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "叶福都"
+      },
+      {
+        "name": "陈思琪"
+      },
+      {
+        "name": "黄家宝"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:gdcpc22nd:301",
+    "event": {
+      "key": "gdcpc22nd",
+      "title": "2025 年（第二十二届）广东省大学生程序设计竞赛暨“汇丰科技（中国）”中国大学生程序设计竞赛邀请赛（广东）预赛",
+      "family": "provincial",
+      "occurred_on": "2025-06-02",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "随便打打",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/gd/gdcpc22nd.srk.json",
+    "recipients": [
+      "马嘉亮",
+      "李镔彬",
+      "陈兴翰"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 2,
+      "time": [
+        385,
+        "min"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "马嘉亮"
+      },
+      {
+        "name": "李镔彬"
+      },
+      {
+        "name": "陈兴翰"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:gdcpc22nd:304",
+    "event": {
+      "key": "gdcpc22nd",
+      "title": "2025 年（第二十二届）广东省大学生程序设计竞赛暨“汇丰科技（中国）”中国大学生程序设计竞赛邀请赛（广东）预赛",
+      "family": "provincial",
+      "occurred_on": "2025-06-02",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "输了就怪领队",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/gd/gdcpc22nd.srk.json",
+    "recipients": [
+      "吴仁光",
+      "汪金力",
+      "柯安鸿"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 2,
+      "time": [
+        453,
+        "min"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "吴仁光"
+      },
+      {
+        "name": "汪金力"
+      },
+      {
+        "name": "柯安鸿"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:gdcpc22nd:305",
+    "event": {
+      "key": "gdcpc22nd",
+      "title": "2025 年（第二十二届）广东省大学生程序设计竞赛暨“汇丰科技（中国）”中国大学生程序设计竞赛邀请赛（广东）预赛",
+      "family": "provincial",
+      "occurred_on": "2025-06-02",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "考的全会蒙德全队",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/gd/gdcpc22nd.srk.json",
+    "recipients": [
+      "王鹏凯",
+      "陈俊东",
+      "钱玟如"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 1,
+      "time": [
+        38,
+        "min"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "王鹏凯"
+      },
+      {
+        "name": "陈俊东"
+      },
+      {
+        "name": "钱玟如"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:gdcpc23rd:team287",
+    "event": {
+      "key": "gdcpc23rd",
+      "title": "广东省第二十三届大学生程序设计竞赛",
+      "family": "provincial",
+      "occurred_on": "2026-05-17",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "海绵宝宝",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/gd/gdcpc23rd.srk.json",
+    "recipients": [
+      "陈思琪",
+      "叶丹萍",
+      "叶宇轩"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 4,
+      "time": [
+        49589000,
+        "ms"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "陈思琪"
+      },
+      {
+        "name": "叶丹萍"
+      },
+      {
+        "name": "叶宇轩"
+      },
+      {
+        "name": "饶浩",
+        "role": "coach"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:gdcpc23rd:team272",
+    "event": {
+      "key": "gdcpc23rd",
+      "title": "广东省第二十三届大学生程序设计竞赛",
+      "family": "provincial",
+      "occurred_on": "2026-05-17",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "稻花乡里说丰年",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/gd/gdcpc23rd.srk.json",
+    "recipients": [
+      "陶健",
+      "洪瑜徽",
+      "董学文"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 3,
+      "time": [
+        24179000,
+        "ms"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "陶健"
+      },
+      {
+        "name": "洪瑜徽"
+      },
+      {
+        "name": "董学文"
+      },
+      {
+        "name": "朱伟浩",
+        "role": "coach"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:gxcpc7th:2001202405190088",
+    "event": {
+      "key": "gxcpc7th",
+      "title": "第七届广西大学生程序设计大赛",
+      "family": "provincial",
+      "occurred_on": "2024-05-19",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "我看队友打代码",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/gx/gxcpc7th.srk.json",
+    "recipients": [
+      "周亚男",
+      "康丁魁",
+      "林日清"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 5,
+      "time": [
+        15660,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "周亚男"
+      },
+      {
+        "name": "康丁魁"
+      },
+      {
+        "name": "林日清"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:gxcpc7th:2001202405190089",
+    "event": {
+      "key": "gxcpc7th",
+      "title": "第七届广西大学生程序设计大赛",
+      "family": "provincial",
+      "occurred_on": "2024-05-19",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "打完这仗就脱下长衫送外卖",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/gx/gxcpc7th.srk.json",
+    "recipients": [
+      "冯诺维",
+      "陈兴翰",
+      "黄家宝"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 4,
+      "time": [
+        22320,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "冯诺维"
+      },
+      {
+        "name": "陈兴翰"
+      },
+      {
+        "name": "黄家宝"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:gxcpc7th:2001202405190090",
+    "event": {
+      "key": "gxcpc7th",
+      "title": "第七届广西大学生程序设计大赛",
+      "family": "provincial",
+      "occurred_on": "2024-05-19",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "三杯鸡",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/gx/gxcpc7th.srk.json",
+    "recipients": [
+      "彭贞铭",
+      "李镔彬",
+      "郑铃玲"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 3,
+      "time": [
+        5400,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "彭贞铭"
+      },
+      {
+        "name": "李镔彬"
+      },
+      {
+        "name": "郑铃玲"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:gxcpc8th:1030014214",
+    "event": {
+      "key": "gxcpc8th",
+      "title": "第八届广西大学生程序设计大赛暨2025中国-东盟国际大学生程序设计大赛",
+      "family": "provincial",
+      "occurred_on": "2025-05-25",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "这个队名, 挂到校园网上影响不好!",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/gx/gxcpc8th.srk.json",
+    "recipients": [
+      "朱子睿",
+      "谢泽栩",
+      "叶福都"
+    ],
+    "official": true,
+    "segments": [
+      {
+        "index": 2,
+        "rank": 17,
+        "style": "silver",
+        "title": "Silver Award",
+        "series": "邀请赛#"
+      }
+    ],
+    "reason": null,
+    "score": {
+      "value": 5,
+      "time": [
+        38660,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "朱子睿"
+      },
+      {
+        "name": "谢泽栩"
+      },
+      {
+        "name": "叶福都"
+      },
+      {
+        "name": "饶浩",
+        "role": "coach"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:gxcpc8th:1030014152",
+    "event": {
+      "key": "gxcpc8th",
+      "title": "第八届广西大学生程序设计大赛暨2025中国-东盟国际大学生程序设计大赛",
+      "family": "provincial",
+      "occurred_on": "2025-05-25",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "灌注 hsn8086 谢谢喵!",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/gx/gxcpc8th.srk.json",
+    "recipients": [
+      "马嘉亮",
+      "陈思琪",
+      "李镔彬"
+    ],
+    "official": true,
+    "segments": [
+      {
+        "index": 2,
+        "rank": 45,
+        "style": "bronze",
+        "title": "Bronze Award",
+        "series": "邀请赛#"
+      }
+    ],
+    "reason": null,
+    "score": {
+      "value": 4,
+      "time": [
+        24797,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "马嘉亮"
+      },
+      {
+        "name": "陈思琪"
+      },
+      {
+        "name": "李镔彬"
+      },
+      {
+        "name": "何常胜",
+        "role": "coach"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:gxcpc9th:1030015132",
+    "event": {
+      "key": "gxcpc9th",
+      "title": "第九届广西大学生程序设计大赛暨2026中国-东盟国际大学生程序设计大赛",
+      "family": "provincial",
+      "occurred_on": "2026-05-31",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "这个队名放到校园网上影响不好",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/gx/gxcpc9th.srk.json",
+    "recipients": [
+      "朱子睿",
+      "谢泽栩",
+      "陈思琪"
+    ],
+    "official": true,
+    "segments": [
+      {
+        "index": 0,
+        "rank": 77,
+        "style": "bronze",
+        "title": "Bronze Award",
+        "series": "邀请赛#"
+      }
+    ],
+    "reason": null,
+    "score": {
+      "value": 5,
+      "time": [
+        37535,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "朱子睿"
+      },
+      {
+        "name": "谢泽栩"
+      },
+      {
+        "name": "陈思琪"
+      },
+      {
+        "name": "饶浩",
+        "role": "coach"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:haccpc6th:G31N",
+    "event": {
+      "key": "haccpc6th",
+      "title": "第六届CCPC河南省大学生程序设计竞赛",
+      "family": "provincial",
+      "occurred_on": "2024-05-12",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "寻找ll之旅",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/ha/haccpc6th.srk.json",
+    "recipients": [
+      "康丁魁",
+      "周亚男",
+      "李镔彬"
+    ],
+    "official": true,
+    "segments": [
+      {
+        "index": 0,
+        "rank": 90,
+        "style": "silver",
+        "title": "Silver Award",
+        "series": "#"
+      }
+    ],
+    "reason": null,
+    "score": {
+      "value": 7,
+      "time": [
+        24696000,
+        "ms"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "康丁魁"
+      },
+      {
+        "name": "周亚男"
+      },
+      {
+        "name": "李镔彬"
+      },
+      {
+        "name": "饶浩",
+        "role": "coach"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:haccpc6th:I31N",
+    "event": {
+      "key": "haccpc6th",
+      "title": "第六届CCPC河南省大学生程序设计竞赛",
+      "family": "provincial",
+      "occurred_on": "2024-05-12",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "SGU-T1",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/ha/haccpc6th.srk.json",
+    "recipients": [
+      "冯诺维",
+      "许申浩",
+      "陈兴翰"
+    ],
+    "official": true,
+    "segments": [
+      {
+        "index": 0,
+        "rank": 235,
+        "style": "bronze",
+        "title": "Bronze Award",
+        "series": "#"
+      }
+    ],
+    "reason": null,
+    "score": {
+      "value": 5,
+      "time": [
+        46596000,
+        "ms"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "冯诺维"
+      },
+      {
+        "name": "许申浩"
+      },
+      {
+        "name": "陈兴翰"
+      },
+      {
+        "name": "饶浩",
+        "role": "coach"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:haccpc7th:A0702",
+    "event": {
+      "key": "haccpc7th",
+      "title": "2025CCPC全国邀请赛（郑州）暨第七届河南省赛",
+      "family": "provincial",
+      "occurred_on": "2025-06-02",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "Ciallo World",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/ha/haccpc7th.srk.json",
+    "recipients": [
+      "冯诺维",
+      "谢泽栩",
+      "朱子睿"
+    ],
+    "official": true,
+    "segments": [
+      {
+        "index": 0,
+        "rank": 161,
+        "style": "bronze",
+        "title": "Bronze Award",
+        "series": "#"
+      }
+    ],
+    "reason": null,
+    "score": {
+      "value": 7,
+      "time": [
+        61777000,
+        "ms"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "冯诺维"
+      },
+      {
+        "name": "谢泽栩"
+      },
+      {
+        "name": "朱子睿"
+      },
+      {
+        "name": "饶浩",
+        "role": "coach"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:hbcpc7th:team_119",
+    "event": {
+      "key": "hbcpc7th",
+      "title": "2026 年 ICPC 国际大学生程序设计竞赛全国邀请赛（武汉）暨湖北省赛",
+      "family": "provincial",
+      "occurred_on": "2026-05-17",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "怎么WA了",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/hb/hbcpc7th.srk.json",
+    "recipients": [
+      "黄家宝",
+      "陈俊东",
+      "卢成洋"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 2,
+      "time": [
+        9540,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "黄家宝"
+      },
+      {
+        "name": "陈俊东"
+      },
+      {
+        "name": "卢成洋"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:jxccpc3rd:team067",
+    "event": {
+      "key": "jxccpc3rd",
+      "title": "2026年中国大学生程序设计竞赛-江西省大学生程序设计竞赛（南昌大学）",
+      "family": "provincial",
+      "occurred_on": "2026-05-24",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "派大星",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/jx/jxccpc3rd.srk.json",
+    "recipients": [
+      "陈思琪",
+      "朱子睿",
+      "陈俊东"
+    ],
+    "official": true,
+    "segments": [
+      {
+        "index": 0,
+        "rank": 84,
+        "style": "silver",
+        "title": "银奖",
+        "series": "邀请赛#"
+      }
+    ],
+    "reason": null,
+    "score": {
+      "value": 6,
+      "time": [
+        50880,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "陈思琪"
+      },
+      {
+        "name": "朱子睿"
+      },
+      {
+        "name": "陈俊东"
+      },
+      {
+        "name": "饶浩",
+        "role": "coach"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:jxcpc2025:268",
+    "event": {
+      "key": "jxcpc2025",
+      "title": "2025年icpc全国邀请赛（南昌）暨2025年（icpc）江西省大学生程序设计竞赛 - 正式赛",
+      "family": "provincial",
+      "occurred_on": "2025-05-18",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "Ciallo World",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/jx/jxcpc2025.srk.json",
+    "recipients": [
+      "冯诺维",
+      "朱子睿",
+      "谢泽栩"
+    ],
+    "official": true,
+    "segments": [],
+    "reason": "无奖项或无法确认奖项",
+    "score": {
+      "value": 5,
+      "time": [
+        40260,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "冯诺维"
+      },
+      {
+        "name": "朱子睿"
+      },
+      {
+        "name": "谢泽栩"
+      }
+    ]
+  },
+  {
+    "source_key": "srk:jxcpc2026:273",
+    "event": {
+      "key": "jxcpc2026",
+      "title": "2026 年 ICPC 国际大学生程序设计竞赛全国邀请赛（南昌）暨江西省赛",
+      "family": "provincial",
+      "occurred_on": "2026-05-17",
+      "date_precision": "day",
+      "category": ""
+    },
+    "team": "这个队名放到校园网上影响不好",
+    "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/jx/jxcpc2026.srk.json",
+    "recipients": [
+      "朱子睿",
+      "叶福都",
+      "谢泽栩"
+    ],
+    "official": true,
+    "segments": [
+      {
+        "index": 0,
+        "rank": 117,
+        "style": "bronze",
+        "title": "铜奖",
+        "series": "#"
+      }
+    ],
+    "reason": null,
+    "score": {
+      "value": 4,
+      "time": [
+        14640,
+        "s"
+      ]
+    },
+    "raw_members": [
+      {
+        "name": "朱子睿"
+      },
+      {
+        "name": "叶福都"
+      },
+      {
+        "name": "谢泽栩"
+      }
+    ]
+  }
+]

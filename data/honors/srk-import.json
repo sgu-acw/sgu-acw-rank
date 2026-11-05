@@ -1,0 +1,404 @@
+{
+  "records": [
+    {
+      "source_key": "srk:ccpc2023guilin:184:series-0",
+      "event": {
+        "key": "ccpc2023guilin",
+        "title": "第 9 届 CCPC 中国大学生程序设计竞赛 桂林站",
+        "family": "ccpc",
+        "occurred_on": "2023-10-29",
+        "date_precision": "day",
+        "category": "#"
+      },
+      "team": "我看队友打代码",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2023/ccpc2023guilin.srk.json",
+      "recipients": [
+        "康丁魁",
+        "林日清",
+        "周亚男"
+      ],
+      "award": "铜奖",
+      "evidence": "SRK 0.3.13；series[0]，rank=117，segment=铜奖。按上游标准库 0.3.3 解析；待核实身份和在校时间。"
+    },
+    {
+      "source_key": "srk:ccpc2024ladies:114:series-0",
+      "event": {
+        "key": "ccpc2024ladies",
+        "title": "第十届中国大学生程序设计竞赛（女生专场）",
+        "family": "ccpc",
+        "occurred_on": "2024-11-03",
+        "date_precision": "day",
+        "category": "#"
+      },
+      "team": "因为晕3D不能玩黑神话来打A",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2024/ccpc2024ladies.srk.json",
+      "recipients": [
+        "何韵怡",
+        "李镔彬",
+        "周亚男"
+      ],
+      "award": "铜奖",
+      "evidence": "SRK 0.3.13；series[0]，rank=81，segment=Bronze Award。按上游标准库 0.3.3 解析；待核实身份和在校时间。"
+    },
+    {
+      "source_key": "srk:ccpc2025invitational-fujian:217:series-0",
+      "event": {
+        "key": "ccpc2025invitational-fujian",
+        "title": "第十二届福建省大学生程序设计竞赛暨2025年CCPC福建邀请赛",
+        "family": "ccpc",
+        "occurred_on": "2025-06-21",
+        "date_precision": "day",
+        "category": "#"
+      },
+      "team": "全队广东人,打a爆改自助餐",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2025/ccpc2025invitational-fujian.srk.json",
+      "recipients": [
+        "叶福都",
+        "谢泽栩",
+        "朱子睿"
+      ],
+      "award": "铜奖",
+      "evidence": "SRK 0.3.8；series[0]，rank=116，segment=Bronze Award。按上游标准库 0.3.3 解析；待核实身份和在校时间。"
+    },
+    {
+      "source_key": "srk:ccpc2025invitational-zhengzhou:A0702:series-0",
+      "event": {
+        "key": "ccpc2025invitational-zhengzhou",
+        "title": "2025CCPC全国邀请赛（郑州）暨第七届河南省赛",
+        "family": "ccpc",
+        "occurred_on": "2025-06-02",
+        "date_precision": "day",
+        "category": "#"
+      },
+      "team": "Ciallo World",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2025/ccpc2025invitational-zhengzhou.srk.json",
+      "recipients": [
+        "冯诺维",
+        "谢泽栩",
+        "朱子睿"
+      ],
+      "award": "铜奖",
+      "evidence": "SRK 0.3.13；series[0]，rank=161，segment=Bronze Award。按上游标准库 0.3.3 解析；待核实身份和在校时间。"
+    },
+    {
+      "source_key": "srk:ccpc2026invitational-fuzhou:42:series-0",
+      "event": {
+        "key": "ccpc2026invitational-fuzhou",
+        "title": "第十三届福建省大学生程序设计竞赛 暨2026年CCPC全国邀请赛（福州）",
+        "family": "ccpc",
+        "occurred_on": "2026-05-30",
+        "date_precision": "day",
+        "category": "邀请赛#"
+      },
+      "team": "輪符雨",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2026/ccpc2026invitational-fuzhou.srk.json",
+      "recipients": [
+        "叶福都",
+        "卢成洋",
+        "叶宇轩"
+      ],
+      "award": "铜奖",
+      "evidence": "SRK 0.3.13；series[0]，rank=178，segment=Bronze Award。按上游标准库 0.3.3 解析；待核实身份和在校时间。"
+    },
+    {
+      "source_key": "srk:ccpc2026invitational-nanchang:team067:series-0",
+      "event": {
+        "key": "ccpc2026invitational-nanchang",
+        "title": "2026年中国大学生程序设计竞赛-全国邀请赛（南昌）（南昌大学）",
+        "family": "ccpc",
+        "occurred_on": "2026-05-24",
+        "date_precision": "day",
+        "category": "邀请赛#"
+      },
+      "team": "派大星",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2026/ccpc2026invitational-nanchang.srk.json",
+      "recipients": [
+        "陈思琪",
+        "朱子睿",
+        "陈俊东"
+      ],
+      "award": "银奖",
+      "evidence": "SRK 0.3.13；series[0]，rank=84，segment=银奖。按上游标准库 0.3.3 解析；待核实身份和在校时间。"
+    },
+    {
+      "source_key": "srk:icpc2023jinan:228:series-0",
+      "event": {
+        "key": "icpc2023jinan",
+        "title": "第 48 届国际大学生程序设计竞赛亚洲区域赛济南站",
+        "family": "icpc",
+        "occurred_on": "2023-12-03",
+        "date_precision": "day",
+        "category": "#"
+      },
+      "team": "我看队友打代码",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2023/icpc2023jinan.srk.json",
+      "recipients": [
+        "康丁魁",
+        "林日清",
+        "周亚男"
+      ],
+      "award": "铜奖",
+      "evidence": "SRK 0.3.4；series[0]，rank=158，segment=铜奖。按上游标准库 0.3.3 解析；待核实身份和在校时间。"
+    },
+    {
+      "source_key": "srk:icpc2024hongkong:CD303-17:series-0",
+      "event": {
+        "key": "icpc2024hongkong",
+        "title": "第 49 届 ICPC 国际大学生程序设计竞赛区域赛香港站",
+        "family": "icpc",
+        "occurred_on": "2024-12-22",
+        "date_precision": "day",
+        "category": "#"
+      },
+      "team": "Man! What can I accept ",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2024/icpc2024hongkong.srk.json",
+      "recipients": [
+        "Nuowei Feng",
+        "Dingkui Kang",
+        "Xinghan Chen"
+      ],
+      "award": "银奖",
+      "evidence": "SRK 0.3.13；series[0]，rank=38，segment=银奖。按上游标准库 0.3.3 解析；待核实身份和在校时间。"
+    },
+    {
+      "source_key": "srk:icpc2024kunming:D1703:series-0",
+      "event": {
+        "key": "icpc2024kunming",
+        "title": "第 49 届 ICPC 国际大学生程序设计竞赛区域赛昆明站",
+        "family": "icpc",
+        "occurred_on": "2024-12-01",
+        "date_precision": "day",
+        "category": "#"
+      },
+      "team": "码农转生~到了区域赛就拿出真本事",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2024/icpc2024kunming.srk.json",
+      "recipients": [
+        "冯诺维",
+        "康丁魁",
+        "陈兴翰"
+      ],
+      "award": "铜奖",
+      "evidence": "SRK 0.3.13；series[0]，rank=242，segment=铜奖。按上游标准库 0.3.3 解析；待核实身份和在校时间。"
+    },
+    {
+      "source_key": "srk:icpc2025invitational-nanchang:268:series-0",
+      "event": {
+        "key": "icpc2025invitational-nanchang",
+        "title": "2025年icpc全国邀请赛（南昌）暨2025年（icpc）江西省大学生程序设计竞赛",
+        "family": "icpc",
+        "occurred_on": "2025-05-18",
+        "date_precision": "day",
+        "category": "ICPC#"
+      },
+      "team": "Ciallo World",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2025/icpc2025invitational-nanchang.srk.json",
+      "recipients": [
+        "冯诺维",
+        "朱子睿",
+        "谢泽栩"
+      ],
+      "award": "铜奖",
+      "evidence": "SRK 0.3.13；series[0]，rank=219，segment=铜奖。按上游标准库 0.3.3 解析；待核实身份和在校时间。"
+    },
+    {
+      "source_key": "srk:icpc2026invitational-nanchang:273:series-0",
+      "event": {
+        "key": "icpc2026invitational-nanchang",
+        "title": "2026 年 ICPC 国际大学生程序设计竞赛全国邀请赛（南昌）暨江西省赛",
+        "family": "icpc",
+        "occurred_on": "2026-05-17",
+        "date_precision": "day",
+        "category": "#"
+      },
+      "team": "这个队名放到校园网上影响不好",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2026/icpc2026invitational-nanchang.srk.json",
+      "recipients": [
+        "朱子睿",
+        "叶福都",
+        "谢泽栩"
+      ],
+      "award": "铜奖",
+      "evidence": "SRK 0.3.9；series[0]，rank=117，segment=铜奖。按上游标准库 0.3.3 解析；待核实身份和在校时间。"
+    },
+    {
+      "source_key": "srk:icpc2026invitational-xi_an:Team347:series-0",
+      "event": {
+        "key": "icpc2026invitational-xi_an",
+        "title": "第 51 届 ICPC 国际大学生程序设计竞赛邀请赛西安站 - 正式赛",
+        "family": "icpc",
+        "occurred_on": "2026-05-02",
+        "date_precision": "day",
+        "category": "#"
+      },
+      "team": "这个队名放到校园网上影响不好",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2026/icpc2026invitational-xi_an.srk.json",
+      "recipients": [
+        "朱子睿",
+        "谢泽栩",
+        "叶福都"
+      ],
+      "award": "银奖",
+      "evidence": "SRK 0.3.9；series[0]，rank=59，segment=银奖。按上游标准库 0.3.3 解析；待核实身份和在校时间。"
+    },
+    {
+      "source_key": "srk:icpc2026xi_an:Team291:series-0",
+      "event": {
+        "key": "icpc2026xi_an",
+        "title": "第 51 届 ICPC 国际大学生程序设计竞赛区域赛西安站 - 正式赛",
+        "family": "icpc",
+        "occurred_on": "2026-10-18",
+        "date_precision": "day",
+        "category": "#"
+      },
+      "team": "可是雾月真的好可爱",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2026/icpc2026xi_an.srk.json",
+      "recipients": [
+        "朱子睿",
+        "叶福都",
+        "谢泽栩"
+      ],
+      "award": "铜奖",
+      "evidence": "SRK 0.3.13；series[0]，rank=246，segment=铜奖。按上游标准库 0.3.3 解析；待核实身份和在校时间。"
+    },
+    {
+      "source_key": "srk:gdcpc20th:team032:series-0",
+      "event": {
+        "key": "gdcpc20th",
+        "title": "第二十届广东省大学生程序设计竞赛",
+        "family": "provincial",
+        "occurred_on": "2023-05-14",
+        "date_precision": "day",
+        "category": "#"
+      },
+      "team": "攻城狮",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/gd/gdcpc20th.srk.json",
+      "recipients": [
+        "刘庭权",
+        "罗凯鑫",
+        "林日清"
+      ],
+      "award": "铜奖",
+      "evidence": "SRK 0.3.13；series[0]，rank=128，segment=Bronze Award。按上游标准库 0.3.3 解析；待核实身份和在校时间。"
+    },
+    {
+      "source_key": "srk:gdcpc21st:team0238:series-0",
+      "event": {
+        "key": "gdcpc21st",
+        "title": "第二十一届广东省大学生程序设计竞赛",
+        "family": "provincial",
+        "occurred_on": "2024-05-26",
+        "date_precision": "day",
+        "category": "#"
+      },
+      "team": "我看队友打代码",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/gd/gdcpc21st.srk.json",
+      "recipients": [
+        "康丁魁",
+        "林日清",
+        "周亚男"
+      ],
+      "award": "铜奖",
+      "evidence": "SRK 0.3.8；series[0]，rank=94，segment=Bronze Award。按上游标准库 0.3.3 解析；待核实身份和在校时间。"
+    },
+    {
+      "source_key": "srk:gxcpc8th:1030014214:series-2",
+      "event": {
+        "key": "gxcpc8th",
+        "title": "第八届广西大学生程序设计大赛暨2025中国-东盟国际大学生程序设计大赛",
+        "family": "provincial",
+        "occurred_on": "2025-05-25",
+        "date_precision": "day",
+        "category": "邀请赛#"
+      },
+      "team": "这个队名, 挂到校园网上影响不好!",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/gx/gxcpc8th.srk.json",
+      "recipients": [
+        "朱子睿",
+        "谢泽栩",
+        "叶福都"
+      ],
+      "award": "银奖",
+      "evidence": "SRK 0.3.13；series[2]，rank=17，segment=Silver Award。按上游标准库 0.3.3 解析；待核实身份和在校时间。"
+    },
+    {
+      "source_key": "srk:gxcpc8th:1030014152:series-2",
+      "event": {
+        "key": "gxcpc8th",
+        "title": "第八届广西大学生程序设计大赛暨2025中国-东盟国际大学生程序设计大赛",
+        "family": "provincial",
+        "occurred_on": "2025-05-25",
+        "date_precision": "day",
+        "category": "邀请赛#"
+      },
+      "team": "灌注 hsn8086 谢谢喵!",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/gx/gxcpc8th.srk.json",
+      "recipients": [
+        "马嘉亮",
+        "陈思琪",
+        "李镔彬"
+      ],
+      "award": "铜奖",
+      "evidence": "SRK 0.3.13；series[2]，rank=45，segment=Bronze Award。按上游标准库 0.3.3 解析；待核实身份和在校时间。"
+    },
+    {
+      "source_key": "srk:gxcpc9th:1030015132:series-0",
+      "event": {
+        "key": "gxcpc9th",
+        "title": "第九届广西大学生程序设计大赛暨2026中国-东盟国际大学生程序设计大赛",
+        "family": "provincial",
+        "occurred_on": "2026-05-31",
+        "date_precision": "day",
+        "category": "邀请赛#"
+      },
+      "team": "这个队名放到校园网上影响不好",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/gx/gxcpc9th.srk.json",
+      "recipients": [
+        "朱子睿",
+        "谢泽栩",
+        "陈思琪"
+      ],
+      "award": "铜奖",
+      "evidence": "SRK 0.3.13；series[0]，rank=77，segment=Bronze Award。按上游标准库 0.3.3 解析；待核实身份和在校时间。"
+    },
+    {
+      "source_key": "srk:haccpc6th:G31N:series-0",
+      "event": {
+        "key": "haccpc6th",
+        "title": "第六届CCPC河南省大学生程序设计竞赛",
+        "family": "provincial",
+        "occurred_on": "2024-05-12",
+        "date_precision": "day",
+        "category": "#"
+      },
+      "team": "寻找ll之旅",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/ha/haccpc6th.srk.json",
+      "recipients": [
+        "康丁魁",
+        "周亚男",
+        "李镔彬"
+      ],
+      "award": "银奖",
+      "evidence": "SRK 0.3.13；series[0]，rank=90，segment=Silver Award。按上游标准库 0.3.3 解析；待核实身份和在校时间。"
+    },
+    {
+      "source_key": "srk:haccpc6th:I31N:series-0",
+      "event": {
+        "key": "haccpc6th",
+        "title": "第六届CCPC河南省大学生程序设计竞赛",
+        "family": "provincial",
+        "occurred_on": "2024-05-12",
+        "date_precision": "day",
+        "category": "#"
+      },
+      "team": "SGU-T1",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/ha/haccpc6th.srk.json",
+      "recipients": [
+        "冯诺维",
+        "许申浩",
+        "陈兴翰"
+      ],
+      "award": "铜奖",
+      "evidence": "SRK 0.3.13；series[0]，rank=235，segment=Bronze Award。按上游标准库 0.3.3 解析；待核实身份和在校时间。"
+    }
+  ]
+}

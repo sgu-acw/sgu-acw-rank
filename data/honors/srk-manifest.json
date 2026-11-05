@@ -1,0 +1,379 @@
+{
+  "repository": "https://github.com/algoux/srk-collection",
+  "commit": "82f077de6246a4d0e474ebe52c099d83d562506c",
+  "scanned": 400,
+  "matched_files": 70,
+  "candidates": 145,
+  "import_records": 20,
+  "sources": [
+    {
+      "path": "official/ccpc/ccpc2022/ccpc2022preliminary.srk.json",
+      "sha256": "8f8846ec3318c22a6d05e0a94c3967d8087ad054e9418f87768fd0b4578663ca",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2022/ccpc2022preliminary.srk.json"
+    },
+    {
+      "path": "official/ccpc/ccpc2023/ccpc2023guilin.srk.json",
+      "sha256": "30505700e3e495cc13b116f105b099d274062935dc68014ed2ab717545775b8b",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2023/ccpc2023guilin.srk.json"
+    },
+    {
+      "path": "official/ccpc/ccpc2023/ccpc2023invitational-xiangtan.srk.json",
+      "sha256": "a889e8c8539f1e709403934d18734cb14b7b75515bf27042fccca53728d510dd",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2023/ccpc2023invitational-xiangtan.srk.json"
+    },
+    {
+      "path": "official/ccpc/ccpc2023/ccpc2023ladies.srk.json",
+      "sha256": "2874876a08fd5ba8c9b20654a88cbe967f586b68377bee59f98dc87ac16392fe",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2023/ccpc2023ladies.srk.json"
+    },
+    {
+      "path": "official/ccpc/ccpc2023/ccpc2023preliminary.srk.json",
+      "sha256": "6fb13a9b7cd8b1453deb62d37df049b188b6a915f145a95769ab8b22a3a0dc2f",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2023/ccpc2023preliminary.srk.json"
+    },
+    {
+      "path": "official/ccpc/ccpc2023/ccpc2023shenzhen.srk.json",
+      "sha256": "17bb3de5ce0ff80afe0228db450e88e6048ccc1e13a37db79bd41a578976b488",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2023/ccpc2023shenzhen.srk.json"
+    },
+    {
+      "path": "official/ccpc/ccpc2024/ccpc2024chongqing.srk.json",
+      "sha256": "656e81c7292153d87a15d996f807697d4a96358502a5e2cc5e4e86fc02b4efee",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2024/ccpc2024chongqing.srk.json"
+    },
+    {
+      "path": "official/ccpc/ccpc2024/ccpc2024ladies.srk.json",
+      "sha256": "7a7feb14e3da0e2d51b0257cdd395812d564eac757cfa7c12c12bd907e9ecddb",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2024/ccpc2024ladies.srk.json"
+    },
+    {
+      "path": "official/ccpc/ccpc2024/ccpc2024preliminary.srk.json",
+      "sha256": "a0b454a9a11cbda271b7d7673ed6f5d326cc74eb259fbcca9568f5e2f9861034",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2024/ccpc2024preliminary.srk.json"
+    },
+    {
+      "path": "official/ccpc/ccpc2025/ccpc2025invitational-fujian.srk.json",
+      "sha256": "82d8de53140c64141fa80e5edbacf713bf29eb4c45a7718823a5b4bed9c34cc9",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2025/ccpc2025invitational-fujian.srk.json"
+    },
+    {
+      "path": "official/ccpc/ccpc2025/ccpc2025invitational-guangdong-preliminary.srk.json",
+      "sha256": "826345661473902dae167c6845e97aad8097dc677c7e4ad92a7f8de435c8fe25",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2025/ccpc2025invitational-guangdong-preliminary.srk.json"
+    },
+    {
+      "path": "official/ccpc/ccpc2025/ccpc2025invitational-zhengzhou.srk.json",
+      "sha256": "e5846c98c1a3e2f2abf2ce4a41590a94332f75adf45ca82053e1f63057a6628f",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2025/ccpc2025invitational-zhengzhou.srk.json"
+    },
+    {
+      "path": "official/ccpc/ccpc2025/ccpc2025ladies.srk.json",
+      "sha256": "2d55003802e4c840aa561ffd2b1accd316882730a7129af489fb793ceac2e05a",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2025/ccpc2025ladies.srk.json"
+    },
+    {
+      "path": "official/ccpc/ccpc2025/ccpc2025preliminary.srk.json",
+      "sha256": "06dc53493d883fc0af5917a9810138396d646f5cd0d7dd3f7f6c22105256fcc0",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2025/ccpc2025preliminary.srk.json"
+    },
+    {
+      "path": "official/ccpc/ccpc2025/ccpc2025zhengzhou.srk.json",
+      "sha256": "0fba73d97d43b2ffab042a84a36585f6d37756bd54e09bd30d7f4f5adde2a04e",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2025/ccpc2025zhengzhou.srk.json"
+    },
+    {
+      "path": "official/ccpc/ccpc2026/ccpc2026invitational-fuzhou.srk.json",
+      "sha256": "6c2fb73874cf7815c3cb43dd323a3e03f963010751b0141f71f9b7f552aa7ba8",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2026/ccpc2026invitational-fuzhou.srk.json"
+    },
+    {
+      "path": "official/ccpc/ccpc2026/ccpc2026invitational-nanchang.srk.json",
+      "sha256": "f743a035166e8857346c5ba723850731bf68d8be10929e44c8a84bd14483f2dc",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2026/ccpc2026invitational-nanchang.srk.json"
+    },
+    {
+      "path": "official/ccpc/ccpc2026/ccpc2026preliminary.srk.json",
+      "sha256": "c33f359493b3b30282114a3e3735935e0aa1e13332baa0761079fe3d8e9942ed",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/ccpc/ccpc2026/ccpc2026preliminary.srk.json"
+    },
+    {
+      "path": "official/icpc/icpc2011/icpc2011preliminary-fuzhou.srk.json",
+      "sha256": "ccdfee5ab9316d6988e709d7c8979a4eba1ed9bddf66c7489e3ffc2c3e1c26d4",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2011/icpc2011preliminary-fuzhou.srk.json"
+    },
+    {
+      "path": "official/icpc/icpc2016/icpc2016preliminary-shenyang.srk.json",
+      "sha256": "fd93b802c34c9531a175b8c2a0888a69f7385d4540e838fc796770cca1cc9413",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2016/icpc2016preliminary-shenyang.srk.json"
+    },
+    {
+      "path": "official/icpc/icpc2020/icpc2020preliminary-xiaomi-2.srk.json",
+      "sha256": "6e27b38b170a69be70cd1e093763db0dd68526bd2986419b580b4071c31a5936",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2020/icpc2020preliminary-xiaomi-2.srk.json"
+    },
+    {
+      "path": "official/icpc/icpc2021/icpc2021kunming.srk.json",
+      "sha256": "8bd1d898667302d35fee7300f41e8e5a4ff14912f641d07674af72c7a53d91be",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2021/icpc2021kunming.srk.json"
+    },
+    {
+      "path": "official/icpc/icpc2021/icpc2021shanghai.srk.json",
+      "sha256": "7145800d6c73c90a4b6a068abb16ac1702b2aae13fe5835975f7961239604afd",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2021/icpc2021shanghai.srk.json"
+    },
+    {
+      "path": "official/icpc/icpc2022/icpc2022hangzhou.srk.json",
+      "sha256": "32b9134a55346532b665ca17130ca501427cffe6e7048cdb336ecc6a0e8022c3",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2022/icpc2022hangzhou.srk.json"
+    },
+    {
+      "path": "official/icpc/icpc2022/icpc2022hefei.srk.json",
+      "sha256": "4fb948dbcd99b4ef9c6af0f811578cf994ee6098cfc913638785d8106c1f879c",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2022/icpc2022hefei.srk.json"
+    },
+    {
+      "path": "official/icpc/icpc2022/icpc2022jinan.srk.json",
+      "sha256": "9153e3eeb78eb0264173dd2dc3cacd0a44a25399e779a21e8ad58469de356424",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2022/icpc2022jinan.srk.json"
+    },
+    {
+      "path": "official/icpc/icpc2022/icpc2022nanjing.srk.json",
+      "sha256": "091de5efb29600bee26256358bf8342bfc597a12b19f2ab244f82f98c654e62a",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2022/icpc2022nanjing.srk.json"
+    },
+    {
+      "path": "official/icpc/icpc2022/icpc2022preliminary-1.srk.json",
+      "sha256": "b584615330e509b1c5f7b539e1ec1761d20228cfc0e61b75b3cdf643e2d9fa97",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2022/icpc2022preliminary-1.srk.json"
+    },
+    {
+      "path": "official/icpc/icpc2022/icpc2022preliminary-2.srk.json",
+      "sha256": "bdae334092a46c6a75bfb02840a2b2e6b2beb23ed606ecc9df4f1238c488c404",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2022/icpc2022preliminary-2.srk.json"
+    },
+    {
+      "path": "official/icpc/icpc2022/icpc2022shenyang.srk.json",
+      "sha256": "25da2d09a0994460b7abce6397cc3f37e0a9b7b53bc7d2eeddfbe3b21f4342fe",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2022/icpc2022shenyang.srk.json"
+    },
+    {
+      "path": "official/icpc/icpc2022/icpc2022xi_an.srk.json",
+      "sha256": "f062b0c4b756a83d2dc833a8d1ceae0627dbddb4300eba31e7a5ba4e896454f0",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2022/icpc2022xi_an.srk.json"
+    },
+    {
+      "path": "official/icpc/icpc2023/icpc2023hangzhou.srk.json",
+      "sha256": "28cd885194acfeec39ba8896abcc81fa27a9715a1709082f1de776f5a604a2fa",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2023/icpc2023hangzhou.srk.json"
+    },
+    {
+      "path": "official/icpc/icpc2023/icpc2023hefei.srk.json",
+      "sha256": "7256cb4534c738630649a0e752559efe850904a549cc38be19afe76d4c520a1c",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2023/icpc2023hefei.srk.json"
+    },
+    {
+      "path": "official/icpc/icpc2023/icpc2023jinan.srk.json",
+      "sha256": "a59972080f5992415fe3b8e36347f738b3f9e75ca4bd58b5cb489910bf9d41a9",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2023/icpc2023jinan.srk.json"
+    },
+    {
+      "path": "official/icpc/icpc2023/icpc2023preliminary-1.srk.json",
+      "sha256": "ce8aa713ea894f2a44e3629c592557292cc2e8bf103f01a41c65591f01f77a9e",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2023/icpc2023preliminary-1.srk.json"
+    },
+    {
+      "path": "official/icpc/icpc2023/icpc2023preliminary-2.srk.json",
+      "sha256": "ce87b7b84b1b08b9a32d5ad1da19f3c39919de48c9dfc5d75bc877b47f2b0dc6",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2023/icpc2023preliminary-2.srk.json"
+    },
+    {
+      "path": "official/icpc/icpc2024/icpc2024hongkong.srk.json",
+      "sha256": "2e5bc07bc5c19c677440447a93940f40e1a69bb149d3f651ad47c2a00afb916f",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2024/icpc2024hongkong.srk.json"
+    },
+    {
+      "path": "official/icpc/icpc2024/icpc2024invitational-wuhan.srk.json",
+      "sha256": "1f2c258b83d09a4d5b9f5222177f3e5946e70a277c0f85f16eb1c9b31ae3324f",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2024/icpc2024invitational-wuhan.srk.json"
+    },
+    {
+      "path": "official/icpc/icpc2024/icpc2024kunming.srk.json",
+      "sha256": "8308c44facac1feae157ef2d10c7b2bd3dfa9a2fbc452b5d006446a960f5523e",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2024/icpc2024kunming.srk.json"
+    },
+    {
+      "path": "official/icpc/icpc2024/icpc2024preliminary-1.srk.json",
+      "sha256": "a5bc260d68018a99f3b1f906238f91729cb525d7f24cfc156c9367049264b646",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2024/icpc2024preliminary-1.srk.json"
+    },
+    {
+      "path": "official/icpc/icpc2024/icpc2024preliminary-2.srk.json",
+      "sha256": "d40784ab07060e102631ef2acaaad15a87675ff2220cf2cb8f2e1782fa3d4994",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2024/icpc2024preliminary-2.srk.json"
+    },
+    {
+      "path": "official/icpc/icpc2025/icpc2025invitational-nanchang.srk.json",
+      "sha256": "0f84e0fc07a045e21e5da9df00197ae607b7425b43f9d8c532a32031f676cd30",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2025/icpc2025invitational-nanchang.srk.json"
+    },
+    {
+      "path": "official/icpc/icpc2025/icpc2025invitational-xi_an.srk.json",
+      "sha256": "27cda65ef0ec3624b439f3fb293db66ef9c9de6a389079793123cf990752d440",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2025/icpc2025invitational-xi_an.srk.json"
+    },
+    {
+      "path": "official/icpc/icpc2025/icpc2025preliminary-1.srk.json",
+      "sha256": "eea66aa42ba711c6448f99bc73ec33f6fcd90b16e948cba00710352c1fe92277",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2025/icpc2025preliminary-1.srk.json"
+    },
+    {
+      "path": "official/icpc/icpc2025/icpc2025preliminary-2.srk.json",
+      "sha256": "ce512aa3f312448761133cc67052d566a13a4fc93d269745edc429b91db9f01c",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2025/icpc2025preliminary-2.srk.json"
+    },
+    {
+      "path": "official/icpc/icpc2025/icpc2025shanghai.srk.json",
+      "sha256": "dfa94f8a6150a2b7beab7189fc29b84075aee9d902f808721fbb6172dc606ae4",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2025/icpc2025shanghai.srk.json"
+    },
+    {
+      "path": "official/icpc/icpc2026/icpc2026invitational-nanchang.srk.json",
+      "sha256": "7eda8dc6c1b06e32cf5e452fee03e7022571ccb9629d6e7d8997b5f203eb3968",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2026/icpc2026invitational-nanchang.srk.json"
+    },
+    {
+      "path": "official/icpc/icpc2026/icpc2026invitational-shenyang.srk.json",
+      "sha256": "f38ac429079654c0450209a9b2eb4415e037c3c19535ea8b0b1114a9d755e5c5",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2026/icpc2026invitational-shenyang.srk.json"
+    },
+    {
+      "path": "official/icpc/icpc2026/icpc2026invitational-shenzhen.srk.json",
+      "sha256": "b0f968b778b507912ea70013d80d844c0851c2e8d3dfa590b378758123c05650",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2026/icpc2026invitational-shenzhen.srk.json"
+    },
+    {
+      "path": "official/icpc/icpc2026/icpc2026invitational-wuhan.srk.json",
+      "sha256": "3c4ff6ed09799a2517c1d163f6a467454c691413e2c54850eba31d8e8c445ed7",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2026/icpc2026invitational-wuhan.srk.json"
+    },
+    {
+      "path": "official/icpc/icpc2026/icpc2026invitational-xi_an.srk.json",
+      "sha256": "e27b367a0a1a2d5ffd85e206269e65580ef99cacd29ef2a681dd3c53c61a74f7",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2026/icpc2026invitational-xi_an.srk.json"
+    },
+    {
+      "path": "official/icpc/icpc2026/icpc2026preliminary-1.srk.json",
+      "sha256": "07d450c50b2ced2b46a44f42194a2531361eca66aae83565c9fa9336a3fa6fa3",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2026/icpc2026preliminary-1.srk.json"
+    },
+    {
+      "path": "official/icpc/icpc2026/icpc2026preliminary-2.srk.json",
+      "sha256": "3740b5594e9f2daab84a47ae65978cb7dbcb7ecc3d9ee98aadb045dd429664b1",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2026/icpc2026preliminary-2.srk.json"
+    },
+    {
+      "path": "official/icpc/icpc2026/icpc2026wuhan.srk.json",
+      "sha256": "389809ed0377d9588484658c7502a9a0ee8269fb01e1ec5176f75cd945441e0d",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2026/icpc2026wuhan.srk.json"
+    },
+    {
+      "path": "official/icpc/icpc2026/icpc2026xi_an.srk.json",
+      "sha256": "6c08739cc0124768ae4d4823483b3dc679bb2daffd4a2e45300e83199c384123",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/icpc/icpc2026/icpc2026xi_an.srk.json"
+    },
+    {
+      "path": "official/provincial/fj/fjcpc13th.srk.json",
+      "sha256": "86224e546d07fb6c3d2cc57669b288b94723a382029bdb2e0656032cf75112b5",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/fj/fjcpc13th.srk.json"
+    },
+    {
+      "path": "official/provincial/gd/gdcpc19th.srk.json",
+      "sha256": "20bc8c7d544885a028e3cd9627bbc0cb69916ef210821de75710c7b2bc569102",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/gd/gdcpc19th.srk.json"
+    },
+    {
+      "path": "official/provincial/gd/gdcpc20th.srk.json",
+      "sha256": "0b78aa73feaa67ef37d6c451c4eab8a954565e61dec073c41f7001aa8067cded",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/gd/gdcpc20th.srk.json"
+    },
+    {
+      "path": "official/provincial/gd/gdcpc21st.srk.json",
+      "sha256": "91664c2bd36b78ef3435cc93f7ab62728143ed69acb957ebc4752c9838070f06",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/gd/gdcpc21st.srk.json"
+    },
+    {
+      "path": "official/provincial/gd/gdcpc22nd.srk.json",
+      "sha256": "f82058004ec3fd6502b48cab03f4ab5edac4b8d8c790c48d4dfaf2522a439f21",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/gd/gdcpc22nd.srk.json"
+    },
+    {
+      "path": "official/provincial/gd/gdcpc23rd.srk.json",
+      "sha256": "44c186b55379a01896ad2e107cd7c95875a12b7d430766e5f00174396f5d0f38",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/gd/gdcpc23rd.srk.json"
+    },
+    {
+      "path": "official/provincial/gx/gxcpc7th.srk.json",
+      "sha256": "1c812ba39d110af94efe3a00ad68e05aa3a2a8df9767f4d9b682c5ac823dc7db",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/gx/gxcpc7th.srk.json"
+    },
+    {
+      "path": "official/provincial/gx/gxcpc8th.srk.json",
+      "sha256": "80197ba629685b0a0510e73d6c883a4824b00160566dcbfd13afddadca2af941",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/gx/gxcpc8th.srk.json"
+    },
+    {
+      "path": "official/provincial/gx/gxcpc9th.srk.json",
+      "sha256": "47cd326163ae28863894767b34ae364b66a7305648ed938f3ac42a705ebedb7a",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/gx/gxcpc9th.srk.json"
+    },
+    {
+      "path": "official/provincial/ha/haccpc6th.srk.json",
+      "sha256": "87ed5c2f7bc6d1a61227097783b03ea4fee94ed0cd9c32b8f95082750e94c99f",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/ha/haccpc6th.srk.json"
+    },
+    {
+      "path": "official/provincial/ha/haccpc7th.srk.json",
+      "sha256": "9928b73f8fa4cd972f4bd04a0f9541e4519106ba483f9039496cc8e0fb6b6e92",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/ha/haccpc7th.srk.json"
+    },
+    {
+      "path": "official/provincial/hb/hbcpc7th.srk.json",
+      "sha256": "29fd6dec23cc87c5784f0e7c1296d0fc42a5ce29b4a51ae558dc057775bcf8c6",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/hb/hbcpc7th.srk.json"
+    },
+    {
+      "path": "official/provincial/jx/jxccpc3rd.srk.json",
+      "sha256": "8175e1f13138eceafed1f0dac5432d1519993c9465e6fcbf34d002d53d08dadd",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/jx/jxccpc3rd.srk.json"
+    },
+    {
+      "path": "official/provincial/jx/jxcpc2025.srk.json",
+      "sha256": "35f098e970c0d9f38c402a9aca1c6cbaf68c16c3cff385da18250152722640ef",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/jx/jxcpc2025.srk.json"
+    },
+    {
+      "path": "official/provincial/jx/jxcpc2026.srk.json",
+      "sha256": "b5ece7bd9620fc6fecf7572eff736e77cc30e9252344fc33065f507405b45a51",
+      "source_url": "https://github.com/algoux/srk-collection/blob/82f077de6246a4d0e474ebe52c099d83d562506c/official/provincial/jx/jxcpc2026.srk.json"
+    }
+  ],
+  "suppressed_duplicates": [
+    {
+      "source_key": "srk:fjcpc13th:42",
+      "canonical_event": "ccpc2026invitational-fuzhou"
+    },
+    {
+      "source_key": "srk:haccpc7th:A0702",
+      "canonical_event": "ccpc2025invitational-zhengzhou"
+    },
+    {
+      "source_key": "srk:jxccpc3rd:team067",
+      "canonical_event": "ccpc2026invitational-nanchang"
+    },
+    {
+      "source_key": "srk:jxcpc2026:273",
+      "canonical_event": "icpc2026invitational-nanchang"
+    }
+  ],
+  "errors": []
+}
