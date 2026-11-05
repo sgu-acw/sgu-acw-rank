@@ -41,6 +41,6 @@
 - 团队奖存一条、多位 `recipients`；个人奖一人一条。同场不同组别放不同 `event.key`；同场同奖多来源应沿用同一规范编号，替代来源保留证据，避免重复计奖。
 - `source_key` 最长 300，`event.key` 最长 200，姓名和奖项最长 100。单次最多 500 条。
 - 导入 API `/api/honors/admin/import`：`preview` 默认 `true`，仅预览；追加时显式传 `false`。逐条冲突放 `failed[].record`；格式不合法整批 422，输入留在后台供修正。
-- 来源只接受 HTTP(S)。导入不关联 `person_id`，不改已有赛事或审核结果；重复键跳过。
+- 来源只接受 HTTP(S)。导入不关联 `user_id`，不改已有赛事或审核结果；重复键跳过。
 
 本轮 SRK 固定提交和各文件 SHA 见 `data/honors/srk-manifest.json`。脚本依赖读取来源检出的实际标准库版本；使用其他版本先对比结果，再更新采集报告。

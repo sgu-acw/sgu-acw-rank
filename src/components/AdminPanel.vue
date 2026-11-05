@@ -9,6 +9,7 @@ import { confirmAction } from '../lib/confirm'
 import { computed, onMounted, ref, watch } from 'vue'
 import { AlertCircle, Check, ChevronDown, Copy, KeyRound, Link2, Loader2, MoreHorizontal, Pencil, Plus, Search, SlidersHorizontal, Trash2, Users, X } from 'lucide-vue-next'
 import AdminWorkspaceNav from './AdminWorkspaceNav.vue'
+import UserHonorEditor from './UserHonorEditor.vue'
 import ActionNotice from './ui/ActionNotice.vue'
 import { Alert } from './ui/alert'
 import { Button } from './ui/button'
@@ -965,6 +966,9 @@ onMounted(async () => {
                     <Loader2 v-if="savingNote === member.id" class="mr-1 h-3.5 w-3.5 animate-spin" />
                     保存修改
                   </Button>
+                </div>
+                <div class="border-t border-border/50 pt-4">
+                  <UserHonorEditor :key="member.id" :user-id="member.id" />
                 </div>
               </div>
             </div>

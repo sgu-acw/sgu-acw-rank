@@ -7,36 +7,29 @@ import {
   honorsApi,
   type HonorAward,
   type HonorImportRecord,
-  type HonorPerson,
+  type HonorUser,
+  type HonorRecipient,
   type ImportResult,
 } from '../lib/honors'
 import AdminWorkspaceNav from './AdminWorkspaceNav.vue'
+import UserHonorEditor from './UserHonorEditor.vue'
 import ActionNotice from './ui/ActionNotice.vue'
 import RefreshButton from './ui/RefreshButton.vue'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
 
 const { user, ready, ensureLoaded } = useAuth()
-const people = ref<HonorPerson[]>([])
+const users = ref<HonorUser[]>([])
 const awards = ref<HonorAward[]>([])
-const section = ref<'people' | 'awards' | 'import'>('awards')
-const active = ref<number | 'new' | null>(null)
+const section = ref<'users' | 'awards' | 'import'>('awards')
+const active = ref<number | null>(null)
 const loading = ref(false)
 const busy = ref(false)
 const error = ref('')
 const notice = ref('')
 const query = ref('')
 let sequence = 0
-const draft = reactive({
-  name: '',
-  aliases: '',
-  user_id: '',
-  study_start: '',
-  study_end: '',
-  note: '',
-  revision: 0,
-})
-const review = reactive({ status: 'pending', person_ids: [] as (number | null)[], revision: 0 })
+const review = reactive({ status: 'pending', user_ids: [] as (number | null)[], revision: 0 })
 const eventDraft = reactive({
   occurred_on: '',
   date_precision: 'day',
@@ -47,8 +40,8 @@ const importText = ref('')
 const importResult = ref<ImportResult | null>(null)
 const selectedAward = computed(() => awards.value.find((a) => a.id === active.value))
 const items = computed(() =>
-  (section.value === 'people'
-    ? people.value.map((p) => ({ id: p.id, title: p.name, sub: p.study_start || '在校时间待核实' }))
+  (section.value === 'users'
+    ? users.value.map((p) => ({ id: p.id, title: p.display_name, sub: `${p.student_id} · 曾用名：${p.former_names.join('、') || '无'}` }))
     : awards.value.map((a) => ({
         id: a.id,
         title: a.event.title,
@@ -58,6 +51,18 @@ const items = computed(() =>
       }))
   ).filter((r) => `${r.title} ${r.sub}`.includes(query.value.trim()))
 )
+function userLabel(p: HonorUser) {
+  return `${p.display_name} · ${p.student_id} · ${p.effective_study_start || '入学待核实'} 至 ${p.effective_study_end || '离校待核实'}${p.former_names.length ? ` · 曾用名 ${p.former_names.join('、')}` : ''}`
+}
+function matchingHint(recipient: HonorRecipient, index: number) {
+  const selected = review.user_ids[index]
+  if (recipient.user_id !== null && recipient.user_id !== undefined) return '已有人工关联；可核对后修改'
+  if (selected !== null && selected === recipient.suggested_user_id) return '初步匹配（未保存）：仅一位姓名或曾用名匹配且符合在校时间的用户，请核对后保存'
+  if (selected !== null) return '已手动选择用户（未保存），请核对在校时间'
+  if (!recipient.candidates?.length) return '没有姓名或曾用名匹配的用户，可手动选择；尚未注册的获奖者保留原始记录'
+  if (recipient.candidates.filter((c) => c.eligibility === '计入').length > 1) return '存在多位符合在校时间的同名用户，请人工选择'
+  return '找到姓名或曾用名候选，但在校时间或比赛日期不符合计入条件，请先核对'
+}
 function failure(e: unknown) {
   error.value = e instanceof ApiError || e instanceof Error ? e.message : '操作失败'
 }
@@ -66,9 +71,9 @@ async function load() {
   loading.value = true
   error.value = ''
   try {
-    const [p, a] = await Promise.all([honorsApi.people(), honorsApi.awards()])
+    const [p, a] = await Promise.all([honorsApi.users(), honorsApi.awards()])
     if (request !== sequence) return false
-    people.value = p
+    users.value = p
     awards.value = a
     return true
   } catch (e) {
@@ -85,22 +90,11 @@ function switchSection(value: typeof section.value) {
   query.value = ''
   error.value = notice.value = ''
 }
-function open(id: number | 'new') {
+function open(id: number) {
   if (busy.value) return
   active.value = id
   error.value = notice.value = ''
-  if (section.value === 'people') {
-    const p = people.value.find((p) => p.id === id)
-    Object.assign(draft, {
-      name: p?.name || '',
-      aliases: p?.aliases.join('、') || '',
-      user_id: p?.user_id?.toString() || '',
-      study_start: p?.study_start || '',
-      study_end: p?.study_end || '',
-      note: p?.note || '',
-      revision: p?.revision || 0,
-    })
-  } else {
+  if (section.value === 'awards') {
     const a = selectedAward.value
     if (a)
       Object.assign(eventDraft, {
@@ -112,41 +106,14 @@ function open(id: number | 'new') {
     if (a)
       Object.assign(review, {
         status: a.status,
-        person_ids: a.recipients.map((r) => r.person_id),
+        user_ids: a.recipients.map((r) => r.user_id ?? r.suggested_user_id ?? null),
         revision: a.revision,
       })
   }
 }
 function cancel() {
   if (busy.value) return
-  if (active.value === 'new') active.value = null
-  else if (active.value !== null) open(active.value)
-}
-async function savePerson() {
-  if (busy.value || active.value === null || section.value !== 'people') return
-  busy.value = true
-  error.value = notice.value = ''
-  const id = active.value
-  try {
-    const p = await honorsApi.savePerson(id === 'new' ? null : id, {
-      ...draft,
-      aliases: draft.aliases
-        .split(/[、,，\n]/)
-        .map((x) => x.trim())
-        .filter(Boolean),
-      user_id: draft.user_id ? Number(draft.user_id) : null,
-      study_start: draft.study_start || null,
-      study_end: draft.study_end || null,
-    })
-    people.value = [...people.value.filter((row) => row.id !== p.id), p]
-    busy.value = false
-    open(p.id)
-    notice.value = '身份已保存，公开记录已按新的在校区间重新计算'
-  } catch (e) {
-    failure(e)
-  } finally {
-    busy.value = false
-  }
+  if (active.value !== null) open(active.value)
 }
 async function saveAward() {
   if (busy.value || typeof active.value !== 'number' || section.value !== 'awards') return
@@ -154,7 +121,7 @@ async function saveAward() {
   error.value = notice.value = ''
   const id = active.value
   try {
-    await honorsApi.review(id, review.revision, review.status, [...review.person_ids])
+    await honorsApi.review(id, review.revision, review.status, [...review.user_ids])
     const refreshed = await load()
     busy.value = false
     if (!refreshed) return
@@ -178,12 +145,20 @@ async function saveEventDate() {
       occurred_on: eventDraft.occurred_on || null,
     })
     if (active.value === id) {
-      awards.value = awards.value.map((row) =>
-        row.event.id === event.id ? { ...row, event } : row
-      )
       eventDraft.expected_occurred_on = event.occurred_on
       eventDraft.expected_date_precision = event.date_precision
-      notice.value = '比赛日期已保存，所有关联获奖记录已重新计算'
+      const refreshed = await load()
+      if (refreshed) {
+        selectedAward.value?.recipients.forEach((r, i) => {
+          const previous = a.recipients[i]
+          if (previous.user_id == null && review.user_ids[i] === (previous.suggested_user_id ?? null)) {
+            review.user_ids[i] = r.suggested_user_id ?? null
+          }
+        })
+        notice.value = '比赛日期已保存，计入状态和初步匹配已重新计算'
+      } else {
+        error.value = `比赛日期已保存，但重新读取候选失败：${error.value}。请刷新后核对。`
+      }
     }
   } catch (e) {
     failure(e)
@@ -243,7 +218,7 @@ onUnmounted(() => {
     <template v-else>
       <div class="flex flex-wrap gap-2" aria-label="荣誉管理分区">
         <Button
-          v-for="tab in ([['awards', '获奖审核'], ['people', '获奖者身份'], ['import', '导入记录']] as const)"
+          v-for="tab in ([['awards', '获奖审核'], ['users', '用户资料'], ['import', '导入记录']] as const)"
           :key="tab[0]"
           variant="outline"
           class="choice-button"
@@ -259,7 +234,7 @@ onUnmounted(() => {
       <section v-if="section === 'import'" class="min-w-0 space-y-4 rounded-lg border bg-card p-4">
         <h2 class="font-semibold">追加获奖记录</h2>
         <p class="text-sm text-muted-foreground">
-          按来源编号去重；新增记录进入待核实队列，不自动匹配姓名。单次最多 500 条。
+          按来源编号去重；新增记录进入待核实队列，审核时按用户姓名和曾用名提供候选。单次最多 500 条。
         </p>
         <form class="space-y-3" @submit.prevent="runImport(true)">
           <label for="honor-import" class="block text-sm">采集数据（JSON）</label>
@@ -297,12 +272,7 @@ onUnmounted(() => {
       <div v-else class="grid min-w-0 gap-4 lg:grid-cols-[260px_minmax(0,1fr)]">
         <section class="min-w-0 space-y-3" :class="active !== null && 'hidden lg:block'">
           <div class="flex items-center justify-between gap-2">
-            <h2 class="font-semibold">{{ section === 'people' ? '获奖者身份' : '获奖审核' }}</h2>
-            <Button v-if="section === 'people'" :disabled="busy" @click="open('new')"
-              >
-添加身份
-</Button
-            >
+            <h2 class="font-semibold">{{ section === 'users' ? '用户资料' : '获奖审核' }}</h2>
           </div>
           <Input v-model="query" aria-label="筛选当前列表" placeholder="筛选当前列表" />
           <p v-if="loading" class="text-sm text-muted-foreground">正在读取…</p>
@@ -339,47 +309,13 @@ onUnmounted(() => {
 </Button
           >
           <p v-if="active === null" class="text-sm text-muted-foreground">选择一条记录开始核对</p>
-          <form v-else-if="section === 'people'" class="space-y-4" @submit.prevent="savePerson">
-            <h2 class="font-semibold">{{ active === 'new' ? '添加身份' : '编辑身份' }}</h2>
-            <fieldset class="min-w-0 space-y-3" :disabled="busy">
-              <label class="block space-y-1 text-sm"
-                >当前姓名<Input v-model="draft.name" required maxlength="100"
-              /></label>
-              <label class="block space-y-1 text-sm"
-                >曾用名（用顿号分隔）<Input v-model="draft.aliases"
-              /></label>
-              <label class="block space-y-1 text-sm"
-                >关联站内成员 ID（可留空）<Input
-                  v-model="draft.user_id"
-                  type="number"
-                  min="1"
-                  step="1"
-              /></label>
-              <p class="text-xs text-muted-foreground">
-                姓名与曾用名只作核对线索，不会自动关联同名账号。
-              </p>
-              <label class="block space-y-1 text-sm"
-                >入学日期<Input v-model="draft.study_start" type="date"
-              /></label>
-              <label class="block space-y-1 text-sm"
-                >离校日期（当天起不计入）<Input v-model="draft.study_end" type="date"
-              /></label>
-              <p class="text-xs text-muted-foreground">
-                离校日期留空时按入学日期加四年计算；时间未核实的身份不计入公开记录。
-              </p>
-              <label for="honor-note" class="block text-sm">身份核对备注（仅管理员可见）</label
-              ><textarea
-                id="honor-note"
-                v-model="draft.note"
-                class="form-textarea w-full"
-                maxlength="3000"
-              />
-            </fieldset>
-            <div class="flex gap-2">
-              <Button type="submit" :disabled="busy">保存身份</Button
-              ><Button variant="outline" :disabled="busy" @click="cancel">取消</Button>
-            </div>
-          </form>
+          <UserHonorEditor
+            v-else-if="section === 'users' && active !== null"
+            :key="active"
+            :user-id="active"
+            @busy-change="busy = $event"
+            @saved="load"
+          />
           <div v-else-if="selectedAward" class="min-w-0 space-y-4">
             <div class="space-y-2">
               <h2 class="break-words font-semibold">{{ selectedAward.event.title }}</h2>
@@ -433,22 +369,27 @@ onUnmounted(() => {
                   >
                   <select
                     :id="`honor-person-${index}`"
-                    v-model="review.person_ids[index]"
+                    v-model="review.user_ids[index]"
                     class="form-select w-full"
                   >
-                    <option :value="null">待关联身份</option>
+                    <option :value="null">暂不关联用户</option>
                     <option
-                      v-for="p in people.filter((p) => !p.merged_into_id)"
+                      v-for="p in users"
                       :key="p.id"
                       :value="p.id"
                     >
-                      #{{ p.id }} {{ p.name }} · {{ p.study_start || '入学时间待核实'
-                      }}{{ p.aliases.length ? ` · 曾用名 ${p.aliases.join('、')}` : '' }}
+                      {{ userLabel(p) }}
                     </option>
                   </select>
-                  <p class="text-xs text-muted-foreground">
-                    上次保存结果：{{ recipient.eligibility }}
-                  </p>
+                  <p class="break-words text-xs text-muted-foreground">{{ matchingHint(recipient, index) }}</p>
+                  <ul v-if="recipient.candidates?.length" class="space-y-1 text-xs text-muted-foreground">
+                    <li v-for="candidate in recipient.candidates" :key="candidate.user_id" class="break-words">
+                      {{ users.find((u) => u.id === candidate.user_id)?.display_name }} ·
+                      {{ users.find((u) => u.id === candidate.user_id)?.student_id }} ·
+                      {{ candidate.matched_by === 'former_name' ? '曾用名匹配' : '姓名匹配' }} · {{ candidate.eligibility }}
+                    </li>
+                  </ul>
+                  <p class="text-xs text-muted-foreground">已保存的计入状态：{{ recipient.eligibility }}</p>
                 </div>
                 <div class="space-y-1">
                   <label for="honor-review-status" class="block text-sm">审核状态</label
@@ -460,7 +401,8 @@ onUnmounted(() => {
                 </div>
               </fieldset>
               <p class="text-xs text-muted-foreground">
-                已核实的记录还须符合获奖者的在校区间；更正区间后会自动重新计算。
+                下拉框包含已有用户。可先在“用户资料”或成员管理登记曾用名、调整在校时间，再回到这里核对候选。
+                初步匹配尚未保存；只有保存审核、标记已核实且符合在校区间的记录才公开计入。
               </p>
               <div class="flex gap-2">
                 <Button type="submit" :disabled="busy">保存审核</Button
