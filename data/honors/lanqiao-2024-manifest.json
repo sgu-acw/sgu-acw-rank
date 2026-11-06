@@ -1,0 +1,140 @@
+{
+  "retrieved_on": "2026-11-06",
+  "school": "韶关学院",
+  "scope": "C/C++、Java、Python 大学B组算法科目",
+  "date_source": {
+    "url": "https://x-static.lanqiao.cn/upload/202403/courseimg/b51b9feb-f45d-492e-9374-3e1d0bb3aab5.pdf",
+    "title": "蓝桥杯组委会字[2024]12号",
+    "page": 1,
+    "sha256": "35604a23995693bc887bb79f5b06b62f523bb16f0ea286f5324e8856b76d35dd",
+    "boundary": "仅佐证比赛日期，不佐证本校获奖姓名"
+  },
+  "archives": [
+    {
+      "url": "https://x-static.lanqiao.cn/upload/202407/courseimg/09265083-738d-483f-b885-21dd75c5c424.rar",
+      "stage": "final",
+      "sha256": "58848f0e091344d8ec8850a6c2bae13a5fd40ae01494d5b72dd31bf75fc0e565",
+      "bytes": 9176064,
+      "files": [
+        {
+          "path": "个人赛（软件赛和电子赛）获奖名单/软件赛/软件赛-CC++程序设计大学B组总决赛获奖名单.pdf",
+          "pages": 156,
+          "sha256": "85e89bf699d62a662569bb3284b1e00613763c445ce1bbb0144bd87d9b87bace",
+          "import_count": 3
+        },
+        {
+          "path": "个人赛（软件赛和电子赛）获奖名单/软件赛/软件赛-Java软件开发大学B组总决赛获奖名单.pdf",
+          "pages": 34,
+          "sha256": "702468ea7cc1667c648ec4e662f5a765d0814e7a6783c6a7b5d22eae8fea0055",
+          "import_count": 13
+        },
+        {
+          "path": "个人赛（软件赛和电子赛）获奖名单/软件赛/软件赛-Python程序设计大学B组总决赛获奖名单.pdf",
+          "pages": 32,
+          "sha256": "6d0a906f5613a9d8af1dad1af85ce7789d1d4e461a790ad4752b255ac3ce47d8",
+          "import_count": 0
+        }
+      ],
+      "school_rows": 16,
+      "import_count": 16
+    },
+    {
+      "url": "https://x-static.lanqiao.cn/upload/202404/courseimg/2d1afdd4-e563-4394-9875-d52e1a7a3994.rar",
+      "stage": "preliminary",
+      "sha256": "be43cf225d798fd3e829e1b856bafcf3289f1275fb94f07b71bfa0361a7fbeda",
+      "bytes": 20096000,
+      "files": [
+        {
+          "path": "第十五届蓝桥杯大赛省赛软件赛个人赛获奖名单/个人赛省赛（软件赛）广东赛区获奖名单.pdf",
+          "pages": 187,
+          "sha256": "0d491a6a20f1d4827371d910bfa5b842fced9c640e08c8e53e59b7177ce4a81b",
+          "import_count": 63
+        }
+      ],
+      "school_rows": 71,
+      "import_count": 63
+    }
+  ],
+  "excluded_school_rows": [
+    {
+      "stage": "preliminary",
+      "pdf": "第十五届蓝桥杯大赛省赛软件赛个人赛获奖名单/个人赛省赛（软件赛）广东赛区获奖名单.pdf",
+      "page": 181,
+      "name": "张展豪",
+      "category": "Web应用开发大学组",
+      "award": "二等奖",
+      "reason": "非本工作坊大学B组算法赛道"
+    },
+    {
+      "stage": "preliminary",
+      "pdf": "第十五届蓝桥杯大赛省赛软件赛个人赛获奖名单/个人赛省赛（软件赛）广东赛区获奖名单.pdf",
+      "page": 182,
+      "name": "张源浩",
+      "category": "Web应用开发大学组",
+      "award": "二等奖",
+      "reason": "非本工作坊大学B组算法赛道"
+    },
+    {
+      "stage": "preliminary",
+      "pdf": "第十五届蓝桥杯大赛省赛软件赛个人赛获奖名单/个人赛省赛（软件赛）广东赛区获奖名单.pdf",
+      "page": 182,
+      "name": "汪苇珺",
+      "category": "Web应用开发大学组",
+      "award": "三等奖",
+      "reason": "非本工作坊大学B组算法赛道"
+    },
+    {
+      "stage": "preliminary",
+      "pdf": "第十五届蓝桥杯大赛省赛软件赛个人赛获奖名单/个人赛省赛（软件赛）广东赛区获奖名单.pdf",
+      "page": 183,
+      "name": "范蓓茵",
+      "category": "Web应用开发大学组",
+      "award": "三等奖",
+      "reason": "非本工作坊大学B组算法赛道"
+    },
+    {
+      "stage": "preliminary",
+      "pdf": "第十五届蓝桥杯大赛省赛软件赛个人赛获奖名单/个人赛省赛（软件赛）广东赛区获奖名单.pdf",
+      "page": 183,
+      "name": "董昊朋",
+      "category": "Web应用开发大学组",
+      "award": "三等奖",
+      "reason": "非本工作坊大学B组算法赛道"
+    },
+    {
+      "stage": "preliminary",
+      "pdf": "第十五届蓝桥杯大赛省赛软件赛个人赛获奖名单/个人赛省赛（软件赛）广东赛区获奖名单.pdf",
+      "page": 183,
+      "name": "黄乐",
+      "category": "Web应用开发大学组",
+      "award": "三等奖",
+      "reason": "非本工作坊大学B组算法赛道"
+    },
+    {
+      "stage": "preliminary",
+      "pdf": "第十五届蓝桥杯大赛省赛软件赛个人赛获奖名单/个人赛省赛（软件赛）广东赛区获奖名单.pdf",
+      "page": 183,
+      "name": "邓文娇",
+      "category": "Web应用开发大学组",
+      "award": "三等奖",
+      "reason": "非本工作坊大学B组算法赛道"
+    },
+    {
+      "stage": "preliminary",
+      "pdf": "第十五届蓝桥杯大赛省赛软件赛个人赛获奖名单/个人赛省赛（软件赛）广东赛区获奖名单.pdf",
+      "page": 184,
+      "name": "吴慧颖",
+      "category": "Web应用开发大学组",
+      "award": "三等奖",
+      "reason": "非本工作坊大学B组算法赛道"
+    }
+  ],
+  "record_count": 79,
+  "award_counts": {
+    "优秀奖": 8,
+    "一等奖": 19,
+    "二等奖": 23,
+    "三等奖": 29
+  },
+  "final_scope_note": "国赛仅解析3份算法B组PDF，其余赛道/组别PDF不纳入；Python B组未检出本校，不等于所有组别无获奖。"
+}
