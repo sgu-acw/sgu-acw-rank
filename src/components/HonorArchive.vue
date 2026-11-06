@@ -3,6 +3,7 @@ import { computed, onUnmounted, ref, watch } from 'vue'
 import { ChevronRight, ExternalLink, Search, Trophy } from 'lucide-vue-next'
 import { ApiError } from '../lib/api'
 import { HONOR_FAMILIES, honorDate, honorsApi, type HonorAward } from '../lib/honors'
+import { groupHonorContests, type HonorContestGroup } from '../lib/honorGroups'
 import { contestHeading, contestMeta, honorCategory, medalKind, type MedalKind } from '../lib/honorPresentation'
 import HonorMedal from './HonorMedal.vue'
 import ActionNotice from './ui/ActionNotice.vue'
@@ -41,27 +42,33 @@ const medalCounts = computed(() => matching.value.reduce((counts, row) => {
   return counts
 }, { gold: 0, silver: 0, bronze: 0, honorable: 0 }))
 const availableMedals = computed(() => medals.filter((m) => medalCounts.value[m.key] || medal.value === m.key))
-type DisplayAward = HonorAward & { count: number }
+const expandedContests = ref(new Set<string>())
 const groups = computed(() => {
-  const combined = new Map<string, DisplayAward>()
-  for (const row of filtered.value) {
-    // Individual awards from one official list share a row; team awards remain distinct.
-    const key = row.team ? `team:${row.id}` : JSON.stringify([row.event.key, row.award, row.source_url])
-    const previous = combined.get(key)
-    if (previous) {
-      previous.recipients.push(...row.recipients)
-      previous.count++
-    } else combined.set(key, { ...row, recipients: [...row.recipients], count: 1 })
+  const grouped = new Map<string, HonorContestGroup[]>()
+  for (const contest of groupHonorContests(filtered.value)) {
+    const key = contest.event.occurred_on?.slice(0, 4) || '日期待补'
+    grouped.set(key, [...(grouped.get(key) || []), contest])
   }
-  const grouped = new Map<string, DisplayAward[]>()
-  for (const row of combined.values()) {
-    const key = row.event.occurred_on?.slice(0, 4) || '日期待补'
-    grouped.set(key, [...(grouped.get(key) || []), row])
-  }
-  return [...grouped].sort(([a], [b]) => b.localeCompare(a)).map(([year, rows]) => ({
-    year, rows, count: rows.reduce((total, row) => total + row.count, 0),
+  return [...grouped].sort(([a], [b]) => b.localeCompare(a)).map(([year, contests]) => ({
+    year, contests, count: contests.reduce((total, contest) => total + contest.count, 0),
   }))
 })
+function contestMedals(contest: HonorContestGroup) {
+  return medals.map((medal) => ({
+    ...medal,
+    count: contest.rows.reduce((total, row) => total + (medalKind(row.award) === medal.key ? row.count : 0), 0),
+  })).filter((medal) => medal.count)
+}
+function contestSubtitle(contest: HonorContestGroup) {
+  const stages = [...new Set(contest.rows.map((row) => contestMeta(row.event).split(' · ')[0]).filter(Boolean))]
+  return stages.length === 1 ? stages[0] : ''
+}
+function toggleContest(key: string, event: Event) {
+  // Search reveals every matching result; browsing keeps manually opened groups.
+  if (search.value.trim()) return
+  if ((event.currentTarget as HTMLElement).hasAttribute('open')) expandedContests.value.add(key)
+  else expandedContests.value.delete(key)
+}
 function clearFilters() { search.value = family.value = year.value = medal.value = '' }
 async function load(clear = false) {
   const request = ++sequence
@@ -77,7 +84,7 @@ async function load(clear = false) {
     if (request === sequence) loading.value = false
   }
 }
-watch(() => props.userId, () => { clearFilters(); load(true) }, { immediate: true })
+watch(() => props.userId, () => { expandedContests.value.clear(); clearFilters(); load(true) }, { immediate: true })
 onUnmounted(() => { sequence++ })
 </script>
 
@@ -128,30 +135,39 @@ onUnmounted(() => { sequence++ })
     <div v-else-if="filtered.length" class="space-y-8">
       <section v-for="group in groups" :key="group.year" class="honor-year-group" :aria-label="`${group.year} 年获奖`">
         <h3 class="year-label"><span>{{ group.year }}</span><span class="year-count">{{ group.count }} 项</span></h3>
-        <div class="honor-rows min-w-0">
-          <details v-for="row in group.rows" :key="row.id" class="honor-row group">
-            <summary :aria-label="`${row.award}，${row.event.title}，${row.recipients.map((p) => p.name).join('、')}`">
-              <HonorMedal :award="row.award" />
-              <div class="contest min-w-0">
-                <h4>{{ contestHeading(row.event) }}</h4>
-                <p v-if="contestMeta(row.event)">{{ contestMeta(row.event) }}</p>
+        <div class="honor-contests min-w-0">
+          <details v-for="contest in group.contests" :key="contest.key" class="honor-contest"
+            :open="!!search.trim() || expandedContests.has(contest.key)" @toggle="toggleContest(contest.key, $event)">
+            <summary class="contest-summary" :aria-label="`${contestHeading(contest.event)}，${contestSubtitle(contest)}，${honorDate(contest.event)}，${contest.count} 项获奖`">
+              <div class="contest-overview min-w-0">
+                <h4>{{ contestHeading(contest.event) }}</h4>
+                <p v-if="contestSubtitle(contest)">{{ contestSubtitle(contest) }}</p>
               </div>
-              <div class="recipients min-w-0"><span v-for="(recipient, index) in row.recipients" :key="index">{{ recipient.name }}</span></div>
-              <time class="honor-date" :datetime="row.event.occurred_on || undefined">{{ honorDate(row.event).slice(5) || group.year }}</time>
-              <ChevronRight class="detail-chevron h-4 w-4 text-muted-foreground" aria-hidden="true" />
+              <div class="contest-stats">
+                <span class="contest-count">{{ contest.count }} 项</span>
+                <span v-for="item in contestMedals(contest)" :key="item.key" class="medal-total" :aria-label="`${item.label} ${item.count} 项`">
+                  <HonorMedal :award="item.award" compact /><span>{{ item.count }}</span>
+                </span>
+              </div>
+              <time class="honor-date" :datetime="contest.event.occurred_on || undefined">{{ contest.event.date_precision === 'day' && contest.event.occurred_on ? honorDate(contest.event).slice(5) : honorDate(contest.event) }}</time>
+              <ChevronRight class="contest-chevron h-4 w-4 text-muted-foreground" aria-hidden="true" />
             </summary>
-            <div class="honor-detail">
-              <p class="break-words font-medium">{{ row.event.title }}</p>
-              <dl class="mt-3 grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-2 text-sm">
-                <dt>奖项</dt><dd>{{ row.award }}</dd>
-                <template v-if="honorCategory(row.event.category)"><dt>组别</dt><dd>{{ honorCategory(row.event.category) }}</dd></template>
-                <dt>日期</dt><dd>{{ honorDate(row.event) }}</dd>
-                <template v-if="userId !== undefined"><dt>获奖者</dt><dd class="break-words">{{ row.recipients.map((p) => p.name).join('、') }}</dd></template>
-                <template v-if="row.team"><dt>队伍</dt><dd class="break-words">{{ row.team }}</dd></template>
-              </dl>
-              <a :href="row.source_url" target="_blank" rel="noopener noreferrer" class="source-link">
-                获奖来源<ExternalLink class="h-3.5 w-3.5" aria-hidden="true" />
-              </a>
+            <div class="contest-content">
+              <p class="contest-full-title">{{ contest.event.title }}</p>
+              <div class="honor-rows">
+                <article v-for="row in contest.rows" :key="row.id" class="honor-row">
+                  <HonorMedal :award="row.award" />
+                  <div class="row-category min-w-0">
+                    <h5>{{ row.team || honorCategory(row.event.category) || contestHeading(row.event) }}</h5>
+                    <p v-if="row.team && honorCategory(row.event.category)">{{ honorCategory(row.event.category) }}</p>
+                  </div>
+                  <div class="recipients min-w-0"><span v-for="(recipient, index) in row.recipients" :key="index">{{ recipient.name }}</span></div>
+                  <a :href="row.source_url" target="_blank" rel="noopener noreferrer" class="source-link"
+                    :aria-label="`查看${row.team || honorCategory(row.event.category) || contestHeading(row.event)}${row.award}获奖来源`" title="查看获奖来源">
+                    <ExternalLink class="h-4 w-4" aria-hidden="true" />
+                  </a>
+                </article>
+              </div>
             </div>
           </details>
         </div>
@@ -163,45 +179,52 @@ onUnmounted(() => { sequence++ })
 <style scoped>
 .honor-archive { container-type: inline-size; }
 .honor-year-group { display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: 24px; }
-.year-label { display: flex; flex-direction: column; gap: 4px; padding-top: 16px; font-variant-numeric: tabular-nums; }
+.year-label { display: flex; flex-direction: column; gap: 4px; padding-top: 20px; font-variant-numeric: tabular-nums; }
 .year-label > span:first-child { font-size: 28px; font-weight: 600; line-height: 36px; letter-spacing: -0.04em; }
 .year-count { font-size: 13px; font-weight: 400; color: hsl(var(--muted-foreground)); }
-.honor-rows { border-top: 1px solid hsl(var(--border)); }
-.honor-row { border-bottom: 1px solid hsl(var(--border) / .65); }
-.honor-row summary { display: grid; grid-template-columns: 44px minmax(0, 1fr) minmax(140px, 190px) 58px 18px; align-items: center; gap: 16px; padding: 16px 8px; cursor: pointer; list-style: none; border-radius: 6px; transition: background-color 150ms var(--ease-out); }
-.honor-row summary::-webkit-details-marker { display: none; }
-.honor-row summary:hover { background: hsl(var(--muted) / .45); }
-.honor-row summary:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 3px; }
-.contest h4 { font-size: 16px; line-height: 1.5; font-weight: 500; overflow-wrap: anywhere; }
-.contest p { margin-top: 3px; font-size: 13px; line-height: 1.55; color: hsl(var(--muted-foreground)); overflow-wrap: anywhere; }
-.recipients { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 14px; line-height: 1.6; overflow-wrap: anywhere; }
+.honor-contests { border-top: 1px solid hsl(var(--border)); }
+.honor-contest { border-bottom: 1px solid hsl(var(--border) / .65); }
+.contest-summary { display: grid; grid-template-columns: minmax(0, 1fr) auto 58px 18px; align-items: center; gap: 20px; min-height: 88px; padding: 18px 8px; cursor: pointer; list-style: none; border-radius: 6px; transition: background-color 150ms var(--ease-out); }
+.contest-summary::-webkit-details-marker { display: none; }
+.contest-summary:hover { background: hsl(var(--muted) / .45); }
+.contest-summary:focus-visible, .source-link:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 3px; }
+.contest-overview h4 { font-size: 16px; line-height: 1.5; font-weight: 600; overflow-wrap: anywhere; }
+.contest-overview p { margin-top: 3px; font-size: 13px; line-height: 1.55; color: hsl(var(--muted-foreground)); overflow-wrap: anywhere; }
+.contest-stats { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: 13px; font-variant-numeric: tabular-nums; }
+.contest-count { color: hsl(var(--muted-foreground)); margin-right: 2px; white-space: nowrap; }
+.medal-total { display: inline-flex; align-items: center; gap: 2px; }
 .honor-date { font-size: 13px; color: hsl(var(--muted-foreground)); font-variant-numeric: tabular-nums; text-align: right; }
-.detail-chevron { transition: transform 180ms var(--ease-out); }
-.honor-row[open] .detail-chevron { transform: rotate(90deg); }
-.honor-detail { margin: 0 8px 18px 68px; padding: 14px 0 0; border-top: 1px dashed hsl(var(--border)); font-size: 14px; line-height: 1.65; animation: detail-in 160ms var(--ease-out); }
-.honor-detail dt { color: hsl(var(--muted-foreground)); }
-.source-link { display: inline-flex; min-height: 44px; align-items: center; gap: 6px; margin-top: 8px; text-decoration: underline; text-underline-offset: 4px; }
-.source-link:hover { color: hsl(var(--muted-foreground)); }
+.contest-chevron { transition: transform 180ms var(--ease-out); }
+.honor-contest[open] > .contest-summary .contest-chevron { transform: rotate(90deg); }
+.honor-contest[open] > .contest-summary { background: hsl(var(--muted) / .3); }
+.contest-content { padding: 0 20px 12px; }
+.contest-full-title { padding: 16px 0 8px; font-size: 13px; line-height: 1.65; color: hsl(var(--muted-foreground)); overflow-wrap: anywhere; }
+.honor-row { display: grid; grid-template-columns: 44px minmax(140px, 220px) minmax(0, 1fr) 44px; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px dashed hsl(var(--border) / .65); }
+.honor-row:last-child { border-bottom: 0; }
+.row-category h5 { font-size: 14px; font-weight: 500; line-height: 1.65; overflow-wrap: anywhere; }
+.row-category p { margin-top: 3px; font-size: 13px; line-height: 1.55; color: hsl(var(--muted-foreground)); overflow-wrap: anywhere; }
+.recipients { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 14px; line-height: 1.7; overflow-wrap: anywhere; }
+.source-link { display: inline-flex; width: 44px; height: 44px; align-items: center; justify-content: center; color: hsl(var(--muted-foreground)); border-radius: 6px; }
+.source-link:hover { background: hsl(var(--muted) / .65); color: hsl(var(--foreground)); }
 .personal .honor-year-group { grid-template-columns: 64px minmax(0,1fr); gap: 12px; }
 .personal .year-label > span:first-child { font-size: 22px; }
-.personal summary { grid-template-columns: 44px minmax(0, 1fr) 58px 18px; }
-.personal .recipients { display: none; }
 @container (max-width: 760px) {
   .honor-year-group, .personal .honor-year-group { grid-template-columns: minmax(0, 1fr); gap: 10px; }
   .year-label { flex-direction: row; align-items: baseline; gap: 10px; padding-top: 0; }
   .year-label > span:first-child { font-size: 24px; line-height: 30px; }
-  .honor-row summary, .personal summary { grid-template-columns: 44px minmax(0, 1fr) 18px; gap: 4px 12px; padding: 14px 0; }
-  .honor-row summary > :first-child { grid-column: 1; grid-row: 1 / span 2; align-self: start; }
-  .contest { grid-column: 2; grid-row: 1; }
-  .contest p { padding-right: 4px; }
-  .recipients { grid-column: 2; grid-row: 2; margin-top: 3px; }
-  .honor-date { grid-column: 2; grid-row: 3; text-align: left; margin-top: 2px; }
-  .detail-chevron { grid-column: 3; grid-row: 1 / span 3; }
-  .honor-detail { margin-left: 56px; margin-right: 0; }
+  .contest-summary { grid-template-columns: minmax(0, 1fr) auto 18px; gap: 8px 12px; padding: 16px 8px; }
+  .contest-overview { grid-column: 1; grid-row: 1; }
+  .contest-stats { grid-column: 1 / span 2; grid-row: 2; gap: 8px; }
+  .honor-date { grid-column: 2; grid-row: 1; }
+  .contest-chevron { grid-column: 3; grid-row: 1 / span 2; }
+  .contest-content { padding: 0 8px 8px; }
+  .honor-row { grid-template-columns: 36px minmax(0, 1fr) 44px; gap: 2px 8px; }
+  .honor-row > .honor-medal { grid-column: 1; grid-row: 1 / span 2; align-self: start; width: 36px; }
+  .row-category { grid-column: 2; grid-row: 1; }
+  .recipients { grid-column: 2; grid-row: 2; margin-top: 4px; }
+  .source-link { grid-column: 3; grid-row: 1 / span 2; align-self: start; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .detail-chevron, .honor-row summary { transition: none; }
-  .honor-detail { animation: none; }
+  .contest-chevron, .contest-summary { transition: none; }
 }
-@keyframes detail-in { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; transform: translateY(0); } }
 </style>
