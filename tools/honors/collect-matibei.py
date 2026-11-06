@@ -31,7 +31,7 @@ for key in [
                 raise ValueError((key, i, line, category, award))
             rank, name = m.groups()
             stage = "全国决赛" if "final" in key else "省赛第" + key[-1] + "场"
-            day = {"1": "2026-03-22", "2": "2026-04-26", "3": "2026-05-24"}.get(key[-1])
+            day = "2026-08-02" if "final" in key else {"1": "2026-03-22", "2": "2026-04-26", "3": "2026-05-24"}[key[-1]]
             records.append(
                 {
                     "source_key": f"official:{key}:{category}:{award}:{rank}",
@@ -47,7 +47,7 @@ for key in [
                     "team": "",
                     "source_url": manifest[key]["url"],
                     "evidence": f"官方公示PDF第{i + 1}页，{category}，{award}第{rank}行。"
-                    + ("决赛日期待核实。" if day is None else "")
+                    + ("决赛日期按用户补充：2026-08-02。" if "final" in key else "")
                     + "身份与在校时间待核实。",
                     "recipients": [name],
                 }

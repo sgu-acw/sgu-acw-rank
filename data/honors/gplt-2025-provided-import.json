@@ -1,0 +1,94 @@
+{
+  "records": [
+    {
+      "source_key": "official:gplt-2025-guangdong-team:SGU-T1",
+      "event": {
+        "key": "gplt-2025-guangdong-team",
+        "title": "第十届中国高校计算机大赛-团体程序设计天梯赛",
+        "family": "gplt",
+        "occurred_on": "2025-04-19",
+        "date_precision": "day",
+        "category": "广东省团队奖 · 华山论剑"
+      },
+      "award": "三等奖",
+      "team": "SGU-T1",
+      "source_url": "https://gplt.patest.cn/",
+      "evidence": "用户提供附件《天梯赛获奖名单2025.省奖.202504301700.docx》，SHA-256 e76f8a4a004d6fffc48f5134c6cca3bee62f082c71c19f539199f91b4a1fea43；正文第654段，广东省团队奖 · 华山论剑 三等奖。正文2024为年份笔误，比赛日按第十届官方2025回溯榜2025-04-19核对。团队奖一队一条，队员按同届官方队伍详情核对；不含教练。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "冯诺维",
+        "朱子睿",
+        "陈兴翰",
+        "叶福都",
+        "朱延杰",
+        "黄家宝",
+        "董学文",
+        "陈思琪",
+        "马嘉亮",
+        "谢泽栩"
+      ]
+    },
+    {
+      "source_key": "official:gplt-2025-guangdong-team:SGU-T2",
+      "event": {
+        "key": "gplt-2025-guangdong-team",
+        "title": "第十届中国高校计算机大赛-团体程序设计天梯赛",
+        "family": "gplt",
+        "occurred_on": "2025-04-19",
+        "date_precision": "day",
+        "category": "广东省团队奖 · 华山论剑"
+      },
+      "award": "三等奖",
+      "team": "SGU-T2",
+      "source_url": "https://gplt.patest.cn/",
+      "evidence": "用户提供附件《天梯赛获奖名单2025.省奖.202504301700.docx》，SHA-256 e76f8a4a004d6fffc48f5134c6cca3bee62f082c71c19f539199f91b4a1fea43；正文第679段，广东省团队奖 · 华山论剑 三等奖。正文2024为年份笔误，比赛日按第十届官方2025回溯榜2025-04-19核对。团队奖一队一条，队员按同届官方队伍详情核对；不含教练。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "李镔彬",
+        "何韵怡",
+        "梁炜蜃",
+        "钱玟如",
+        "陈俊东",
+        "徐守恒",
+        "吴仁光",
+        "黄炜骅",
+        "周林峰",
+        "来文升"
+      ]
+    },
+    {
+      "source_key": "official:gplt-2025-national-individual:谢泽栩",
+      "event": {
+        "key": "gplt-2025-national-individual",
+        "title": "第十届中国高校计算机大赛-团体程序设计天梯赛",
+        "family": "gplt",
+        "occurred_on": "2025-04-19",
+        "date_precision": "day",
+        "category": "全国个人奖"
+      },
+      "award": "二等奖",
+      "team": "SGU-T1",
+      "source_url": "https://gplt.patest.cn/",
+      "evidence": "用户提供附件《天梯赛获奖名单2025.国奖.202504301700.docx.docx》，SHA-256 bfb4c51b6062ffa983e75af18b8ebbc21cf50ffaf7625bff2efb87df428c2e75；正文第3620段，全国个人奖 二等奖。正文2024为年份笔误，比赛日按第十届官方2025回溯榜2025-04-19核对。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "谢泽栩"
+      ]
+    },
+    {
+      "source_key": "official:gplt-2025-national-individual:朱子睿",
+      "event": {
+        "key": "gplt-2025-national-individual",
+        "title": "第十届中国高校计算机大赛-团体程序设计天梯赛",
+        "family": "gplt",
+        "occurred_on": "2025-04-19",
+        "date_precision": "day",
+        "category": "全国个人奖"
+      },
+      "award": "三等奖",
+      "team": "SGU-T1",
+      "source_url": "https://gplt.patest.cn/",
+      "evidence": "用户提供附件《天梯赛获奖名单2025.国奖.202504301700.docx.docx》，SHA-256 bfb4c51b6062ffa983e75af18b8ebbc21cf50ffaf7625bff2efb87df428c2e75；正文第4388段，全国个人奖 三等奖。正文2024为年份笔误，比赛日按第十届官方2025回溯榜2025-04-19核对。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "朱子睿"
+      ]
+    }
+  ]
+}

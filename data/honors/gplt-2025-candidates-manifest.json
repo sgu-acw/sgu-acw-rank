@@ -1,0 +1,44 @@
+{
+  "retrieved_on": "2026-11-06",
+  "school": "韶关学院",
+  "competition": "第十届中国高校计算机大赛-团体程序设计天梯赛",
+  "competition_id": "1913235947836194816",
+  "teams": [
+    {"fid": "370", "name": "SGU-T1"},
+    {"fid": "373", "name": "SGU-T2"},
+    {"fid": "374", "name": "SGU-T3"}
+  ],
+  "source_files": [
+    {
+      "url": "https://static.pintia.cn/assets/gplt/rank-page-archive-2025/school.html",
+      "sha256": "0333e773c086d539485b50ae89fe7d65e51e06f6a4062cd5bc80ae3517240251"
+    },
+    {
+      "url": "https://static.pintia.cn/assets/gplt/rank-page-archive-2025/team.html",
+      "sha256": "a68536d32ca09d5f6726e2d69254529b46020ad73bcdba43d1fe108e4f94b64f"
+    },
+    {
+      "url": "https://static.pintia.cn/assets/gplt/rank-page-archive-2025/student.html",
+      "sha256": "98c5df06e6e2725bc10c39900159cc9d96f71f1aa8e1d2aae302d69d2e7c50ab"
+    },
+    {
+      "url": "https://static.pintia.cn/assets/gplt/rank-page-archive-2025/data.common.js",
+      "sha256": "1968cd14f08b3073db76073e2a03b85f92eddf04008b1946ac867aeb51c9ce2f"
+    },
+    {
+      "url": "https://static.pintia.cn/assets/gplt/rank-page-archive-2025/data.school.js",
+      "sha256": "0bc67048ef42c036ec1fb370bfae137a2622d46925ae2edb09b16bd8dd536324"
+    },
+    {
+      "url": "https://static.pintia.cn/assets/gplt/rank-page-archive-2025/data.team.js",
+      "sha256": "bcd1e90f784ec23cbb8939fd31040e4444046ee1a1452590b545bd512267adef"
+    },
+    {
+      "url": "https://static.pintia.cn/assets/gplt/rank-page-archive-2025/data.student.js",
+      "sha256": "484642813897a73ea80393433d815049cc122256c8163581b474db04c9a96d62"
+    }
+  ],
+  "row_count": 30,
+  "award_status": "candidate_only_not_importable",
+  "award_note": "Official regulation describes personal award rules, but the public archive exposes score and rank rather than a formal award field. Scores were not converted into award tiers."
+}

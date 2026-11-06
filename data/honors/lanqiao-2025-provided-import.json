@@ -1,0 +1,1390 @@
+{
+  "records": [
+    {
+      "source_key": "official:lanqiao-2025-preliminary-cpp-b:冯诺维",
+      "event": {
+        "key": "lanqiao-2025-preliminary-cpp-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · C/C++程序设计大学B组"
+      },
+      "award": "一等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第16页文本第17行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "冯诺维"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-cpp-b:陈思琪",
+      "event": {
+        "key": "lanqiao-2025-preliminary-cpp-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · C/C++程序设计大学B组"
+      },
+      "award": "一等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第21页文本第4行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "陈思琪"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-cpp-b:钱玟如",
+      "event": {
+        "key": "lanqiao-2025-preliminary-cpp-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · C/C++程序设计大学B组"
+      },
+      "award": "一等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第24页文本第2行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "钱玟如"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-cpp-b:陈俊东",
+      "event": {
+        "key": "lanqiao-2025-preliminary-cpp-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · C/C++程序设计大学B组"
+      },
+      "award": "二等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第32页文本第17行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "陈俊东"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-cpp-b:柯安鸿",
+      "event": {
+        "key": "lanqiao-2025-preliminary-cpp-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · C/C++程序设计大学B组"
+      },
+      "award": "二等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第33页文本第14行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "柯安鸿"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-cpp-b:汪金力",
+      "event": {
+        "key": "lanqiao-2025-preliminary-cpp-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · C/C++程序设计大学B组"
+      },
+      "award": "二等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第34页文本第44行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "汪金力"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-cpp-b:梁炜蜃",
+      "event": {
+        "key": "lanqiao-2025-preliminary-cpp-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · C/C++程序设计大学B组"
+      },
+      "award": "二等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第34页文本第45行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "梁炜蜃"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-cpp-b:董学文",
+      "event": {
+        "key": "lanqiao-2025-preliminary-cpp-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · C/C++程序设计大学B组"
+      },
+      "award": "二等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第38页文本第20行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "董学文"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-cpp-b:吴仁光",
+      "event": {
+        "key": "lanqiao-2025-preliminary-cpp-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · C/C++程序设计大学B组"
+      },
+      "award": "二等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第42页文本第17行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "吴仁光"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-cpp-b:罗孝杰",
+      "event": {
+        "key": "lanqiao-2025-preliminary-cpp-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · C/C++程序设计大学B组"
+      },
+      "award": "二等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第42页文本第18行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "罗孝杰"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-cpp-b:吴凯诗",
+      "event": {
+        "key": "lanqiao-2025-preliminary-cpp-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · C/C++程序设计大学B组"
+      },
+      "award": "二等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第42页文本第19行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "吴凯诗"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-cpp-b:林乐",
+      "event": {
+        "key": "lanqiao-2025-preliminary-cpp-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · C/C++程序设计大学B组"
+      },
+      "award": "二等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第45页文本第1行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "林乐"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-cpp-b:施瀚雯",
+      "event": {
+        "key": "lanqiao-2025-preliminary-cpp-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · C/C++程序设计大学B组"
+      },
+      "award": "二等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第47页文本第22行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "施瀚雯"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-cpp-b:郑裕宏",
+      "event": {
+        "key": "lanqiao-2025-preliminary-cpp-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · C/C++程序设计大学B组"
+      },
+      "award": "二等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第50页文本第13行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "郑裕宏"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-cpp-b:黄昊南",
+      "event": {
+        "key": "lanqiao-2025-preliminary-cpp-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · C/C++程序设计大学B组"
+      },
+      "award": "二等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第55页文本第46行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "黄昊南"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-cpp-b:卢俊良",
+      "event": {
+        "key": "lanqiao-2025-preliminary-cpp-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · C/C++程序设计大学B组"
+      },
+      "award": "二等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第58页文本第31行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "卢俊良"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-cpp-b:朱广凤",
+      "event": {
+        "key": "lanqiao-2025-preliminary-cpp-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · C/C++程序设计大学B组"
+      },
+      "award": "二等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第60页文本第46行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "朱广凤"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-cpp-b:覃健企",
+      "event": {
+        "key": "lanqiao-2025-preliminary-cpp-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · C/C++程序设计大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第64页文本第23行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "覃健企"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-cpp-b:尹如心",
+      "event": {
+        "key": "lanqiao-2025-preliminary-cpp-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · C/C++程序设计大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第71页文本第3行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "尹如心"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-cpp-b:周林峰",
+      "event": {
+        "key": "lanqiao-2025-preliminary-cpp-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · C/C++程序设计大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第74页文本第45行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "周林峰"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-cpp-b:王鹏凯",
+      "event": {
+        "key": "lanqiao-2025-preliminary-cpp-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · C/C++程序设计大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第79页文本第4行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "王鹏凯"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-cpp-b:林振鹏",
+      "event": {
+        "key": "lanqiao-2025-preliminary-cpp-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · C/C++程序设计大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第83页文本第34行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "林振鹏"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-cpp-b:张意",
+      "event": {
+        "key": "lanqiao-2025-preliminary-cpp-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · C/C++程序设计大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第85页文本第28行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "张意"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-cpp-b:林业凯",
+      "event": {
+        "key": "lanqiao-2025-preliminary-cpp-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · C/C++程序设计大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第92页文本第22行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "林业凯"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-cpp-b:杨涛",
+      "event": {
+        "key": "lanqiao-2025-preliminary-cpp-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · C/C++程序设计大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第113页文本第1行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "杨涛"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-java-b:李镔彬",
+      "event": {
+        "key": "lanqiao-2025-preliminary-java-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · Java软件开发大学B组"
+      },
+      "award": "一等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第129页文本第11行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "李镔彬"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-java-b:谢泽栩",
+      "event": {
+        "key": "lanqiao-2025-preliminary-java-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · Java软件开发大学B组"
+      },
+      "award": "一等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第129页文本第20行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "谢泽栩"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-java-b:张皓然",
+      "event": {
+        "key": "lanqiao-2025-preliminary-java-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · Java软件开发大学B组"
+      },
+      "award": "一等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第129页文本第46行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "张皓然"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-java-b:马嘉亮",
+      "event": {
+        "key": "lanqiao-2025-preliminary-java-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · Java软件开发大学B组"
+      },
+      "award": "一等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第131页文本第14行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "马嘉亮"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-java-b:何韵怡",
+      "event": {
+        "key": "lanqiao-2025-preliminary-java-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · Java软件开发大学B组"
+      },
+      "award": "一等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第131页文本第15行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "何韵怡"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-java-b:黄家宝",
+      "event": {
+        "key": "lanqiao-2025-preliminary-java-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · Java软件开发大学B组"
+      },
+      "award": "一等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第131页文本第25行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "黄家宝"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-java-b:陈兴翰",
+      "event": {
+        "key": "lanqiao-2025-preliminary-java-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · Java软件开发大学B组"
+      },
+      "award": "一等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第131页文本第37行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "陈兴翰"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-java-b:薛文远",
+      "event": {
+        "key": "lanqiao-2025-preliminary-java-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · Java软件开发大学B组"
+      },
+      "award": "一等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第132页文本第9行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "薛文远"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-java-b:朱延杰",
+      "event": {
+        "key": "lanqiao-2025-preliminary-java-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · Java软件开发大学B组"
+      },
+      "award": "一等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第132页文本第25行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "朱延杰"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-java-b:何俊谚",
+      "event": {
+        "key": "lanqiao-2025-preliminary-java-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · Java软件开发大学B组"
+      },
+      "award": "一等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第133页文本第46行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "何俊谚"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-java-b:谢伟力",
+      "event": {
+        "key": "lanqiao-2025-preliminary-java-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · Java软件开发大学B组"
+      },
+      "award": "一等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第133页文本第47行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "谢伟力"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-java-b:李伟城",
+      "event": {
+        "key": "lanqiao-2025-preliminary-java-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · Java软件开发大学B组"
+      },
+      "award": "二等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第134页文本第23行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "李伟城"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-java-b:胡嘉瀚",
+      "event": {
+        "key": "lanqiao-2025-preliminary-java-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · Java软件开发大学B组"
+      },
+      "award": "二等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第135页文本第45行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "胡嘉瀚"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-java-b:许申浩",
+      "event": {
+        "key": "lanqiao-2025-preliminary-java-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · Java软件开发大学B组"
+      },
+      "award": "二等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第135页文本第46行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "许申浩"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-java-b:苏瑞华",
+      "event": {
+        "key": "lanqiao-2025-preliminary-java-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · Java软件开发大学B组"
+      },
+      "award": "二等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第137页文本第41行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "苏瑞华"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-java-b:郭柏林",
+      "event": {
+        "key": "lanqiao-2025-preliminary-java-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · Java软件开发大学B组"
+      },
+      "award": "二等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第137页文本第42行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "郭柏林"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-java-b:杨宇恒",
+      "event": {
+        "key": "lanqiao-2025-preliminary-java-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · Java软件开发大学B组"
+      },
+      "award": "二等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第137页文本第43行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "杨宇恒"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-java-b:黄炜骅",
+      "event": {
+        "key": "lanqiao-2025-preliminary-java-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · Java软件开发大学B组"
+      },
+      "award": "二等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第138页文本第47行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "黄炜骅"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-java-b:谢伟浩",
+      "event": {
+        "key": "lanqiao-2025-preliminary-java-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · Java软件开发大学B组"
+      },
+      "award": "二等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第143页文本第14行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "谢伟浩"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-java-b:袁培好",
+      "event": {
+        "key": "lanqiao-2025-preliminary-java-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · Java软件开发大学B组"
+      },
+      "award": "二等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第143页文本第15行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "袁培好"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-java-b:赖吉勇",
+      "event": {
+        "key": "lanqiao-2025-preliminary-java-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · Java软件开发大学B组"
+      },
+      "award": "二等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第144页文本第8行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "赖吉勇"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-java-b:尤朗彦",
+      "event": {
+        "key": "lanqiao-2025-preliminary-java-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · Java软件开发大学B组"
+      },
+      "award": "二等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第144页文本第9行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "尤朗彦"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-java-b:卢嘉宇",
+      "event": {
+        "key": "lanqiao-2025-preliminary-java-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · Java软件开发大学B组"
+      },
+      "award": "二等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第144页文本第10行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "卢嘉宇"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-java-b:陈铭智",
+      "event": {
+        "key": "lanqiao-2025-preliminary-java-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · Java软件开发大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第148页文本第17行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "陈铭智"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-java-b:马树顷",
+      "event": {
+        "key": "lanqiao-2025-preliminary-java-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · Java软件开发大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第148页文本第37行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "马树顷"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-java-b:袁金昊",
+      "event": {
+        "key": "lanqiao-2025-preliminary-java-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · Java软件开发大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第149页文本第23行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "袁金昊"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-java-b:梁楚豪",
+      "event": {
+        "key": "lanqiao-2025-preliminary-java-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · Java软件开发大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第149页文本第24行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "梁楚豪"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-java-b:林羿安",
+      "event": {
+        "key": "lanqiao-2025-preliminary-java-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · Java软件开发大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第152页文本第15行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "林羿安"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-java-b:陈嘉兴",
+      "event": {
+        "key": "lanqiao-2025-preliminary-java-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · Java软件开发大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第154页文本第9行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "陈嘉兴"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-java-b:何沅铮",
+      "event": {
+        "key": "lanqiao-2025-preliminary-java-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · Java软件开发大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第155页文本第14行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "何沅铮"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-java-b:戴楷润",
+      "event": {
+        "key": "lanqiao-2025-preliminary-java-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · Java软件开发大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第155页文本第15行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "戴楷润"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-java-b:来文升",
+      "event": {
+        "key": "lanqiao-2025-preliminary-java-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · Java软件开发大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第155页文本第16行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "来文升"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-java-b:陈长圳",
+      "event": {
+        "key": "lanqiao-2025-preliminary-java-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · Java软件开发大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第155页文本第17行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "陈长圳"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-java-b:叶福都",
+      "event": {
+        "key": "lanqiao-2025-preliminary-java-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · Java软件开发大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第155页文本第18行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "叶福都"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-python-b:朱子睿",
+      "event": {
+        "key": "lanqiao-2025-preliminary-python-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · Python程序设计大学B组"
+      },
+      "award": "一等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第186页文本第7行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "朱子睿"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-python-b:陶健",
+      "event": {
+        "key": "lanqiao-2025-preliminary-python-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · Python程序设计大学B组"
+      },
+      "award": "一等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第190页文本第8行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "陶健"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-python-b:徐守恒",
+      "event": {
+        "key": "lanqiao-2025-preliminary-python-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · Python程序设计大学B组"
+      },
+      "award": "二等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第198页文本第36行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "徐守恒"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-python-b:邵俊龙",
+      "event": {
+        "key": "lanqiao-2025-preliminary-python-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · Python程序设计大学B组"
+      },
+      "award": "二等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第202页文本第36行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "邵俊龙"
+      ]
+    },
+    {
+      "source_key": "official:lanqiao-2025-preliminary-python-b:黄超",
+      "event": {
+        "key": "lanqiao-2025-preliminary-python-b",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-04-12",
+        "date_precision": "day",
+        "category": "广东省赛 · Python程序设计大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://dasai.lanqiao.cn/awards-public",
+      "evidence": "用户提供附件《个人赛省赛（软件赛）广东赛区获奖名单 (1).pdf》，SHA-256 79cbfa9aaba82a310ba25db5fdf09cd507a673c4b5ce261957f3dbe5a5144686；PDF第210页文本第39行。来源链接为官方入口/表内来源，不代表已独立下载原附件。身份与在校时间待核实。",
+      "recipients": [
+        "黄超"
+      ]
+    },
+    {
+      "source_key": "user-provided:lanqiao-2025-final:java:谢泽栩",
+      "event": {
+        "key": "lanqiao-2025-final-java-unspecified-group",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-06-15",
+        "date_precision": "day",
+        "category": "全国总决赛 · Java软件开发大学B组"
+      },
+      "award": "一等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202505/courseimg/7b4554cd-9973-45a9-85be-deb365d933df.pdf",
+      "evidence": "姓名、科目及奖项来自用户于2026-11-06提供的13人获奖名单，行：谢泽栩 / Java / 一等奖。原始名单未写组别；用户于2026-11-06补充确认均为大学B组。组委会第十六届总决赛通知确认比赛日期为2025-06-15；该通知只佐证比赛日期，不佐证此人获奖。身份与在校时间待核实。",
+      "recipients": [
+        "谢泽栩"
+      ]
+    },
+    {
+      "source_key": "user-provided:lanqiao-2025-final:java:黄家宝",
+      "event": {
+        "key": "lanqiao-2025-final-java-unspecified-group",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-06-15",
+        "date_precision": "day",
+        "category": "全国总决赛 · Java软件开发大学B组"
+      },
+      "award": "一等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202505/courseimg/7b4554cd-9973-45a9-85be-deb365d933df.pdf",
+      "evidence": "姓名、科目及奖项来自用户于2026-11-06提供的13人获奖名单，行：黄家宝 / Java / 一等奖。原始名单未写组别；用户于2026-11-06补充确认均为大学B组。组委会第十六届总决赛通知确认比赛日期为2025-06-15；该通知只佐证比赛日期，不佐证此人获奖。身份与在校时间待核实。",
+      "recipients": [
+        "黄家宝"
+      ]
+    },
+    {
+      "source_key": "user-provided:lanqiao-2025-final:python:朱子睿",
+      "event": {
+        "key": "lanqiao-2025-final-python-unspecified-group",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-06-15",
+        "date_precision": "day",
+        "category": "全国总决赛 · Python程序设计大学B组"
+      },
+      "award": "一等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202505/courseimg/7b4554cd-9973-45a9-85be-deb365d933df.pdf",
+      "evidence": "姓名、科目及奖项来自用户于2026-11-06提供的13人获奖名单，行：朱子睿 / Python / 一等奖。原始名单未写组别；用户于2026-11-06补充确认均为大学B组。组委会第十六届总决赛通知确认比赛日期为2025-06-15；该通知只佐证比赛日期，不佐证此人获奖。身份与在校时间待核实。",
+      "recipients": [
+        "朱子睿"
+      ]
+    },
+    {
+      "source_key": "user-provided:lanqiao-2025-final:java:陈兴翰",
+      "event": {
+        "key": "lanqiao-2025-final-java-unspecified-group",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-06-15",
+        "date_precision": "day",
+        "category": "全国总决赛 · Java软件开发大学B组"
+      },
+      "award": "二等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202505/courseimg/7b4554cd-9973-45a9-85be-deb365d933df.pdf",
+      "evidence": "姓名、科目及奖项来自用户于2026-11-06提供的13人获奖名单，行：陈兴翰 / Java / 二等奖。原始名单未写组别；用户于2026-11-06补充确认均为大学B组。组委会第十六届总决赛通知确认比赛日期为2025-06-15；该通知只佐证比赛日期，不佐证此人获奖。身份与在校时间待核实。",
+      "recipients": [
+        "陈兴翰"
+      ]
+    },
+    {
+      "source_key": "user-provided:lanqiao-2025-final:java:朱延杰",
+      "event": {
+        "key": "lanqiao-2025-final-java-unspecified-group",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-06-15",
+        "date_precision": "day",
+        "category": "全国总决赛 · Java软件开发大学B组"
+      },
+      "award": "二等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202505/courseimg/7b4554cd-9973-45a9-85be-deb365d933df.pdf",
+      "evidence": "姓名、科目及奖项来自用户于2026-11-06提供的13人获奖名单，行：朱延杰 / Java / 二等奖。原始名单未写组别；用户于2026-11-06补充确认均为大学B组。组委会第十六届总决赛通知确认比赛日期为2025-06-15；该通知只佐证比赛日期，不佐证此人获奖。身份与在校时间待核实。",
+      "recipients": [
+        "朱延杰"
+      ]
+    },
+    {
+      "source_key": "user-provided:lanqiao-2025-final:java:李镔彬",
+      "event": {
+        "key": "lanqiao-2025-final-java-unspecified-group",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-06-15",
+        "date_precision": "day",
+        "category": "全国总决赛 · Java软件开发大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202505/courseimg/7b4554cd-9973-45a9-85be-deb365d933df.pdf",
+      "evidence": "姓名、科目及奖项来自用户于2026-11-06提供的13人获奖名单，行：李镔彬 / Java / 三等奖。原始名单未写组别；用户于2026-11-06补充确认均为大学B组。组委会第十六届总决赛通知确认比赛日期为2025-06-15；该通知只佐证比赛日期，不佐证此人获奖。身份与在校时间待核实。",
+      "recipients": [
+        "李镔彬"
+      ]
+    },
+    {
+      "source_key": "user-provided:lanqiao-2025-final:python:陶健",
+      "event": {
+        "key": "lanqiao-2025-final-python-unspecified-group",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-06-15",
+        "date_precision": "day",
+        "category": "全国总决赛 · Python程序设计大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202505/courseimg/7b4554cd-9973-45a9-85be-deb365d933df.pdf",
+      "evidence": "姓名、科目及奖项来自用户于2026-11-06提供的13人获奖名单，行：陶健 / Python / 三等奖。原始名单未写组别；用户于2026-11-06补充确认均为大学B组。组委会第十六届总决赛通知确认比赛日期为2025-06-15；该通知只佐证比赛日期，不佐证此人获奖。身份与在校时间待核实。",
+      "recipients": [
+        "陶健"
+      ]
+    },
+    {
+      "source_key": "user-provided:lanqiao-2025-final:java:马嘉亮",
+      "event": {
+        "key": "lanqiao-2025-final-java-unspecified-group",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-06-15",
+        "date_precision": "day",
+        "category": "全国总决赛 · Java软件开发大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202505/courseimg/7b4554cd-9973-45a9-85be-deb365d933df.pdf",
+      "evidence": "姓名、科目及奖项来自用户于2026-11-06提供的13人获奖名单，行：马嘉亮 / Java / 三等奖。原始名单未写组别；用户于2026-11-06补充确认均为大学B组。组委会第十六届总决赛通知确认比赛日期为2025-06-15；该通知只佐证比赛日期，不佐证此人获奖。身份与在校时间待核实。",
+      "recipients": [
+        "马嘉亮"
+      ]
+    },
+    {
+      "source_key": "user-provided:lanqiao-2025-final:java:薛文远",
+      "event": {
+        "key": "lanqiao-2025-final-java-unspecified-group",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-06-15",
+        "date_precision": "day",
+        "category": "全国总决赛 · Java软件开发大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202505/courseimg/7b4554cd-9973-45a9-85be-deb365d933df.pdf",
+      "evidence": "姓名、科目及奖项来自用户于2026-11-06提供的13人获奖名单，行：薛文远 / Java / 三等奖。原始名单未写组别；用户于2026-11-06补充确认均为大学B组。组委会第十六届总决赛通知确认比赛日期为2025-06-15；该通知只佐证比赛日期，不佐证此人获奖。身份与在校时间待核实。",
+      "recipients": [
+        "薛文远"
+      ]
+    },
+    {
+      "source_key": "user-provided:lanqiao-2025-final:java:张皓然",
+      "event": {
+        "key": "lanqiao-2025-final-java-unspecified-group",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-06-15",
+        "date_precision": "day",
+        "category": "全国总决赛 · Java软件开发大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202505/courseimg/7b4554cd-9973-45a9-85be-deb365d933df.pdf",
+      "evidence": "姓名、科目及奖项来自用户于2026-11-06提供的13人获奖名单，行：张皓然 / Java / 三等奖。原始名单未写组别；用户于2026-11-06补充确认均为大学B组。组委会第十六届总决赛通知确认比赛日期为2025-06-15；该通知只佐证比赛日期，不佐证此人获奖。身份与在校时间待核实。",
+      "recipients": [
+        "张皓然"
+      ]
+    },
+    {
+      "source_key": "user-provided:lanqiao-2025-final:cpp:冯诺维",
+      "event": {
+        "key": "lanqiao-2025-final-cpp-unspecified-group",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-06-15",
+        "date_precision": "day",
+        "category": "全国总决赛 · C/C++程序设计大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202505/courseimg/7b4554cd-9973-45a9-85be-deb365d933df.pdf",
+      "evidence": "姓名、科目及奖项来自用户于2026-11-06提供的13人获奖名单，行：冯诺维 / C/C++ / 三等奖。原始名单未写组别；用户于2026-11-06补充确认均为大学B组。组委会第十六届总决赛通知确认比赛日期为2025-06-15；该通知只佐证比赛日期，不佐证此人获奖。身份与在校时间待核实。",
+      "recipients": [
+        "冯诺维"
+      ]
+    },
+    {
+      "source_key": "user-provided:lanqiao-2025-final:cpp:钱玟如",
+      "event": {
+        "key": "lanqiao-2025-final-cpp-unspecified-group",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-06-15",
+        "date_precision": "day",
+        "category": "全国总决赛 · C/C++程序设计大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202505/courseimg/7b4554cd-9973-45a9-85be-deb365d933df.pdf",
+      "evidence": "姓名、科目及奖项来自用户于2026-11-06提供的13人获奖名单，行：钱玟如 / C/C++ / 三等奖。原始名单未写组别；用户于2026-11-06补充确认均为大学B组。组委会第十六届总决赛通知确认比赛日期为2025-06-15；该通知只佐证比赛日期，不佐证此人获奖。身份与在校时间待核实。",
+      "recipients": [
+        "钱玟如"
+      ]
+    },
+    {
+      "source_key": "user-provided:lanqiao-2025-final:cpp:陈思琪",
+      "event": {
+        "key": "lanqiao-2025-final-cpp-unspecified-group",
+        "title": "第十六届蓝桥杯全国软件和信息技术专业人才大赛",
+        "family": "lanqiao",
+        "occurred_on": "2025-06-15",
+        "date_precision": "day",
+        "category": "全国总决赛 · C/C++程序设计大学B组"
+      },
+      "award": "三等奖",
+      "team": "",
+      "source_url": "https://x-static.lanqiao.cn/upload/202505/courseimg/7b4554cd-9973-45a9-85be-deb365d933df.pdf",
+      "evidence": "姓名、科目及奖项来自用户于2026-11-06提供的13人获奖名单，行：陈思琪 / C/C++ / 三等奖。原始名单未写组别；用户于2026-11-06补充确认均为大学B组。组委会第十六届总决赛通知确认比赛日期为2025-06-15；该通知只佐证比赛日期，不佐证此人获奖。身份与在校时间待核实。",
+      "recipients": [
+        "陈思琪"
+      ]
+    }
+  ]
+}

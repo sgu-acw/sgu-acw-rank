@@ -1,0 +1,37 @@
+{
+  "events": {
+    "12": {
+      "occurred_on": "2021-06-05",
+      "date_precision": "day",
+      "source_url": "https://jwc.ustb.edu.cn/tztg/c1db0a69775840cb9bf7b02f0eaa1bba.htm",
+      "source_title": "北京科技大学教务处教通知〔2021〕116号",
+      "source_type": "university_official_notice",
+      "retrieved_on": "2026-11-06",
+      "sha256": "174d0ddd6e15bf4c88e761a841de5294cbe7542c742d7df560c9ef40eb235ba9",
+      "position": "正文首段",
+      "boundary": "仅佐证同届全国总决赛日期，不佐证本校获奖者名单"
+    },
+    "13": {
+      "occurred_on": "2022-06-18",
+      "date_precision": "day",
+      "source_url": "https://x-static.lanqiao.cn/upload/202204/courseimg/17be56bd-8787-4058-bf26-f5aacb2b5f2f.pdf",
+      "source_title": "第十三届蓝桥杯大赛告知书，组委会2022-04-28",
+      "source_type": "organizer_notice",
+      "retrieved_on": "2026-11-06",
+      "sha256": "e3f0bee1fc48003e8cb5a0cabbdfa8387baf355430bd78161d9892893fa23675",
+      "position": "第1页",
+      "boundary": "仅佐证同届全国总决赛日期，不佐证本校获奖者名单"
+    },
+    "14": {
+      "occurred_on": "2023-06-10",
+      "date_precision": "day",
+      "source_url": "https://x-static.lanqiao.cn/upload/202305/courseimg/e6114aec-ea66-4196-b85a-1603a9c1bc58.pdf",
+      "source_title": "蓝桥杯组委会字〔2023〕24号",
+      "source_type": "organizer_notice",
+      "retrieved_on": "2026-11-06",
+      "sha256": "1c244242f2cbd3404cc297ac9fc0fb73de16c6b49e7022351bb583d2aab4ba5f",
+      "position": "第1页",
+      "boundary": "仅佐证同届全国总决赛日期，不佐证本校获奖者名单"
+    }
+  }
+}

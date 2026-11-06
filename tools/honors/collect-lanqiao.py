@@ -12,12 +12,15 @@ from pathlib import Path
 
 from pypdf import PdfReader
 
+from lanqiao_scope import is_workshop_lanqiao_category
+
 cache, output = map(Path, sys.argv[1:])
 urls = {
     12: "https://x-static.lanqiao.cn/upload/202110/courseimg/41147d63-c9bb-47d8-ae99-d5776a6c39f8.rar",
     13: "https://x-static.lanqiao.cn/upload/202210/courseimg/8044a2a8-df16-47b3-9055-7639605f65e7.rar",
     14: "https://x-static.lanqiao.cn/upload/202403/courseimg/ff620789-4672-404d-8fac-f3a166af880a.rar",
 }
+date_sources = json.loads((Path(__file__).resolve().parents[2] / "data/honors/lanqiao-date-sources.json").read_text())["events"]
 records, manifest = [], []
 for edition, url in urls.items():
     root = cache / f"sgu-lanqiao{edition}-final"
@@ -44,6 +47,11 @@ for edition, url in urls.items():
                     raise ValueError((pdf, page_index + 1, line))
                 exam, name, category, award = match.groups()
                 category = re.sub(r"\s+", "", category)
+                # The 12th edition officially called Python's sole university
+                # track "大学组"; preserve that historical label.
+                legacy_python = edition == 12 and category == "Python程序设计大学组"
+                if not is_workshop_lanqiao_category(category) and not legacy_python:
+                    continue
                 records.append(
                     {
                         "source_key": f"official:lanqiao{edition}-final:{exam}",
@@ -51,14 +59,14 @@ for edition, url in urls.items():
                             "key": f"lanqiao{edition}-final-{category}",
                             "title": f"第{edition}届蓝桥杯全国软件和信息技术专业人才大赛全国总决赛",
                             "family": "lanqiao",
-                            "occurred_on": f"{edition + 2009}-01-01",
-                            "date_precision": "year",
+                            "occurred_on": date_sources[str(edition)]["occurred_on"],
+                            "date_precision": "day",
                             "category": category,
                         },
                         "award": award,
                         "team": "",
                         "source_url": url,
-                        "evidence": f"官方压缩包内 {pdf.name} 第{page_index + 1}页；比赛日期暂仅精确到年份。身份与在校区间待核实。",
+                        "evidence": f"官方压缩包内 {pdf.name} 第{page_index + 1}页；比赛日期依据{date_sources[str(edition)]['source_title']}（{date_sources[str(edition)]['source_url']}）核实到日。身份与在校区间待核实。",
                         "recipients": [name],
                     }
                 )
