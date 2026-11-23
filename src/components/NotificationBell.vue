@@ -4,6 +4,7 @@ import { Bell } from 'lucide-vue-next'
 import { notificationApi } from '../lib/api'
 import { useAuth } from '../lib/auth'
 const { isAdmin, ensureLoaded } = useAuth()
+const mounted = ref(false)
 const unread = ref(0)
 let timer: ReturnType<typeof setInterval> | undefined
 let pending = false
@@ -17,6 +18,7 @@ async function refresh() {
 }
 watch(isAdmin, value => { if (value) void refresh(); else unread.value = 0 })
 onMounted(async () => {
+  mounted.value = true
   await ensureLoaded()
   if (disposed) return
   void refresh(); timer = setInterval(refresh, 60000)
@@ -33,7 +35,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <a v-if="isAdmin" href="/notifications" class="relative mr-1 inline-flex h-11 w-11 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground" :aria-label="unread ? `站内信，${unread} 条未读` : '站内信'" title="管理员站内信">
+  <a v-if="mounted && isAdmin" href="/notifications" class="relative mr-1 inline-flex h-11 w-11 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground" :aria-label="unread ? `站内信，${unread} 条未读` : '站内信'" title="管理员站内信">
     <Bell class="h-4 w-4" />
     <span v-if="unread" class="absolute right-0 top-0 flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-600 px-1 text-[10px] font-semibold text-white">{{ unread > 99 ? '99+' : unread }}</span>
   </a>

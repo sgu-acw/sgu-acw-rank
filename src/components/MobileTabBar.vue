@@ -28,14 +28,19 @@ import { useAuth } from '../lib/auth'
 import { LEARN_LOCAL } from '../lib/api'
 
 const currentPath = ref('')
+const mounted = ref(false)
 const moreOpen = ref(false)
 const { user, isExternal, isCampusMember, isAdmin, canPost, ensureLoaded } = useAuth()
+
+// 与 AppNav 一致：必须等客户端挂载后再展开校内入口，防止 ClientRouter 切换后
+// hydration 首帧与静态 HTML 不一致导致链接错位。
+const showCampus = computed(() => mounted.value && isCampusMember.value)
 
 const tabs = computed(() => [
   { title: '首页', route: '/', icon: Home },
   { title: '每日一题', route: '/daily', icon: CalendarCheck },
   { title: '题单', route: '/problems', icon: ListChecks },
-  isCampusMember.value
+  showCampus.value
     ? { title: '练习数据', route: '/practice', icon: BarChart3 }
     : LEARN_LOCAL
       ? { title: '题库', route: '/learn', icon: Terminal }
@@ -46,18 +51,18 @@ const extraLinks = computed(() => {
   const list = [
     ...(LEARN_LOCAL
       ? [
-          ...(isCampusMember.value ? [{ title: '题库', route: '/learn', icon: Terminal }] : []),
+          ...(showCampus.value ? [{ title: '题库', route: '/learn', icon: Terminal }] : []),
           { title: '云端 IDE', route: '/ide', icon: SquareTerminal },
         ]
       : []),
-    ...(isCampusMember.value
+    ...(showCampus.value
       ? [
           { title: '集训', route: '/camps', icon: Trophy },
           { title: '工作坊状态', route: '/status', icon: Activity },
           { title: '线下赛报名', route: '/signups', icon: ClipboardList },
         ]
       : []),
-    ...(isCampusMember.value || LEARN_LOCAL ? [{ title: '荣誉殿堂', route: '/honors', icon: Award }] : []),
+    ...(showCampus.value || LEARN_LOCAL ? [{ title: '荣誉殿堂', route: '/honors', icon: Award }] : []),
     { title: '博客', route: '/blog', icon: BookOpen },
     { title: '导航与资源', route: '/nav', icon: Compass },
     { title: 'Codeforces 资料', route: '/codeforces/profile', icon: User },
@@ -110,13 +115,16 @@ function closeOnEscape(event: KeyboardEvent) {
 
 onMounted(() => {
   syncPath()
+  mounted.value = true
   void ensureLoaded()
   window.addEventListener('keydown', closeOnEscape)
+  document.addEventListener('astro:after-swap', syncPath)
   document.addEventListener('astro:page-load', syncPath)
 })
 
 onUnmounted(() => {
   window.removeEventListener('keydown', closeOnEscape)
+  document.removeEventListener('astro:after-swap', syncPath)
   document.removeEventListener('astro:page-load', syncPath)
 })
 </script>

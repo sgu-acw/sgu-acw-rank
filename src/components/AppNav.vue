@@ -89,13 +89,17 @@ const rawNavGroups: NavGroup[] = [
   },
 ]
 
-// 仅在确认是校内成员后展示校内专属入口；未登录与校外用户只看到开放功能，
-// 且 SSR 首帧与未登录一致，不产生 hydration 差异。
+// 仅在客户端挂载且确认是校内成员后展示校内专属入口。
+// 必须同时依赖 mounted：ClientRouter 切换页面时 useAuth() 单例里可能已有登录态，
+// 而新页面的静态 HTML 仍是不含校内项的 SSR 产物；若 hydration 首帧就渲染校内项，
+// Vue 会按索引复用已有 <a> 节点且不修补 href，导致第二次点击跳到错位链接。
+const showCampus = computed(() => mounted.value && isCampusMember.value)
+
 const navGroups = computed(() =>
   rawNavGroups
     .map((group) => ({
       ...group,
-      items: group.items.filter((item) => !item.campusOnly || isCampusMember.value),
+      items: group.items.filter((item) => !item.campusOnly || showCampus.value),
     }))
     .filter((group) => group.items.length > 0),
 )
@@ -109,11 +113,13 @@ onMounted(() => {
   mounted.value = true
   // 侧边栏需要知道是否已登录，才能决定底部显示什么。
   void ensureLoaded()
-  // ClientRouter 只交换页面内容，组件不会重新挂载；路径必须跟着导航事件更新。
+  // ClientRouter 持久化侧边栏时组件不会重新挂载；路径必须跟着导航事件更新。
+  document.addEventListener('astro:after-swap', syncPath)
   document.addEventListener('astro:page-load', syncPath)
 })
 
 onUnmounted(() => {
+  document.removeEventListener('astro:after-swap', syncPath)
   document.removeEventListener('astro:page-load', syncPath)
 })
 

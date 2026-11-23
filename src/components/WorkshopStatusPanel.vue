@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { CalendarDays, Clock, RefreshCw } from 'lucide-vue-next'
+import { CalendarDays, Clock, Loader2, RefreshCw } from 'lucide-vue-next'
 import AccessGate from './AccessGate.vue'
 import { workshopApi, type WorkshopOverride } from '../lib/api'
 import { useAuth } from '../lib/auth'
@@ -15,6 +15,7 @@ import {
 } from '../lib/workshopStatus'
 
 const { user, isCampusMember, ready, ensureLoaded } = useAuth()
+const mounted = ref(false)
 const { data, state, override, refresh } = useWorkshopStatus(isCampusMember)
 
 const busy = ref(false)
@@ -83,6 +84,7 @@ function isCurrent(r: WorkshopOverride): boolean {
 }
 
 onMounted(async () => {
+  mounted.value = true
   await ensureLoaded()
   if (!isCampusMember.value) return
   try {
@@ -94,8 +96,13 @@ onMounted(async () => {
 </script>
 
 <template>
+  <div v-if="!mounted || !ready" class="flex items-center justify-center gap-2 py-12 text-sm text-muted-foreground">
+    <Loader2 class="h-4 w-4 animate-spin" />
+    正在读取…
+  </div>
+
   <AccessGate
-    v-if="ready && !isCampusMember"
+    v-else-if="!isCampusMember"
     :mode="user ? 'campus' : 'login'"
     title="工作坊开门状态仅对校内成员开放"
   />

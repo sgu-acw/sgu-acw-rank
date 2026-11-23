@@ -12,9 +12,11 @@ import MemberProfileBody from './MemberProfileBody.vue'
 import { useAuth } from '../lib/auth'
 
 const { user, isCampusMember, ready, ensureLoaded } = useAuth()
+const mounted = ref(false)
 const userId = ref(0)
 
 onMounted(async () => {
+  mounted.value = true
   const fromQuery = new URLSearchParams(window.location.search).get('id')
   if (fromQuery) userId.value = Number(fromQuery)
   await ensureLoaded()
@@ -22,7 +24,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div v-if="!ready" class="flex items-center justify-center gap-2 py-12 text-sm text-muted-foreground">
+  <div v-if="!mounted || !ready" class="flex items-center justify-center gap-2 py-12 text-sm text-muted-foreground">
     <Loader2 class="h-4 w-4 animate-spin" />
     正在读取…
   </div>

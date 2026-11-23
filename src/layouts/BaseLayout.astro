@@ -148,12 +148,12 @@ const { title = '算法竞赛工作坊' } = Astro.props
       </a>
       <div class="flex-1" />
       <QuickJump client:load />
-      <NotificationBell client:load />
+      <NotificationBell client:load transition:persist="notification-bell" />
       <ThemeToggle client:load />
     </div>
   </header>
   <div class="flex">
-    <AppNav client:load />
+    <AppNav client:load transition:persist="app-nav" />
     <!--
       内容区。
 
@@ -171,7 +171,7 @@ const { title = '算法竞赛工作坊' } = Astro.props
   </div>
 
   <!-- 底部标签栏。md 以上自己隐藏。 -->
-  <MobileTabBar client:load />
+  <MobileTabBar client:load transition:persist="mobile-tab-bar" />
 
   <!--
     公告弹窗。挂在布局上所以所有页面都会检查一次。

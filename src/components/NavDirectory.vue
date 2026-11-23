@@ -5,7 +5,7 @@
  * 校内成员看到完整内容（含工作坊 QQ 群与校内直达）；
  * 未登录与校外用户只看到公开学习入口与外部竞赛资源，不暴露内部群号。
  */
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import {
   ArrowUpRight,
   BookOpen,
@@ -37,7 +37,9 @@ interface NavSection {
 
 const qqGroup = '905189428'
 
+const mounted = ref(false)
 const { isCampusMember, ensureLoaded } = useAuth()
+const showCampus = computed(() => mounted.value && isCampusMember.value)
 
 const rawSections: NavSection[] = [
   {
@@ -140,12 +142,13 @@ const sections = computed(() =>
   rawSections
     .map((section) => ({
       ...section,
-      links: section.links.filter((link) => !link.campusOnly || isCampusMember.value),
+      links: section.links.filter((link) => !link.campusOnly || showCampus.value),
     }))
     .filter((section) => section.links.length > 0),
 )
 
 onMounted(() => {
+  mounted.value = true
   void ensureLoaded()
 })
 </script>
@@ -163,7 +166,7 @@ onMounted(() => {
     </header>
 
     <a
-      v-if="isCampusMember"
+      v-if="showCampus"
       :href="`https://qm.qq.com/q/${qqGroup}`"
       target="_blank"
       rel="noreferrer"
