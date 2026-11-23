@@ -2,16 +2,25 @@
 /**
  * 登录 / 注册表单。
  *
- * 两种模式共用一套字段样式，用 tab 切换。注册成功和登录成功都直接跳转，
- * 不在这里处理后续导航，交给调用方传 onSuccess。
+ * 登录支持校内 11 位学号或校外用户名；注册提供两条清晰通道：
+ * - 校内成员：邀请码 + 学号 + 真实姓名 + 密码（开通全部校内功能）
+ * - 校外人员：自定义用户名 + 昵称 + 密码（免邀请码，仅开放学习与公开功能）
  */
 import { computed, onMounted, ref } from 'vue'
-import { AlertCircle, Fingerprint, Loader2 } from 'lucide-vue-next'
+import { AlertCircle, Fingerprint, GraduationCap, Loader2, UserPlus } from 'lucide-vue-next'
 import { Alert } from './ui/alert'
 import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Input } from './ui/input'
-import { ApiError, authApi, isStudentIdShaped, normalizeStudentId } from '../lib/api'
+import {
+  ApiError,
+  authApi,
+  isExternalUsernameShaped,
+  isStudentIdShaped,
+  normalizeExternalUsername,
+  normalizeLoginIdentifier,
+  normalizeStudentId,
+} from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { getPasskey, passkeySupported } from '../lib/webauthn'
 
@@ -25,15 +34,25 @@ const props = withDefaults(
   { initialMode: 'login', redirectTo: '/me' },
 )
 
-const { login, register, finishTotpLogin, loginWithPasskey, user, ensureLoaded } = useAuth()
+const {
+  login,
+  register,
+  registerExternal,
+  finishTotpLogin,
+  loginWithPasskey,
+  user,
+  ensureLoaded,
+} = useAuth()
 
 const mode = ref<'login' | 'register'>(props.initialMode)
+const registerChannel = ref<'campus' | 'external'>('campus')
 const submitting = ref(false)
 const error = ref('')
-//: 还在确认登录态。确认完之前不渲染表单，免得已登录的人先看一眼空表单。
+/** 还在确认登录态。确认完之前不渲染表单，免得已登录的人先看一眼空表单。 */
 const checking = ref(true)
 
-const studentId = ref('')
+const identifier = ref('')
+const externalUsername = ref('')
 
 // 两步验证第二步的状态：密码过了，差一个 TOTP 码。
 const totpTicket = ref('')
@@ -43,31 +62,61 @@ const password = ref('')
 const displayName = ref('')
 const inviteCode = ref('')
 
-// 学号格式提示。不在输入框上监听 keyup 来触发：浏览器自动填充和脚本设值都
-// 不会发 keyup，那样会漏掉。改为直接看当前值，只多一个「非空」条件。
+const isExternalRegister = computed(
+  () => mode.value === 'register' && registerChannel.value === 'external',
+)
+
 const studentIdLooksWrong = computed(
-  () => studentId.value.trim() !== '' && !isStudentIdShaped(studentId.value),
+  () =>
+    mode.value === 'register' &&
+    registerChannel.value === 'campus' &&
+    identifier.value.trim() !== '' &&
+    !isStudentIdShaped(identifier.value),
+)
+
+const externalUsernameLooksWrong = computed(
+  () =>
+    isExternalRegister.value &&
+    externalUsername.value.trim() !== '' &&
+    !isExternalUsernameShaped(externalUsername.value),
 )
 
 const canSubmit = computed(() => {
   if (submitting.value) return false
-  if (!studentId.value.trim() || !password.value) return false
-  if (mode.value === 'register') {
-    if (!displayName.value.trim() || !inviteCode.value.trim()) return false
-    if (!isStudentIdShaped(studentId.value)) return false
+  if (mode.value === 'login') {
+    return Boolean(identifier.value.trim() && password.value)
   }
-  return true
+  if (!displayName.value.trim() || password.value.length < 8) return false
+  if (registerChannel.value === 'external') {
+    return isExternalUsernameShaped(externalUsername.value)
+  }
+  return Boolean(inviteCode.value.trim() && isStudentIdShaped(identifier.value))
 })
 
 // 按钮为何不可点。光把按钮置灰而不说明原因，用户只能猜。
 const blockedReason = computed(() => {
   if (submitting.value) return ''
-  if (!inviteCode.value.trim() && mode.value === 'register') return '请填写邀请码'
-  if (!studentId.value.trim()) return '请填写学号'
-  if (!isStudentIdShaped(studentId.value)) return '学号格式不对，应为 11 位数字'
-  if (!displayName.value.trim() && mode.value === 'register') return '请填写姓名'
+  if (mode.value === 'login') {
+    if (!identifier.value.trim()) return '请填写学号或校外用户名'
+    if (!password.value) return '请填写密码'
+    return ''
+  }
+  if (registerChannel.value === 'external') {
+    if (!externalUsername.value.trim()) return '请填写校外用户名'
+    if (!isExternalUsernameShaped(externalUsername.value)) {
+      return '用户名需以字母开头，3-16 位，仅含字母、数字、_ 或 -'
+    }
+    if (!displayName.value.trim()) return '请填写昵称'
+    if (!password.value) return '请填写密码'
+    if (password.value.length < 8) return '密码至少 8 位'
+    return ''
+  }
+  if (!inviteCode.value.trim()) return '请填写邀请码'
+  if (!identifier.value.trim()) return '请填写学号'
+  if (!isStudentIdShaped(identifier.value)) return '学号格式不对，应为 11 位数字'
+  if (!displayName.value.trim()) return '请填写姓名'
   if (!password.value) return '请填写密码'
-  if (mode.value === 'register' && password.value.length < 8) return '密码至少 8 位'
+  if (password.value.length < 8) return '密码至少 8 位'
   return ''
 })
 
@@ -76,25 +125,24 @@ function switchMode(next: 'login' | 'register') {
   error.value = ''
 }
 
+function switchChannel(next: 'campus' | 'external') {
+  registerChannel.value = next
+  error.value = ''
+}
+
 onMounted(async () => {
-  // 邀请链接形如 /register?code=ABCD1234。带了这个参数就直接进注册模式并把
-  // 码填好——成员从群里点过来时不该还要手抄一遍。
-  const code = new URLSearchParams(window.location.search).get('code')
+  const params = new URLSearchParams(window.location.search)
+  const code = params.get('code')
+  const channel = params.get('channel')
   if (code) {
     mode.value = 'register'
+    registerChannel.value = 'campus'
     inviteCode.value = code.trim().toUpperCase()
+  } else if (channel === 'external') {
+    mode.value = 'register'
+    registerChannel.value = 'external'
   }
 
-  // 已经登录的人不该停在登录/注册表单上。
-  //
-  // 之前没这一步，已登录的账号点 /register 会看到一个空的注册表单，填了
-  // 还会因为「账号已存在」报错——其实是该直接进去的。
-  //
-  // 先 await ensureLoaded()：user 初始为 null，不等它拉完就判，已登录的人
-  // 也会被当成未登录放过去。
-  //
-  // 用 finally 复位 checking：ensureLoaded 内部已经吞掉网络错误，但真出
-  // 意外时也不能让页面永远卡在「正在确认」。
   try {
     await ensureLoaded()
     if (user.value) {
@@ -106,6 +154,7 @@ onMounted(async () => {
   }
   canPasskey.value = passkeySupported()
 })
+
 async function submit() {
   if (!canSubmit.value) return
 
@@ -114,22 +163,33 @@ async function submit() {
 
   try {
     if (mode.value === 'login') {
-      const r = await login(normalizeStudentId(studentId.value), password.value)
-      // 开了两步验证：转去填码，别直接跳走。
+      const r = await login(normalizeLoginIdentifier(identifier.value), password.value)
       if (typeof r === 'object' && 'totpRequired' in r && r.totpRequired) {
         totpTicket.value = r.ticket
         totpCode.value = ''
         submitting.value = false
         return
       }
-    } else {
-      await register({
-        invite_code: inviteCode.value.trim().toUpperCase(),
-        student_id: normalizeStudentId(studentId.value),
+      window.location.href = props.redirectTo
+      return
+    }
+
+    if (registerChannel.value === 'external') {
+      await registerExternal({
+        username: normalizeExternalUsername(externalUsername.value),
         display_name: displayName.value.trim(),
         password: password.value,
       })
+      window.location.href = '/'
+      return
     }
+
+    await register({
+      invite_code: inviteCode.value.trim().toUpperCase(),
+      student_id: normalizeStudentId(identifier.value),
+      display_name: displayName.value.trim(),
+      password: password.value,
+    })
     window.location.href = props.redirectTo
   } catch (err) {
     if (err instanceof ApiError) {
@@ -141,7 +201,6 @@ async function submit() {
   }
 }
 
-// 第二步：票据 + 验证码 → 会话。
 async function submitTotp() {
   if (!totpTicket.value || !totpCode.value.trim() || submitting.value) return
   submitting.value = true
@@ -153,14 +212,12 @@ async function submitTotp() {
     error.value = err instanceof ApiError ? err.message : '出了点问题，请稍后重试'
     submitting.value = false
     if (err instanceof ApiError && err.message.includes('票据')) {
-      // 票据过期就退回密码步
       totpTicket.value = ''
       totpCode.value = ''
     }
   }
 }
 
-// 通行密钥登录：浏览器自己挑账号的密钥，不用先输学号。
 async function usePasskey() {
   if (!canPasskey.value || submitting.value) return
   submitting.value = true
@@ -178,36 +235,67 @@ async function usePasskey() {
 </script>
 
 <template>
-  <!--
-    确认登录态期间不渲染表单。已登录的人会直接被跳走，让表单先出现再消失
-    会白闪一下。
-  -->
   <div v-if="checking" class="flex items-center justify-center gap-2 py-10 text-sm text-muted-foreground">
     <Loader2 class="h-4 w-4 animate-spin" />
     正在确认登录状态
   </div>
 
-  <Card v-else class="w-full max-w-md mx-auto">
-    <CardHeader class="pb-4">
-      <CardTitle class="text-lg">{{ mode === 'login' ? '登录' : '注册' }}</CardTitle>
+  <Card v-else class="mx-auto w-full max-w-md">
+    <CardHeader class="space-y-3 pb-4">
+      <div class="flex items-center justify-between gap-2">
+        <CardTitle class="text-lg">{{ mode === 'login' ? '登录' : '注册账号' }}</CardTitle>
+        <div class="segment-tabs" role="tablist" aria-label="登录或注册">
+          <button
+            v-for="tab in [
+              { key: 'login' as const, label: '登录' },
+              { key: 'register' as const, label: '注册' },
+            ]"
+            :key="tab.key"
+            type="button"
+            role="tab"
+            :aria-selected="mode === tab.key"
+            class="segment-tab"
+            @click="switchMode(tab.key)"
+          >
+            {{ tab.label }}
+          </button>
+        </div>
+      </div>
 
-      <div class="flex gap-1 pt-3">
+      <!-- 注册通道切换：校内成员 vs 校外人员 -->
+      <div
+        v-if="mode === 'register' && !totpTicket"
+        class="grid grid-cols-2 gap-2 pt-1"
+        role="radiogroup"
+        aria-label="选择注册身份"
+      >
         <button
-          v-for="tab in [
-            { key: 'login' as const, label: '登录' },
-            { key: 'register' as const, label: '注册' },
-          ]"
-          :key="tab.key"
           type="button"
-          class="flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors"
+          :aria-pressed="registerChannel === 'campus'"
+          class="flex items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium transition-colors"
           :class="
-            mode === tab.key
-              ? 'bg-accent text-accent-foreground'
-              : 'text-muted-foreground hover:bg-muted/60'
+            registerChannel === 'campus'
+              ? 'border-primary bg-primary/10 text-foreground'
+              : 'border-border/60 bg-background text-muted-foreground hover:border-border hover:text-foreground'
           "
-          @click="switchMode(tab.key)"
+          @click="switchChannel('campus')"
         >
-          {{ tab.label }}
+          <GraduationCap class="h-3.5 w-3.5 shrink-0" />
+          校内成员
+        </button>
+        <button
+          type="button"
+          :aria-pressed="registerChannel === 'external'"
+          class="flex items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium transition-colors"
+          :class="
+            registerChannel === 'external'
+              ? 'border-primary bg-primary/10 text-foreground'
+              : 'border-border/60 bg-background text-muted-foreground hover:border-border hover:text-foreground'
+          "
+          @click="switchChannel('external')"
+        >
+          <UserPlus class="h-3.5 w-3.5 shrink-0" />
+          校外人员
         </button>
       </div>
     </CardHeader>
@@ -247,7 +335,16 @@ async function usePasskey() {
       </form>
 
       <form v-else class="space-y-4" @submit.prevent="submit">
-        <div v-if="mode === 'register'" class="space-y-1.5">
+        <!-- 校外通道说明 -->
+        <div
+          v-if="isExternalRegister"
+          class="rounded-lg border border-border/60 bg-muted/35 px-3 py-2.5 text-xs leading-relaxed text-muted-foreground"
+        >
+          无需邀请码与学号。校外账号可使用在线题库、云端 IDE、每日一题与公开题单并保存个人刷题记录；校内榜单、集训与内部活动仅对校内成员开放。
+        </div>
+
+        <!-- 校内注册：邀请码 -->
+        <div v-if="mode === 'register' && registerChannel === 'campus'" class="space-y-1.5">
           <label for="invite" class="text-sm font-medium">邀请码</label>
           <Input
             id="invite"
@@ -260,32 +357,60 @@ async function usePasskey() {
           />
         </div>
 
-        <div class="space-y-1.5">
-          <label for="student-id" class="text-sm font-medium">学号</label>
+        <!-- 校外注册：用户名 -->
+        <div v-if="isExternalRegister" class="space-y-1.5">
+          <label for="external-username" class="text-sm font-medium">用户名</label>
+          <Input
+            id="external-username"
+            v-model="externalUsername"
+            placeholder="字母开头，3-16 位（如 alice_acm）"
+            autocomplete="username"
+            autocapitalize="none"
+            spellcheck="false"
+            maxlength="16"
+            class="font-mono"
+          />
+          <p v-if="externalUsernameLooksWrong" class="text-xs text-destructive">
+            需以英文字母开头，3-16 位，仅允许字母、数字、下划线或连字符
+          </p>
+          <p v-else class="text-xs text-muted-foreground">
+            作为登录账号使用，自动统一为小写
+          </p>
+        </div>
+
+        <!-- 登录或校内注册：学号 / 用户名 -->
+        <div v-else class="space-y-1.5">
+          <label for="student-id" class="text-sm font-medium">
+            {{ mode === 'login' ? '学号 / 用户名' : '学号' }}
+          </label>
           <Input
             id="student-id"
-            v-model="studentId"
-            placeholder="11 位学号"
+            v-model="identifier"
+            :placeholder="mode === 'login' ? '校内 11 位学号，或校外用户名' : '11 位学号'"
             autocomplete="username"
-            inputmode="numeric"
+            :inputmode="mode === 'register' ? 'numeric' : 'text'"
             spellcheck="false"
             class="font-mono"
           />
           <p v-if="studentIdLooksWrong" class="text-xs text-destructive">
             学号格式看起来不对，应为 11 位数字
           </p>
-          <p v-else class="text-xs text-muted-foreground">
-            {{ mode === 'register' ? '入学年份、学院、专业会从学号自动识别' : '' }}
+          <p v-else-if="mode === 'register'" class="text-xs text-muted-foreground">
+            入学年份、学院、专业会从学号自动识别
           </p>
         </div>
 
+        <!-- 注册时的姓名 / 昵称 -->
         <div v-if="mode === 'register'" class="space-y-1.5">
-          <label for="display-name" class="text-sm font-medium">姓名</label>
+          <label for="display-name" class="text-sm font-medium">
+            {{ isExternalRegister ? '昵称' : '姓名' }}
+          </label>
           <Input
             id="display-name"
             v-model="displayName"
-            placeholder="真实姓名"
-            autocomplete="name"
+            :placeholder="isExternalRegister ? '用于站内显示的称呼' : '真实姓名'"
+            :autocomplete="isExternalRegister ? 'nickname' : 'name'"
+            maxlength="32"
           />
         </div>
 
@@ -302,7 +427,13 @@ async function usePasskey() {
 
         <Button type="submit" class="w-full" :disabled="!canSubmit">
           <Loader2 v-if="submitting" class="mr-2 h-4 w-4 animate-spin" />
-          {{ mode === 'login' ? '登录' : '注册并登录' }}
+          {{
+            mode === 'login'
+              ? '登录'
+              : isExternalRegister
+                ? '创建校外账号'
+                : '注册并登录'
+          }}
         </Button>
 
         <Button
@@ -322,13 +453,16 @@ async function usePasskey() {
         </p>
       </form>
 
-      <!--
-        只有登录页需要这一句：用户找不到「忘记密码」入口时会到处找。
-        注册页不需要——邀请码字段的 placeholder 已经写了「群里的邀请码」。
-      -->
-      <p v-if="mode === 'login'" class="text-center text-xs text-muted-foreground">
-        忘记密码请联系管理员重置
-      </p>
+      <div v-if="mode === 'login'" class="flex items-center justify-between border-t border-border/40 pt-3 text-xs text-muted-foreground">
+        <span>忘记密码请联系管理员重置</span>
+        <button
+          type="button"
+          class="font-medium text-foreground underline-offset-4 hover:underline"
+          @click="switchMode('register'); switchChannel('external')"
+        >
+          校外注册 →
+        </button>
+      </div>
     </CardContent>
   </Card>
 </template>

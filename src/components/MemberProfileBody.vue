@@ -37,15 +37,7 @@ const props = withDefaults(
   { entry: null },
 )
 
-const { user, ensureLoaded } = useAuth()
-
-/**
- * 当前查看者是不是管理员。
- *
- * 决定要不要多显示一段「管理员信息」。注意这只是界面上的取舍——真正的
- * 权限在后端，普通成员即使手动改前端也拿不到那些数据（会 403）。
- */
-const isAdmin = computed(() => !!user.value && user.value.role !== 'member')
+const { isAdmin, ensureLoaded } = useAuth()
 
 const loading = ref(true)
 const error = ref('')

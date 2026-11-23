@@ -60,9 +60,10 @@ onMounted(() => {
 
 <template>
   <div class="space-y-4">
-    <div class="flex flex-wrap items-center justify-between gap-3">
+    <div class="page-header">
       <div>
-        <h1 class="text-lg font-semibold tracking-tight">题单</h1>
+        <h1 class="page-title">题单</h1>
+        <p class="page-subtitle">按算法专题整理的训练题单与合集</p>
       </div>
       <div v-if="!loading && lists.length > 3" class="relative w-full sm:w-64">
         <Search class="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
@@ -101,7 +102,7 @@ onMounted(() => {
         v-for="item in filteredLists"
         :key="item.id"
         type="button"
-        class="surface-action group flex w-full items-start gap-3 rounded-lg border border-border/50 bg-card px-4 py-3.5 text-left"
+        class="surface-card surface-action group flex w-full items-start gap-3 px-4 py-3.5 text-left"
         @click="go(`/problems/view?id=${item.id}`)"
       >
         <component

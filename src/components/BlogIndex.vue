@@ -56,9 +56,12 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="mx-auto w-full max-w-3xl space-y-4">
-    <div class="flex flex-wrap items-center justify-between gap-2">
-      <h1 class="text-lg font-semibold tracking-tight">博客</h1>
+  <div class="page-shell">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">博客</h1>
+        <p class="page-subtitle">学习笔记、算法总结与站点公告</p>
+      </div>
       <div class="flex items-center gap-2">
         <div v-if="!loading && posts.length > 3" class="relative w-44 sm:w-56">
           <Search class="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />

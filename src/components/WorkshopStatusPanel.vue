@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { CalendarDays, Clock, RefreshCw } from 'lucide-vue-next'
+import AccessGate from './AccessGate.vue'
 import { workshopApi, type WorkshopOverride } from '../lib/api'
+import { useAuth } from '../lib/auth'
 import {
   formatAge,
   overrideUntilText,
@@ -12,7 +14,8 @@ import {
   useWorkshopStatus,
 } from '../lib/workshopStatus'
 
-const { data, state, override, refresh } = useWorkshopStatus()
+const { user, isCampusMember, ready, ensureLoaded } = useAuth()
+const { data, state, override, refresh } = useWorkshopStatus(isCampusMember)
 
 const busy = ref(false)
 const checkedAt = ref<Date | null>(null)
@@ -80,6 +83,8 @@ function isCurrent(r: WorkshopOverride): boolean {
 }
 
 onMounted(async () => {
+  await ensureLoaded()
+  if (!isCampusMember.value) return
   try {
     schedule.value = await workshopApi.schedule()
   } catch {
@@ -89,8 +94,21 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="max-w-2xl mx-auto space-y-4">
-    <div class="rounded-lg border border-border/40 bg-card p-6">
+  <AccessGate
+    v-if="ready && !isCampusMember"
+    :mode="user ? 'campus' : 'login'"
+    title="工作坊开门状态仅对校内成员开放"
+  />
+
+  <div v-else class="page-shell-reading">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">工作坊状态</h1>
+        <p class="page-subtitle">实时查看活动室开门情况与近期状态排期</p>
+      </div>
+    </div>
+
+    <div class="surface-card p-6">
       <div class="flex items-start justify-between gap-4">
         <div class="flex items-center gap-3">
           <span class="relative flex h-3 w-3">

@@ -60,7 +60,7 @@ export interface User {
   major_name?: string | null
   class_label?: string | null
   class_no: number
-  role: 'root' | 'admin' | 'member'
+  role: 'root' | 'admin' | 'member' | 'external'
   status: 'active' | 'disabled'
   /** 是否被授予站内文章写作权限（管理员天然拥有）。 */
   can_post?: boolean
@@ -202,6 +202,13 @@ export const authApi = {
     display_name: string
     password: string
   }) => api.post<User>('/auth/register', payload),
+
+  /** 校外人员自助注册：无需学号与邀请码，仅开放基础学习与公开功能。 */
+  registerExternal: (payload: {
+    username: string
+    display_name: string
+    password: string
+  }) => api.post<User>('/auth/register-external', payload),
 
   logout: () => api.post<void>('/auth/logout'),
 
@@ -526,7 +533,7 @@ export interface AdminUser {
   college_code: string
   major_code: string
   class_no: number
-  role: 'root' | 'admin' | 'member'
+  role: 'root' | 'admin' | 'member' | 'external'
   status: 'active' | 'disabled'
   created_at: string
   last_login_at: string | null
@@ -606,6 +613,7 @@ export const adminApi = {
       user_count: number
       active_count: number
       admin_count: number
+      external_count?: number
       usable_invite_count: number
     }>('/admin/stats'),
 
@@ -673,6 +681,7 @@ export const adminApi = {
  * 末三位序号；联培为 12 位，末位是大写字母。真正的裁决仍在服务端。
  */
 const STUDENT_ID_RE = /^(\d{2})([123])(\d{2})(\d{2})(\d)(\d{3})([A-Z])?$/
+const EXTERNAL_USERNAME_RE = /^[a-z][a-z0-9_-]{2,15}$/
 
 export function isStudentIdShaped(value: string): boolean {
   return STUDENT_ID_RE.test(value.trim().toUpperCase())
@@ -680,6 +689,21 @@ export function isStudentIdShaped(value: string): boolean {
 
 export function normalizeStudentId(value: string): string {
   return value.trim().toUpperCase()
+}
+
+export function isExternalUsernameShaped(value: string): boolean {
+  return EXTERNAL_USERNAME_RE.test(value.trim().toLowerCase())
+}
+
+export function normalizeExternalUsername(value: string): string {
+  return value.trim().toLowerCase()
+}
+
+/** 登录标识归一化：数字开头按校内学号转大写，字母开头按校外用户名转小写。 */
+export function normalizeLoginIdentifier(value: string): string {
+  const cleaned = value.trim()
+  if (!cleaned) return ''
+  return /^[a-zA-Z]/.test(cleaned) ? cleaned.toLowerCase() : cleaned.toUpperCase()
 }
 
 // --------------------------------------------------------------------------- //

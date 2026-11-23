@@ -4,12 +4,13 @@ import { ArrowLeft, BookOpen, CircleCheck, Loader2, LogIn, RefreshCw } from 'luc
 import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import ActionNotice from './ui/ActionNotice.vue'
+import AccessGate from './AccessGate.vue'
 import CampLeaderboard from './CampLeaderboard.vue'
 import CampResultNotice from './CampResultNotice.vue'
 import { ApiError, campApi, PLATFORM_META, platformLabel, type CampDetail } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { confirmAction } from '../lib/confirm'
-const { user, ensureLoaded } = useAuth()
+const { user, isCampusMember, ready, ensureLoaded } = useAuth()
 const camp = ref<CampDetail | null>(null)
 const loading = ref(true)
 const refreshing = ref(false)
@@ -69,10 +70,13 @@ function tick() {
   }
 }
 onMounted(async () => {
+  await ensureLoaded()
+  if (disposed) return
+  if (!isCampusMember.value) { loading.value = false; return }
   const raw = Number(new URLSearchParams(location.search).get('id'))
   if (!Number.isSafeInteger(raw) || raw <= 0) { error.value = '集训地址不完整，请返回列表选择集训。'; loading.value = false; return }
   id.value = raw
-  await Promise.all([ensureLoaded(), load()])
+  await load()
   if (disposed) return
   tick(); timer = setInterval(tick, 1000)
   document.addEventListener('visibilitychange', tick)
@@ -81,7 +85,13 @@ onUnmounted(() => { disposed = true; clearInterval(timer); document.removeEventL
 </script>
 
 <template>
-  <div class="mx-auto w-full min-w-0 max-w-4xl space-y-4">
+  <AccessGate
+    v-if="ready && !isCampusMember"
+    :mode="user ? 'campus' : 'login'"
+    title="集训详情仅对校内成员开放"
+  />
+
+  <div v-else class="page-shell">
     <div class="flex flex-wrap items-center gap-2">
       <a href="/camps" class="mr-auto inline-flex min-h-11 items-center gap-2 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft class="h-4 w-4" />全部集训</a>
       <Button v-if="id" variant="outline" :disabled="refreshing || busy" @click="load"><RefreshCw class="mr-2 h-4 w-4" :class="refreshing && 'animate-spin'" />刷新</Button>

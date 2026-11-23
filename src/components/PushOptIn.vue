@@ -20,7 +20,7 @@ const busy = ref(false)
 const state = ref<'idle' | 'ok' | 'fail'>('idle')
 const failReason = ref('')
 
-const { user, ready, ensureLoaded } = useAuth()
+const { isCampusMember, ready, ensureLoaded } = useAuth()
 
 function dismiss() {
   visible.value = false
@@ -46,7 +46,7 @@ async function enable() {
 onMounted(async () => {
   if (!pushSupported()) return
   await ensureLoaded()
-  if (!ready.value || !user.value) return
+  if (!ready.value || !isCampusMember.value) return
   if (pushPermission() === 'denied') return
   try {
     if (localStorage.getItem(DISMISS_KEY)) return

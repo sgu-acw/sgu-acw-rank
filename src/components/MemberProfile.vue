@@ -2,24 +2,36 @@
 /**
  * 成员资料页 `/member?id=N`。
  *
- * 页面是静态输出的，用不了 `/member/3` 这种路径——构建时不知道有哪些 id，
- * 动态路由会要求 getStaticPaths。所以走查询参数。
- *
- * 内容在 MemberProfileBody 里，与练习榜的弹窗共用。
+ * 成员名录与详情仅对校内成员开放：先确认登录身份，再挂载 MemberProfileBody，
+ * 避免对未登录或校外访客发出 401/403 请求。
  */
 import { onMounted, ref } from 'vue'
+import { Loader2 } from 'lucide-vue-next'
+import AccessGate from './AccessGate.vue'
 import MemberProfileBody from './MemberProfileBody.vue'
+import { useAuth } from '../lib/auth'
 
+const { user, isCampusMember, ready, ensureLoaded } = useAuth()
 const userId = ref(0)
 
-// 必须放在 onMounted 里。服务端渲染时没有 window，若在 setup 顶层读，
-// 服务端拿到 0 而客户端拿到真实值，hydration 时两边对不上。
-onMounted(() => {
+onMounted(async () => {
   const fromQuery = new URLSearchParams(window.location.search).get('id')
   if (fromQuery) userId.value = Number(fromQuery)
+  await ensureLoaded()
 })
 </script>
 
 <template>
-  <MemberProfileBody :user-id="userId" />
+  <div v-if="!ready" class="flex items-center justify-center gap-2 py-12 text-sm text-muted-foreground">
+    <Loader2 class="h-4 w-4 animate-spin" />
+    正在读取…
+  </div>
+
+  <AccessGate
+    v-else-if="!isCampusMember"
+    :mode="user ? 'campus' : 'login'"
+    title="成员资料仅对校内成员开放"
+  />
+
+  <MemberProfileBody v-else :user-id="userId" />
 </template>

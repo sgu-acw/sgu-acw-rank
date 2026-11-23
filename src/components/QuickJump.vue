@@ -38,7 +38,7 @@ interface JumpItem {
   icon: unknown
 }
 
-const { user, isAdmin, canPost, ensureLoaded } = useAuth()
+const { user, isCampusMember, isAdmin, canPost, ensureLoaded } = useAuth()
 
 const open = ref(false)
 const query = ref('')
@@ -57,11 +57,19 @@ const items = computed<JumpItem[]>(() => {
           { title: '云端 IDE', route: '/ide', group: '训练', keywords: 'ide code editor yun', icon: SquareTerminal },
         ]
       : []),
-    { title: '练习数据', route: '/practice', group: '训练', keywords: 'practice rank rating lianxi', icon: BarChart3 },
-    { title: '集训', route: '/camps', group: '训练', keywords: 'camps training jixun', icon: Trophy },
+    ...(isCampusMember.value
+      ? [
+          { title: '练习数据', route: '/practice', group: '训练', keywords: 'practice rank rating lianxi', icon: BarChart3 },
+          { title: '集训', route: '/camps', group: '训练', keywords: 'camps training jixun', icon: Trophy },
+        ]
+      : []),
     { title: '荣誉殿堂', route: '/honors', group: '工作坊', keywords: 'honors awards rongyu icpc ccpc', icon: Award },
-    { title: '工作坊状态', route: '/status', group: '工作坊', keywords: 'status workshop heartbeat zhuangtai', icon: Activity },
-    { title: '线下赛报名', route: '/signups', group: '工作坊', keywords: 'signups register baoming', icon: ClipboardList },
+    ...(isCampusMember.value
+      ? [
+          { title: '工作坊状态', route: '/status', group: '工作坊', keywords: 'status workshop heartbeat zhuangtai', icon: Activity },
+          { title: '线下赛报名', route: '/signups', group: '工作坊', keywords: 'signups register baoming', icon: ClipboardList },
+        ]
+      : []),
     { title: '博客', route: '/blog', group: '工作坊', keywords: 'blog posts articles boke', icon: BookOpen },
     { title: '导航与资源', route: '/nav', group: '工作坊', keywords: 'nav links resources daohang', icon: Compass },
     { title: 'Codeforces 资料', route: '/codeforces/profile', group: '工作坊', keywords: 'codeforces cf profile', icon: User },

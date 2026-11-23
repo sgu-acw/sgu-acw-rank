@@ -46,11 +46,19 @@ onUnmounted(() => { disposed = true; ++requestId })
 </script>
 
 <template>
-  <div class="mx-auto w-full max-w-4xl space-y-4">
-    <div class="flex flex-wrap items-center gap-2">
-      <h1 class="mr-auto flex items-center gap-2 text-lg font-semibold"><Bell class="h-5 w-5" />管理员站内信 <span class="text-sm font-normal text-muted-foreground">{{ unread }} 条未读</span></h1>
-      <Button variant="outline" :disabled="loading || busy || !isAdmin" @click="load"><RefreshCw class="mr-2 h-4 w-4" :class="loading && 'animate-spin'" />刷新</Button>
-      <Button variant="outline" :disabled="loading || busy || !unread" @click="markRead()"><CheckCheck class="mr-2 h-4 w-4" />全部已读</Button>
+  <div class="page-shell">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title flex items-center gap-2">
+          <Bell class="h-5 w-5 text-muted-foreground" />
+          管理员站内信
+          <span class="text-sm font-normal text-muted-foreground">{{ unread }} 条未读</span>
+        </h1>
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <Button variant="outline" size="sm" :disabled="loading || busy || !isAdmin" @click="load"><RefreshCw class="mr-1.5 h-3.5 w-3.5" :class="loading && 'animate-spin'" />刷新</Button>
+        <Button variant="outline" size="sm" :disabled="loading || busy || !unread" @click="markRead()"><CheckCheck class="mr-1.5 h-3.5 w-3.5" />全部已读</Button>
+      </div>
     </div>
     <p v-if="!loading && !isAdmin" class="py-10 text-sm text-muted-foreground">{{ user ? '需要管理员权限才能查看故障站内信。' : '请先登录管理员账号。' }} <a v-if="!user" href="/login" class="underline">前往登录</a></p>
     <template v-else>

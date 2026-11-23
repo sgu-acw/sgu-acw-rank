@@ -6,12 +6,13 @@ import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Input } from './ui/input'
 import ActionNotice from './ui/ActionNotice.vue'
+import AccessGate from './AccessGate.vue'
 import { ApiError, PLATFORM_META, signupApi, type SignupAnswer, type SignupSummary } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { confirmAction } from '../lib/confirm'
 import { useNow } from '../lib/useNow'
 
-const { user, ensureLoaded } = useAuth()
+const { user, isCampusMember, ready, ensureLoaded } = useAuth()
 
 const id = ref<number | null>(null)
 const signup = ref<SignupSummary | null>(null)
@@ -137,6 +138,10 @@ onMounted(async () => {
   const raw = new URLSearchParams(window.location.search).get('id')
   id.value = raw ? parseInt(raw, 10) : null
   await ensureLoaded()
+  if (!isCampusMember.value) {
+    loading.value = false
+    return
+  }
   if (!id.value) {
     error.value = '缺少报名地址'
     loading.value = false
@@ -147,7 +152,13 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="mx-auto w-full max-w-2xl space-y-4">
+  <AccessGate
+    v-if="ready && !isCampusMember"
+    :mode="user ? 'campus' : 'login'"
+    title="线下赛报名详情仅对校内成员开放"
+  />
+
+  <div v-else class="page-shell-reading">
     <a href="/signups" class="inline-flex min-h-11 items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
       <ArrowLeft class="h-4 w-4" />全部报名
     </a>

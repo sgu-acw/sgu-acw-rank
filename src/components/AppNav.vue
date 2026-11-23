@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 import {
   Award,
   Bell,
@@ -41,9 +41,21 @@ const currentPath = ref('')
 const mounted = ref(false)
 
 // 侧边栏底部的登录入口。未登录时显示「登录」，已登录时显示姓名并链到个人中心。
-const { user, isAdmin, canPost, ensureLoaded } = useAuth()
+const { user, isExternal, isCampusMember, isAdmin, canPost, ensureLoaded } = useAuth()
 
-const navGroups = [
+interface NavItem {
+  title: string
+  route: string
+  icon: unknown
+  campusOnly?: boolean
+}
+
+interface NavGroup {
+  label: string
+  items: NavItem[]
+}
+
+const rawNavGroups: NavGroup[] = [
   {
     label: '总览',
     items: [{ title: '首页', route: '/', icon: Home }],
@@ -54,26 +66,39 @@ const navGroups = [
       { title: '每日一题', route: '/daily', icon: CalendarCheck },
       { title: '题单', route: '/problems', icon: ListChecks },
       // 题库与云端 IDE 只在题库功能开启时存在。
-      ...(LEARN_LOCAL ? [
-        { title: '题库', route: '/learn', icon: Terminal },
-        { title: '云端 IDE', route: '/ide', icon: SquareTerminal },
-      ] : []),
-      { title: '练习数据', route: '/practice', icon: BarChart3 },
-      { title: '集训', route: '/camps', icon: Trophy },
+      ...(LEARN_LOCAL
+        ? [
+            { title: '题库', route: '/learn', icon: Terminal },
+            { title: '云端 IDE', route: '/ide', icon: SquareTerminal },
+          ]
+        : []),
+      { title: '练习数据', route: '/practice', icon: BarChart3, campusOnly: true },
+      { title: '集训', route: '/camps', icon: Trophy, campusOnly: true },
     ],
   },
   {
     label: '工作坊',
     items: [
       { title: '荣誉殿堂', route: '/honors', icon: Award },
-      { title: '工作坊状态', route: '/status', icon: Activity },
-      { title: '线下赛报名', route: '/signups', icon: ClipboardList },
+      { title: '工作坊状态', route: '/status', icon: Activity, campusOnly: true },
+      { title: '线下赛报名', route: '/signups', icon: ClipboardList, campusOnly: true },
       { title: '博客', route: '/blog', icon: BookOpen },
       { title: '导航与资源', route: '/nav', icon: Compass },
       { title: 'Codeforces 资料', route: '/codeforces/profile', icon: User },
     ],
   },
 ]
+
+// 仅在确认是校内成员后展示校内专属入口；未登录与校外用户只看到开放功能，
+// 且 SSR 首帧与未登录一致，不产生 hydration 差异。
+const navGroups = computed(() =>
+  rawNavGroups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) => !item.campusOnly || isCampusMember.value),
+    }))
+    .filter((group) => group.items.length > 0),
+)
 
 function syncPath() {
   currentPath.value = window.location.pathname
@@ -184,11 +209,17 @@ function isActive(route: string): boolean {
           v-if="user"
           href="/me"
           :aria-current="isActive('/me') ? 'page' : undefined"
-          class="flex min-h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors duration-150 ease-[var(--ease-out)] active:scale-[0.99]"
+          class="flex min-h-10 items-center gap-2.5 rounded-lg px-3 text-sm font-medium transition-colors duration-150 ease-[var(--ease-out)] active:scale-[0.99]"
           :class="isActive('/me') ? 'bg-accent text-accent-foreground' : 'text-muted-foreground hover:bg-accent/70 hover:text-foreground'"
         >
           <User class="h-4 w-4 shrink-0" />
           <span class="truncate">{{ user.display_name }}</span>
+          <span
+            v-if="isExternal"
+            class="ml-auto shrink-0 rounded border border-border/60 bg-muted/60 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground"
+          >
+            校外
+          </span>
         </a>
         <a
           v-else
@@ -196,7 +227,7 @@ function isActive(route: string): boolean {
           class="flex min-h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-accent-foreground"
         >
           <LogIn class="h-4 w-4" />
-          登录
+          登录 / 注册
         </a>
       </div>
     </nav>

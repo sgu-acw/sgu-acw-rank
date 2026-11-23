@@ -3,10 +3,11 @@ import { computed, onMounted, ref } from 'vue'
 import { AlertCircle, CalendarDays, CheckCircle2, ChevronRight, Users } from 'lucide-vue-next'
 import { Alert } from './ui/alert'
 import { Card, CardContent } from './ui/card'
+import AccessGate from './AccessGate.vue'
 import { ApiError, signupApi, type SignupSummary } from '../lib/api'
 import { useAuth } from '../lib/auth'
 
-const { ensureLoaded } = useAuth()
+const { user, isCampusMember, ready, ensureLoaded } = useAuth()
 
 const signups = ref<SignupSummary[]>([])
 const loading = ref(true)
@@ -74,18 +75,32 @@ async function load() {
   }
 }
 
-onMounted(() => {
-  void Promise.all([ensureLoaded(), load()])
+onMounted(async () => {
+  await ensureLoaded()
+  if (!isCampusMember.value) {
+    loading.value = false
+    return
+  }
+  await load()
 })
 </script>
 
 <template>
-  <div class="mx-auto w-full max-w-3xl space-y-4">
-    <div class="flex flex-wrap items-center justify-between gap-2">
-      <h1 class="text-lg font-semibold tracking-tight">线下赛报名</h1>
+  <AccessGate
+    v-if="ready && !isCampusMember"
+    :mode="user ? 'campus' : 'login'"
+    title="线下赛报名仅对校内成员开放"
+  />
+
+  <div v-else class="page-shell">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">线下赛报名</h1>
+        <p class="page-subtitle">校内选拔赛与线下活动报名入口</p>
+      </div>
       <div
         v-if="!loading && signups.length > 0"
-        class="inline-flex rounded-lg border border-border/50 bg-muted/40 p-0.5 text-xs"
+        class="segment-tabs"
         role="tablist"
         aria-label="按状态筛选报名"
       >
@@ -95,12 +110,7 @@ onMounted(() => {
           type="button"
           role="tab"
           :aria-selected="statusFilter === tab.key"
-          class="rounded-md px-2.5 py-1 font-medium transition-colors"
-          :class="
-            statusFilter === tab.key
-              ? 'bg-card text-foreground shadow-sm'
-              : 'text-muted-foreground hover:text-foreground'
-          "
+          class="segment-tab"
           @click="statusFilter = tab.key"
         >
           {{ tab.label }}

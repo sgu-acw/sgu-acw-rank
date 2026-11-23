@@ -63,8 +63,14 @@ onUnmounted(() => { serial++ })
 </script>
 <template>
   <div class="learning-page problem-library">
-    <header class="learning-page-heading">
-      <div><div class="mb-2 flex items-center gap-2 text-xs text-muted-foreground"><BookOpen class="h-4 w-4" />PROBLEM LIBRARY</div><h1 class="text-2xl font-semibold tracking-tight">题库</h1><p class="mt-2 text-sm text-muted-foreground">从一道题开始，把想法写成代码。</p></div>
+    <header class="page-header mb-5">
+      <div>
+        <h1 class="page-title flex items-center gap-2">
+          <BookOpen class="h-5 w-5 text-muted-foreground" />
+          题库
+        </h1>
+        <p class="page-subtitle">从一道题开始，把想法写成代码。</p>
+      </div>
       <a href="/ide" class="learning-text-link"><Code2 class="h-4 w-4" />打开云端 IDE<ArrowUpRight class="h-4 w-4" /></a>
     </header>
     <div class="library-overview">
@@ -74,7 +80,7 @@ onUnmounted(() => { serial++ })
     </div>
     <ActionNotice :message="error" variant="error" /><ActionNotice :message="progressError" variant="info" />
     <div class="library-layout">
-      <aside class="library-chapters" aria-label="按章节浏览"><p class="mb-3 text-xs font-medium text-muted-foreground">学习章节</p><nav class="space-y-1"><button type="button" class="chapter-link" :aria-pressed="!chapter" @click="chapter = ''"><span>全部题目</span><span>{{ rows.length }}</span></button><button v-for="name in chapters" :key="name" type="button" class="chapter-link" :aria-pressed="chapter === name" @click="chapter = name"><span class="truncate">{{ name }}</span><span>{{ user ? `${chapterProgress(name).solved} / ` : '' }}{{ chapterProgress(name).total }}</span></button></nav><p v-if="!user" class="mt-5 text-xs leading-6 text-muted-foreground">登录后可记录完成进度。<br />所有题目均可直接阅读和练习。</p></aside>
+      <aside class="library-chapters" aria-label="按章节浏览"><p class="mb-3 text-xs font-medium text-muted-foreground">学习章节</p><nav class="space-y-1"><button type="button" class="chapter-link" :aria-pressed="!chapter" @click="chapter = ''"><span>全部题目</span><span>{{ rows.length }}</span></button><button v-for="name in chapters" :key="name" type="button" class="chapter-link" :aria-pressed="chapter === name" @click="chapter = name"><span class="truncate">{{ name }}</span><span>{{ user ? `${chapterProgress(name).solved} / ` : '' }}{{ chapterProgress(name).total }}</span></button></nav><p v-if="!user" class="mt-5 text-xs leading-6 text-muted-foreground"><a href="/login" class="font-medium text-foreground underline underline-offset-4">登录</a>或<a href="/register?channel=external" class="font-medium text-foreground underline underline-offset-4">校外注册</a>后可云端记录完成进度。<br />未登录也可直接阅读题目并在浏览器本地运行。</p></aside>
       <section class="min-w-0" aria-label="题目列表">
         <div class="library-controls">
           <div class="flex min-w-0 items-center gap-2"><div class="relative min-w-0 flex-1"><Search class="pointer-events-none absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" /><Input v-model="keyword" type="search" class="w-full pl-9" aria-label="搜索题目" placeholder="搜索题名、标签或题号…" /></div><IconButton label="筛选条件" :aria-expanded="filtersOpen" @click="filtersOpen = !filtersOpen"><SlidersHorizontal class="h-4 w-4" /></IconButton><RefreshButton :busy="loading" @click="load" /></div>

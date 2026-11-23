@@ -13,11 +13,12 @@
  * 数据由后端定时同步平台得来，页面只读。
  */
 import { computed, onMounted, ref, watch } from 'vue'
-import { AlertCircle, ChevronDown, Filter, Loader2, LogIn, RefreshCw, X } from 'lucide-vue-next'
+import { AlertCircle, ChevronDown, Filter, Loader2, RefreshCw, X } from 'lucide-vue-next'
 import { Alert } from './ui/alert'
 import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Input } from './ui/input'
+import AccessGate from './AccessGate.vue'
 import MemberDialog from './MemberDialog.vue'
 import {
   ApiError,
@@ -35,7 +36,7 @@ import {
 import { useAuth } from '../lib/auth'
 import { formatEnrollYear } from '../lib/format'
 
-const { ensureLoaded } = useAuth()
+const { user, isCampusMember, ready, ensureLoaded } = useAuth()
 
 type Dimension = 'practice' | 'rating' | 'checkin'
 
@@ -290,6 +291,10 @@ function formatSolvedAt(value: string): string {
 }
 
 async function load() {
+  if (!isCampusMember.value) {
+    loading.value = false
+    return
+  }
   loading.value = true
   error.value = ''
   needsLogin.value = false
@@ -322,7 +327,7 @@ async function load() {
       status.value = sync
     }
   } catch (err) {
-    if (err instanceof ApiError && err.status === 401) {
+    if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
       needsLogin.value = true
     } else {
       error.value = err instanceof ApiError ? err.message : '加载失败，请稍后重试'
@@ -377,9 +382,18 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="space-y-4">
-    <div class="flex flex-wrap items-center justify-between gap-3">
-      <h1 class="text-lg font-semibold tracking-tight">榜单</h1>
+  <AccessGate
+    v-if="ready && !isCampusMember"
+    :mode="user ? 'campus' : 'login'"
+    title="练习数据与榜单仅对校内成员开放"
+  />
+
+  <div v-else class="space-y-4">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">练习数据</h1>
+        <p class="page-subtitle">校内成员练习量、多平台 Rating 与每日一题签到统计</p>
+      </div>
       <Button variant="outline" size="sm" :disabled="loading" @click="reload">
         <RefreshCw class="mr-1.5 h-3.5 w-3.5" :class="loading && 'animate-spin'" />
         刷新
@@ -387,7 +401,7 @@ onMounted(async () => {
     </div>
 
     <!-- 维度 -->
-    <div class="flex gap-1 rounded-md border border-border/40 p-0.5">
+    <div class="segment-tabs flex w-full" role="tablist" aria-label="榜单维度">
       <button
         v-for="tab in [
           { key: 'practice' as const, label: '练习量' },
@@ -395,12 +409,10 @@ onMounted(async () => {
           { key: 'checkin' as const, label: '签到' },
         ]"
         :key="tab.key"
-        class="flex-1 rounded px-3 py-2 text-xs font-medium transition-colors active:scale-[0.98]"
-        :class="
-          dimension === tab.key
-            ? 'bg-accent text-accent-foreground'
-            : 'text-muted-foreground hover:bg-muted/60'
-        "
+        type="button"
+        role="tab"
+        :aria-selected="dimension === tab.key"
+        class="segment-tab flex-1 py-2"
         @click="dimension = tab.key"
       >
         {{ tab.label }}
@@ -526,14 +538,11 @@ onMounted(async () => {
       <span class="text-sm">{{ error }}</span>
     </Alert>
 
-    <Card v-if="needsLogin">
-      <CardContent class="py-8 text-center">
-        <Button @click="go('/login')">
-          <LogIn class="mr-2 h-4 w-4" />
-          登录后查看榜单
-        </Button>
-      </CardContent>
-    </Card>
+    <AccessGate
+      v-if="needsLogin"
+      :mode="user ? 'campus' : 'login'"
+      title="练习数据与榜单仅对校内成员开放"
+    />
 
     <!-- 练习量 -->
     <Card v-else-if="dimension === 'practice'">

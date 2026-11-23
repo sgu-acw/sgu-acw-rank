@@ -3,7 +3,7 @@
  * 移动端主导航：把高频训练动作放在拇指区，低频信息收进「更多」。
  * 桌面端仍用分组侧栏；移动端不尝试缩小那套导航。
  */
-import { onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import {
   Activity,
   Award,
@@ -29,28 +29,41 @@ import { LEARN_LOCAL } from '../lib/api'
 
 const currentPath = ref('')
 const moreOpen = ref(false)
-const { user, isAdmin, canPost, ensureLoaded } = useAuth()
+const { user, isExternal, isCampusMember, isAdmin, canPost, ensureLoaded } = useAuth()
 
-const tabs = [
+const tabs = computed(() => [
   { title: '首页', route: '/', icon: Home },
   { title: '每日一题', route: '/daily', icon: CalendarCheck },
   { title: '题单', route: '/problems', icon: ListChecks },
-  { title: '练习数据', route: '/practice', icon: BarChart3 },
-]
+  isCampusMember.value
+    ? { title: '练习数据', route: '/practice', icon: BarChart3 }
+    : LEARN_LOCAL
+      ? { title: '题库', route: '/learn', icon: Terminal }
+      : { title: '荣誉殿堂', route: '/honors', icon: Award },
+])
 
-const extraLinks = [
-  ...(LEARN_LOCAL ? [
-    { title: '题库', route: '/learn', icon: Terminal },
-    { title: '云端 IDE', route: '/ide', icon: SquareTerminal },
-  ] : []),
-  { title: '集训', route: '/camps', icon: Trophy },
-  { title: '荣誉殿堂', route: '/honors', icon: Award },
-  { title: '工作坊状态', route: '/status', icon: Activity },
-  { title: '线下赛报名', route: '/signups', icon: ClipboardList },
-  { title: '博客', route: '/blog', icon: BookOpen },
-  { title: '导航与资源', route: '/nav', icon: Compass },
-  { title: 'Codeforces 资料', route: '/codeforces/profile', icon: User },
-]
+const extraLinks = computed(() => {
+  const list = [
+    ...(LEARN_LOCAL
+      ? [
+          ...(isCampusMember.value ? [{ title: '题库', route: '/learn', icon: Terminal }] : []),
+          { title: '云端 IDE', route: '/ide', icon: SquareTerminal },
+        ]
+      : []),
+    ...(isCampusMember.value
+      ? [
+          { title: '集训', route: '/camps', icon: Trophy },
+          { title: '工作坊状态', route: '/status', icon: Activity },
+          { title: '线下赛报名', route: '/signups', icon: ClipboardList },
+        ]
+      : []),
+    ...(isCampusMember.value || LEARN_LOCAL ? [{ title: '荣誉殿堂', route: '/honors', icon: Award }] : []),
+    { title: '博客', route: '/blog', icon: BookOpen },
+    { title: '导航与资源', route: '/nav', icon: Compass },
+    { title: 'Codeforces 资料', route: '/codeforces/profile', icon: User },
+  ]
+  return list
+})
 
 function syncPath() {
   currentPath.value = window.location.pathname
@@ -86,19 +99,10 @@ const isAdminRoute = () =>
   currentPath.value.startsWith('/editorials/admin')
 
 const moreActive = () =>
-  [
-    '/learn',
-    '/ide',
-    '/honors',
-    '/camps',
-    '/status',
-    '/signups',
-    '/blog',
-    '/nav',
-    '/codeforces/profile',
-    '/me',
-    '/notifications',
-  ].some((route) => isActive(route)) || isAdminRoute()
+  extraLinks.value.some((link) => isActive(link.route)) ||
+  isActive('/me') ||
+  isActive('/notifications') ||
+  isAdminRoute()
 
 function closeOnEscape(event: KeyboardEvent) {
   if (event.key === 'Escape') moreOpen.value = false
@@ -177,7 +181,7 @@ onUnmounted(() => {
         >
           <User class="h-4 w-4 shrink-0" />
           <span class="truncate">{{ user.display_name }}</span>
-          <span class="ml-auto text-xs text-muted-foreground">个人中心</span>
+          <span class="ml-auto text-xs text-muted-foreground">{{ isExternal ? '校外账号' : '个人中心' }}</span>
         </a>
         <a
           v-else

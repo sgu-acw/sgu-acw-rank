@@ -90,12 +90,18 @@ onUnmounted(() => { sequence++ })
 
 <template>
   <section class="honor-archive min-w-0" :class="userId !== undefined && 'personal'" aria-label="历史获奖记录" :aria-busy="loading">
-    <header class="mb-6 flex items-center justify-between gap-4">
-      <h2 class="flex items-center gap-2.5 text-xl font-semibold">
-        <Trophy class="h-5 w-5 text-muted-foreground" aria-hidden="true" />
-        {{ userId === undefined ? '荣誉殿堂' : '历史获奖记录' }}
-        <span v-if="records.length" class="ml-1 text-sm font-normal tabular-nums text-muted-foreground">{{ records.length }} 项</span>
-      </h2>
+    <header class="page-header mb-6">
+      <div>
+        <component
+          :is="userId === undefined ? 'h1' : 'h2'"
+          :class="userId === undefined ? 'page-title flex items-center gap-2' : 'flex items-center gap-2 text-base font-semibold tracking-tight'"
+        >
+          <Trophy class="h-5 w-5 text-muted-foreground" aria-hidden="true" />
+          {{ userId === undefined ? '荣誉殿堂' : '历史获奖记录' }}
+          <span v-if="records.length" class="ml-1 text-sm font-normal tabular-nums text-muted-foreground">{{ records.length }} 项</span>
+        </component>
+        <p v-if="userId === undefined" class="page-subtitle">历届算法竞赛获奖档案与赛事检索</p>
+      </div>
       <RefreshButton :busy="loading" @click="load()" />
     </header>
     <template v-if="userId === undefined">

@@ -23,7 +23,7 @@ import { ApiError, authApi } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { formatEnrollYear } from '../lib/format'
 
-const { user, loading, ready, ensureLoaded, logout, setUser } = useAuth()
+const { user, isExternal, isCampusMember, loading, ready, ensureLoaded, logout, setUser } = useAuth()
 
 const editingName = ref(false)
 const draftName = ref('')
@@ -86,6 +86,8 @@ const roleName = computed(() => {
       return 'root'
     case 'admin':
       return '管理员'
+    case 'external':
+      return '校外账号'
     default:
       return '成员'
   }
@@ -129,10 +131,12 @@ function go(path: string) {
       </div>
 
       <div v-else-if="!user" class="space-y-4 py-2">
-        <p class="text-sm text-muted-foreground">登录后可绑定 OJ 账号、参与集训与管理安全设置。</p>
-        <div class="flex gap-2">
+        <p class="text-sm text-muted-foreground">
+          登录后可保存个人做题记录与管理账号安全；校内成员还可绑定 OJ 账号、参与集训与查看练习榜单。
+        </p>
+        <div class="flex flex-wrap gap-2">
           <Button class="flex-1" @click="go('/login')">去登录</Button>
-          <Button variant="outline" class="flex-1" @click="go('/register')">去注册</Button>
+          <Button variant="outline" class="flex-1" @click="go('/register?channel=external')">校外注册</Button>
         </div>
       </div>
 
@@ -180,16 +184,20 @@ function go(path: string) {
 
         <Separator />
 
-        <dl class="grid gap-3 text-sm sm:grid-cols-3">
-          <div class="rounded-md bg-muted/30 px-3 py-2">
+        <div v-if="isExternal" class="rounded-lg border border-border/50 bg-muted/30 px-3.5 py-2.5 text-xs leading-relaxed text-muted-foreground">
+          当前为校外体验账号（登录用户名：<span class="font-mono text-foreground">{{ user.student_id }}</span>），已开放题库云端记录、云端 IDE、每日一题与公开题单；校内学籍、OJ 榜单与内部活动暂不开放。
+        </div>
+
+        <dl v-else class="grid gap-3 text-sm sm:grid-cols-3">
+          <div class="rounded-lg bg-muted/30 px-3 py-2">
             <dt class="text-xs text-muted-foreground">入学年份</dt>
             <dd class="mt-0.5 font-medium">{{ formatEnrollYear(user.enroll_year) || '—' }}</dd>
           </div>
-          <div class="rounded-md bg-muted/30 px-3 py-2">
+          <div class="rounded-lg bg-muted/30 px-3 py-2">
             <dt class="text-xs text-muted-foreground">培养层次</dt>
             <dd class="mt-0.5 font-medium">{{ levelName }}</dd>
           </div>
-          <div class="rounded-md bg-muted/30 px-3 py-2">
+          <div class="rounded-lg bg-muted/30 px-3 py-2">
             <dt class="text-xs text-muted-foreground">院系 / 班级</dt>
             <dd class="mt-0.5 truncate font-medium" :title="academicLabel">{{ academicLabel }}</dd>
           </div>
@@ -199,18 +207,20 @@ function go(path: string) {
   </Card>
 
   <div v-if="ready && user" class="mt-4 space-y-4">
-    <div class="rounded-lg border bg-card p-4">
-      <HonorArchive :user-id="user.id" />
-    </div>
+    <template v-if="isCampusMember">
+      <div class="surface-card p-4">
+        <HonorArchive :user-id="user.id" />
+      </div>
 
-    <!-- 账号绑定只在已登录时显示，它需要会话。 -->
-    <AccountBindings />
+      <!-- 账号绑定只在校内成员登录时显示。 -->
+      <AccountBindings />
+    </template>
 
     <SecuritySettings />
 
     <SessionManager />
 
-    <PushSettings />
+    <PushSettings v-if="isCampusMember" />
 
     <PasswordForm />
   </div>

@@ -31,7 +31,7 @@ import {
 } from '../lib/api'
 import { useAuth } from '../lib/auth'
 
-const { user, ensureLoaded } = useAuth()
+const { user, isCampusMember, ensureLoaded } = useAuth()
 
 /**
  * 题单 id 从查询参数里取。
@@ -104,8 +104,8 @@ async function load() {
     const detail = await problemListApi.get(listId.value)
     if (seq !== loadSeq) return
     data.value = detail
-    // 排行单独拉，失败不影响题目列表。
-    if (detail.kind === 'list') {
+    // 完成度排行仅对校内成员开放，非校内访客跳过该请求避免多余 401/403。
+    if (detail.kind === 'list' && isCampusMember.value) {
       rankLoading.value = true
       try {
         const rankRes = await problemListApi.rank(listId.value)
@@ -115,6 +115,8 @@ async function load() {
       } finally {
         if (seq === loadSeq) rankLoading.value = false
       }
+    } else {
+      rank.value = null
     }
   } catch (err) {
     if (seq !== loadSeq) return
@@ -146,7 +148,7 @@ const backTarget = computed(() => {
   return { href: '/problems', label: '题单' }
 })
 
-onMounted(() => {
+onMounted(async () => {
   const raw = new URLSearchParams(window.location.search).get('id')
   const parsed = Number(raw)
   if (!raw || !Number.isFinite(parsed)) {
@@ -156,7 +158,8 @@ onMounted(() => {
   }
   listId.value = parsed
 
-  void Promise.all([ensureLoaded(), load()])
+  await ensureLoaded()
+  await load()
 })
 </script>
 

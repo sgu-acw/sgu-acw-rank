@@ -390,17 +390,19 @@ async function resetPassword(target: AdminUser) {
 }
 
 function roleLabel(role: string): string {
-  return role === 'root' ? 'root' : role === 'admin' ? '管理员' : '成员'
+  if (role === 'root') return 'root'
+  if (role === 'admin') return '管理员'
+  if (role === 'external') return '校外'
+  return '成员'
 }
 
 /** 能不能改这个人的角色。
  *
- * 管理员之间是平级的，所以任何管理员都能改别人的角色。两个例外：
- * root 动不了（要转让得走别的路），以及自己——把自己降级会当场失去
- * 管理权限，多半是误操作。
+ * 管理员之间是平级的，所以任何管理员都能改别人的角色。三个例外：
+ * root 动不了、校外账号不能直接转为校内成员、以及不能降级自己。
  */
 function canChangeRole(member: AdminUser): boolean {
-  if (member.role === 'root') return false
+  if (member.role === 'root' || member.role === 'external') return false
   if (member.id === user.value?.id) return false
   return true
 }
@@ -490,6 +492,13 @@ onMounted(async () => {
             管理员
             <span class="ml-1 font-mono tabular-nums text-foreground">{{ stats.admin_count }}</span>
           </span>
+          <template v-if="(stats.external_count ?? 0) > 0">
+            <span class="text-border">·</span>
+            <span>
+              校外
+              <span class="ml-1 font-mono tabular-nums text-foreground">{{ stats.external_count }}</span>
+            </span>
+          </template>
           <span class="text-border">·</span>
           <span title="开了推送通知的成员数（一人多设备算一次）">
             开通知
@@ -639,7 +648,7 @@ onMounted(async () => {
               <Search class="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/60" />
               <Input
                 v-model="filters.q"
-                placeholder="搜学号或姓名"
+                placeholder="搜学号、用户名或姓名"
                 class="h-9 pl-8 text-xs"
               />
             </div>
@@ -650,6 +659,7 @@ onMounted(async () => {
             >
               <option value="">全部身份</option>
               <option value="member">成员</option>
+              <option value="external">校外账号</option>
               <option value="admin">管理员</option>
               <option value="root">root</option>
             </select>
@@ -903,35 +913,37 @@ onMounted(async () => {
                       @update:model-value="(v: string) => (editingNote[member.id] = v)"
                     />
                   </label>
-                  <label class="space-y-1 text-xs font-medium text-muted-foreground">
-                    学院名称
-                    <Input
-                      :model-value="editingCollege[member.id] ?? member.college_name ?? ''"
-                      placeholder="留空使用学号解析值"
-                      list="academic-colleges"
-                      class="h-9 text-sm text-foreground"
-                      @update:model-value="(v: string) => (editingCollege[member.id] = v)"
-                    />
-                  </label>
-                  <label class="space-y-1 text-xs font-medium text-muted-foreground">
-                    专业名称
-                    <Input
-                      :model-value="editingMajor[member.id] ?? member.major_name ?? ''"
-                      placeholder="留空使用学号解析值"
-                      list="academic-majors"
-                      class="h-9 text-sm text-foreground"
-                      @update:model-value="(v: string) => (editingMajor[member.id] = v)"
-                    />
-                  </label>
-                  <label class="space-y-1 text-xs font-medium text-muted-foreground">
-                    班级
-                    <Input
-                      :model-value="editingClassNo[member.id] ?? (member.class_no ? String(member.class_no) : '')"
-                      placeholder="如 3，留空不分班"
-                      class="h-9 text-sm text-foreground"
-                      @update:model-value="(v: string) => (editingClassNo[member.id] = v)"
-                    />
-                  </label>
+                  <template v-if="member.role !== 'external'">
+                    <label class="space-y-1 text-xs font-medium text-muted-foreground">
+                      学院名称
+                      <Input
+                        :model-value="editingCollege[member.id] ?? member.college_name ?? ''"
+                        placeholder="留空使用学号解析值"
+                        list="academic-colleges"
+                        class="h-9 text-sm text-foreground"
+                        @update:model-value="(v: string) => (editingCollege[member.id] = v)"
+                      />
+                    </label>
+                    <label class="space-y-1 text-xs font-medium text-muted-foreground">
+                      专业名称
+                      <Input
+                        :model-value="editingMajor[member.id] ?? member.major_name ?? ''"
+                        placeholder="留空使用学号解析值"
+                        list="academic-majors"
+                        class="h-9 text-sm text-foreground"
+                        @update:model-value="(v: string) => (editingMajor[member.id] = v)"
+                      />
+                    </label>
+                    <label class="space-y-1 text-xs font-medium text-muted-foreground">
+                      班级
+                      <Input
+                        :model-value="editingClassNo[member.id] ?? (member.class_no ? String(member.class_no) : '')"
+                        placeholder="如 3，留空不分班"
+                        class="h-9 text-sm text-foreground"
+                        @update:model-value="(v: string) => (editingClassNo[member.id] = v)"
+                      />
+                    </label>
+                  </template>
                   <label v-if="canChangeRole(member)" class="space-y-1 text-xs font-medium text-muted-foreground">
                     账号身份
                     <select

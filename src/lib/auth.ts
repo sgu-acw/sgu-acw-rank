@@ -80,6 +80,17 @@ export function useAuth() {
     return created
   }
 
+  async function registerExternal(payload: {
+    username: string
+    display_name: string
+    password: string
+  }): Promise<User> {
+    const created = await authApi.registerExternal(payload)
+    user.value = created
+    ready.value = true
+    return created
+  }
+
   async function logout(): Promise<void> {
     try {
       await authApi.logout()
@@ -105,12 +116,18 @@ export function useAuth() {
     loading: readonly(loading),
     ready: readonly(ready),
     isLoggedIn: computed(() => user.value !== null),
+    isExternal: computed(() => user.value?.role === 'external'),
+    isCampusMember: computed(
+      () => user.value !== null && user.value.role !== 'external',
+    ),
     isAdmin: computed(() => user.value?.role === 'root' || user.value?.role === 'admin'),
     canPost: computed(
       () =>
-        user.value?.role === 'root' ||
-        user.value?.role === 'admin' ||
-        Boolean(user.value?.can_post),
+        user.value !== null &&
+        user.value.role !== 'external' &&
+        (user.value.role === 'root' ||
+          user.value.role === 'admin' ||
+          Boolean(user.value.can_post)),
     ),
     fetchMe,
     ensureLoaded,
@@ -118,6 +135,7 @@ export function useAuth() {
     finishTotpLogin,
     loginWithPasskey,
     register,
+    registerExternal,
     logout,
     patchUser,
     setUser,

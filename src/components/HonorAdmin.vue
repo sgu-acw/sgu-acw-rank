@@ -19,7 +19,7 @@ import RefreshButton from './ui/RefreshButton.vue'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
 
-const { user, ready, ensureLoaded } = useAuth()
+const { isAdmin, ready, ensureLoaded } = useAuth()
 const users = ref<HonorUser[]>([])
 const awards = ref<HonorAward[]>([])
 const section = ref<'users' | 'awards' | 'import'>('awards')
@@ -201,7 +201,7 @@ async function runImport(preview: boolean) {
 }
 onMounted(async () => {
   await ensureLoaded()
-  if (user.value && user.value.role !== 'member') await load()
+  if (isAdmin.value) await load()
 })
 onUnmounted(() => {
   sequence++
@@ -214,13 +214,13 @@ onUnmounted(() => {
       >
 <RefreshButton
         :busy="loading"
-        :disabled="busy || !user || user.role === 'member'"
+        :disabled="busy || !isAdmin"
         @click="load"
     />
 </AdminWorkspaceNav>
     <p v-if="!ready" role="status">正在读取…</p>
     <ActionNotice
-      v-else-if="!user || user.role === 'member'"
+      v-else-if="!isAdmin"
       message="需要管理员权限"
       variant="error"
     />

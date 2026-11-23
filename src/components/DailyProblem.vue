@@ -25,7 +25,7 @@ import { useAuth } from '../lib/auth'
 
 const props = withDefaults(defineProps<{ compact?: boolean }>(), { compact: false })
 
-const { user, ensureLoaded } = useAuth()
+const { isCampusMember, ensureLoaded } = useAuth()
 
 const board = ref<DailyProblemBoard | null>(null)
 const loading = ref(true)
@@ -93,23 +93,20 @@ function membersSolved(entry: DailyProblemEntry): string {
     <!-- 头部：说明 + 倒计时 + 重抽 -->
     <div class="flex flex-wrap items-center justify-between gap-2">
       <div class="min-w-0">
-        <!--
-          compact 是首页用的。首页上它是今天的主线，标题要压过周围的
-          卡片标题，否则整个页面看起来全是同样重量的块，没有重点。
-        -->
-        <h2 :class="props.compact ? 'text-lg font-semibold tracking-tight' : 'text-sm font-medium'">每日一题</h2>
+        <h1 v-if="!props.compact" class="page-title">每日一题</h1>
+        <h2 v-else class="text-lg font-semibold tracking-tight">每日一题</h2>
         <!--
           不显示倒计时。小时分钟一直在跳，看久了只会让人焦虑，而这是一天
           一次的东西——知道「凌晨四点换」就够了。
         -->
-        <p class="mt-0.5 text-[11px] text-muted-foreground">凌晨四点刷新</p>
-        <!-- 签到状态。只有登录后才显示——未登录没有「我」这个概念。 -->
-        <p v-if="user && board" class="mt-1 flex flex-wrap items-center gap-x-2 text-[11px]">
+        <p class="mt-0.5 text-xs text-muted-foreground">按难度分档每日抽题 · 凌晨四点刷新</p>
+        <!-- 签到状态：仅校内成员展示。 -->
+        <p v-if="isCampusMember && board" class="mt-1.5 flex flex-wrap items-center gap-x-2 text-xs">
           <span
             v-if="board.checked_in_today"
             class="flex items-center gap-0.5 font-medium text-emerald-600 dark:text-emerald-500"
           >
-            <Check class="h-3 w-3" />
+            <Check class="h-3.5 w-3.5" />
             今天已签到
           </span>
           <span v-else class="text-muted-foreground">今天还没签到</span>
@@ -191,8 +188,8 @@ function membersSolved(entry: DailyProblemEntry): string {
           <!-- 难度和过题人数。放在底部，三张卡对齐。 -->
           <div class="mt-auto flex flex-wrap items-center gap-x-2 gap-y-0.5 pt-1 text-[11px] text-muted-foreground">
             <span v-if="problem.rating" class="font-mono">{{ problem.rating }} 分</span>
-            <!-- 站内完成人数。这是成员之间的进度参照，比 CF 全站数字更有意义。 -->
-            <span>{{ membersSolved(problem) }}</span>
+            <!-- 站内完成人数仅对校内成员显示，避免向访客或校外账号暴露站内成员动态。 -->
+            <span v-if="isCampusMember">{{ membersSolved(problem) }}</span>
 
             <!--
               题解入口。放在卡片底部，与难度同一行。
@@ -247,10 +244,10 @@ function membersSolved(entry: DailyProblemEntry): string {
       </CardContent>
     </Card>
 
-    <!-- 今日已签到成员（完整页展示） -->
+    <!-- 今日已签到成员（完整页且仅校内成员展示） -->
     <div
-      v-if="!props.compact && board && board.checked_in_today_names?.length"
-      class="flex flex-wrap items-center gap-1.5 rounded-lg border border-border/50 bg-card/60 px-3.5 py-2.5 text-xs text-muted-foreground"
+      v-if="!props.compact && isCampusMember && board && board.checked_in_today_names?.length"
+      class="flex flex-wrap items-center gap-1.5 rounded-xl border border-border/60 bg-card/60 px-3.5 py-2.5 text-xs text-muted-foreground"
     >
       <span class="inline-flex items-center gap-1 font-medium text-foreground">
         <Users class="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-500" />

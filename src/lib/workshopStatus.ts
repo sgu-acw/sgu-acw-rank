@@ -5,7 +5,7 @@
  * sending SSH heartbeats. The backend only reports the age of the newest
  * heartbeat; the browser never talks to the Pi.
  */
-import { onMounted, onUnmounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref, watch, type Ref } from 'vue'
 import { workshopApi, type WorkshopOverride } from './api'
 
 export const WORKSHOP_STATUS_API: string =
@@ -31,13 +31,17 @@ export type WorkshopState = 'loading' | 'open' | 'closed' | 'error' | 'special'
 
 const POLL_MS = 20_000
 
-export function useWorkshopStatus() {
+export function useWorkshopStatus(enabled?: Ref<boolean>) {
   const data = ref<WorkshopStatus | null>(null)
   const override = ref<WorkshopOverride | null>(null)
   const state = ref<WorkshopState>('loading')
   let timer: number | undefined
+  let mounted = false
+
+  const isEnabled = () => (enabled ? enabled.value : true)
 
   async function refresh() {
+    if (!isEnabled()) return
     // 手动覆盖优先：有生效中的特殊状态就显示它，心跳只是背景。
     // 覆盖接口挂了不当成状态服务挂了——那不是一回事。
     try {
@@ -61,18 +65,41 @@ export function useWorkshopStatus() {
     }
   }
 
+  function startPolling() {
+    if (!mounted || !isEnabled()) return
+    void refresh()
+    if (timer === undefined) {
+      timer = window.setInterval(refresh, POLL_MS)
+    }
+  }
+
+  function stopPolling() {
+    if (timer !== undefined) {
+      window.clearInterval(timer)
+      timer = undefined
+    }
+  }
+
   function onVisibility() {
-    if (!document.hidden) refresh()
+    if (!document.hidden && isEnabled()) void refresh()
+  }
+
+  if (enabled) {
+    watch(enabled, (active) => {
+      if (active) startPolling()
+      else stopPolling()
+    })
   }
 
   onMounted(() => {
-    refresh()
-    timer = window.setInterval(refresh, POLL_MS)
+    mounted = true
+    if (isEnabled()) startPolling()
     document.addEventListener('visibilitychange', onVisibility)
   })
 
   onUnmounted(() => {
-    if (timer !== undefined) window.clearInterval(timer)
+    mounted = false
+    stopPolling()
     document.removeEventListener('visibilitychange', onVisibility)
   })
 

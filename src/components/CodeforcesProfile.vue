@@ -128,9 +128,12 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="mx-auto w-full max-w-3xl space-y-4">
-    <div>
-      <h1 class="text-lg font-semibold tracking-tight">Codeforces 资料</h1>
+  <div class="page-shell">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Codeforces 资料</h1>
+        <p class="page-subtitle">输入 Handle 查询公开资料与历史 Rating 走势</p>
+      </div>
     </div>
 
     <form class="flex gap-2" @submit.prevent="searchUser">

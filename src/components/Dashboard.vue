@@ -10,19 +10,26 @@ import {
   AlertCircle,
   AlertTriangle,
   ArrowRight,
+  Award,
   BarChart3,
+  BookOpen,
   ClipboardList,
+  Compass,
   Flame,
   ListChecks,
   LogIn,
   RefreshCw,
+  SquareTerminal,
+  Terminal,
   Trophy,
+  UserPlus,
 } from 'lucide-vue-next'
 import { Alert } from './ui/alert'
 import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import {
   ApiError,
+  LEARN_LOCAL,
   campApi,
   practiceApi,
   signupApi,
@@ -31,12 +38,13 @@ import {
   type DashboardAccount,
   type SignupSummary,
 } from '../lib/api'
+import { learningApi } from '../lib/learning/api'
 import { useAuth } from '../lib/auth'
 import { formatEnrollYear } from '../lib/format'
 import WorkshopStatusCard from './WorkshopStatusCard.vue'
 import DailyProblem from './DailyProblem.vue'
 
-const { user, ensureLoaded } = useAuth()
+const { user, isExternal, isCampusMember, ensureLoaded } = useAuth()
 
 const loading = ref(true)
 const error = ref('')
@@ -44,6 +52,9 @@ const data = ref<Dashboard | null>(null)
 const activeCamps = ref<CampSummary[]>([])
 const openSignups = ref<SignupSummary[]>([])
 const activeDayIndex = ref<number | null>(null)
+
+/** 校外账号的学习概览（题库已过题数 / 总题数 / 累计提交次数）。 */
+const externalStats = ref<{ solved: number; total: number; runs: number } | null>(null)
 
 const maxDaily = computed(() => {
   if (!data.value) return 1
@@ -77,8 +88,41 @@ async function load() {
   loading.value = true
   error.value = ''
 
+  // 未登录访客不发起任何校内鉴权接口，直接展示开放学习首页。
+  if (!user.value) {
+    data.value = null
+    activeCamps.value = []
+    openSignups.value = []
+    externalStats.value = null
+    loading.value = false
+    return
+  }
+
+  // 校外账号只加载个人题库学习进度，不触碰校内练习/集训/报名接口。
+  if (isExternal.value) {
+    data.value = null
+    activeCamps.value = []
+    openSignups.value = []
+    if (LEARN_LOCAL) {
+      const [problemsRes, progressRes, runsRes] = await Promise.allSettled([
+        learningApi.list(),
+        learningApi.progress(),
+        learningApi.runs(),
+      ])
+      const total = problemsRes.status === 'fulfilled' ? problemsRes.value.length : 0
+      const solved = progressRes.status === 'fulfilled' ? progressRes.value.solved_problem_ids.length : 0
+      const runs = runsRes.status === 'fulfilled' ? runsRes.value.length : 0
+      externalStats.value = { solved, total, runs }
+    } else {
+      externalStats.value = null
+    }
+    loading.value = false
+    return
+  }
+
+  // 校内成员完整工作台。
   const tasks = [
-    user.value ? practiceApi.dashboard() : Promise.resolve(null),
+    practiceApi.dashboard(),
     campApi.list(),
     signupApi.list(),
   ] as const
@@ -130,66 +174,192 @@ onMounted(async () => {
       </div>
     </div>
 
-    <!-- 未登录：每日一题 + 工作坊状态 + 快捷入口 + 登录引导 -->
+    <!-- 未登录：开放学习与展示入口 + 登录/校外注册引导（不展示校内内部状态与活动） -->
     <template v-else-if="!user">
-      <DailyProblem />
-      <WorkshopStatusCard />
+      <Card>
+        <CardContent class="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
+          <div class="min-w-0 space-y-1.5">
+            <h1 class="page-title">算法竞赛工作坊</h1>
+            <p class="max-w-xl text-sm leading-relaxed text-muted-foreground">
+              面向算法竞赛学习的开放训练平台。浏览每日一题、专题题单、荣誉殿堂与博客文章；校外访客也可免邀请码注册，在线刷题并保存个人提交记录。
+            </p>
+          </div>
+          <div class="flex shrink-0 flex-wrap gap-2">
+            <Button @click="go('/login')">
+              <LogIn class="mr-1.5 h-4 w-4" />
+              登录
+            </Button>
+            <Button variant="outline" @click="go('/register?channel=external')">
+              <UserPlus class="mr-1.5 h-4 w-4" />
+              校外人员注册
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
-      <div class="grid gap-3 sm:grid-cols-3">
+      <DailyProblem compact />
+
+      <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <a
+          v-if="LEARN_LOCAL"
+          href="/learn"
+          class="surface-card surface-action group p-4"
+        >
+          <div class="flex items-center justify-between">
+            <Terminal class="h-4 w-4 text-primary" />
+            <ArrowRight class="h-3.5 w-3.5 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+          </div>
+          <p class="mt-2.5 text-sm font-medium">在线题库</p>
+          <p class="mt-0.5 text-xs text-muted-foreground">浏览器内直接编写、运行与评测算法题</p>
+        </a>
+        <a
+          v-if="LEARN_LOCAL"
+          href="/ide"
+          class="surface-card surface-action group p-4"
+        >
+          <div class="flex items-center justify-between">
+            <SquareTerminal class="h-4 w-4 text-primary" />
+            <ArrowRight class="h-3.5 w-3.5 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+          </div>
+          <p class="mt-2.5 text-sm font-medium">云端 IDE</p>
+          <p class="mt-0.5 text-xs text-muted-foreground">免配置在线编写和运行 C++ / Python</p>
+        </a>
         <a
           href="/problems"
-          class="group rounded-xl border border-border/60 bg-card p-4 transition-colors hover:border-border hover:bg-accent/30"
+          class="surface-card surface-action group p-4"
         >
           <div class="flex items-center justify-between">
             <ListChecks class="h-4 w-4 text-primary" />
             <ArrowRight class="h-3.5 w-3.5 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
           </div>
           <p class="mt-2.5 text-sm font-medium">专题题单</p>
-          <p class="mt-0.5 text-xs text-muted-foreground">按专题整理训练题目与完成进度</p>
+          <p class="mt-0.5 text-xs text-muted-foreground">按专题整理经典训练题目</p>
         </a>
         <a
-          href="/practice"
-          class="group rounded-xl border border-border/60 bg-card p-4 transition-colors hover:border-border hover:bg-accent/30"
+          href="/honors"
+          class="surface-card surface-action group p-4"
         >
           <div class="flex items-center justify-between">
-            <BarChart3 class="h-4 w-4 text-primary" />
+            <Award class="h-4 w-4 text-primary" />
             <ArrowRight class="h-3.5 w-3.5 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
           </div>
-          <p class="mt-2.5 text-sm font-medium">练习榜单</p>
-          <p class="mt-0.5 text-xs text-muted-foreground">查看刷题趋势与多平台 Rating 排行</p>
+          <p class="mt-2.5 text-sm font-medium">荣誉殿堂</p>
+          <p class="mt-0.5 text-xs text-muted-foreground">历届算法竞赛获奖记录展示</p>
         </a>
         <a
-          href="/signups"
-          class="group rounded-xl border border-border/60 bg-card p-4 transition-colors hover:border-border hover:bg-accent/30"
+          href="/blog"
+          class="surface-card surface-action group p-4"
         >
           <div class="flex items-center justify-between">
-            <ClipboardList class="h-4 w-4 text-primary" />
+            <BookOpen class="h-4 w-4 text-primary" />
             <ArrowRight class="h-3.5 w-3.5 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
           </div>
-          <p class="mt-2.5 text-sm font-medium">线下赛报名</p>
-          <p class="mt-0.5 text-xs text-muted-foreground">
-            {{ openSignups.length > 0 ? `当前有 ${openSignups.length} 项报名开放中` : '查看比赛报名与队伍安排' }}
-          </p>
+          <p class="mt-2.5 text-sm font-medium">博客与公告</p>
+          <p class="mt-0.5 text-xs text-muted-foreground">公开学习笔记、题解分享与站点公告</p>
+        </a>
+        <a
+          href="/nav"
+          class="surface-card surface-action group p-4"
+        >
+          <div class="flex items-center justify-between">
+            <Compass class="h-4 w-4 text-primary" />
+            <ArrowRight class="h-3.5 w-3.5 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+          </div>
+          <p class="mt-2.5 text-sm font-medium">导航与资源</p>
+          <p class="mt-0.5 text-xs text-muted-foreground">常用 OJ 平台、学习百科与开发工具</p>
         </a>
       </div>
+    </template>
 
-      <Card class="py-8 text-center">
-        <CardContent class="space-y-3">
-          <p class="text-sm text-muted-foreground">登录后可追踪每日刷题进度、参与集训与管理 OJ 账号绑定</p>
-          <div class="flex flex-wrap items-center justify-center gap-2">
-            <Button @click="go('/login')">
-              <LogIn class="mr-2 h-4 w-4" />
-              登录工作坊账号
-            </Button>
-            <Button variant="outline" @click="go('/register')">
-              使用邀请码注册
-            </Button>
+    <!-- 校外账号：精简学习首页（个人题库进度 + 每日一题 + 公开入口） -->
+    <template v-else-if="isExternal">
+      <div class="page-header">
+        <div class="min-w-0">
+          <div class="flex flex-wrap items-center gap-2">
+            <h1 class="page-title">{{ user.display_name }}</h1>
+            <span class="rounded-md border border-border/60 bg-muted/50 px-2 py-0.5 text-xs font-medium text-muted-foreground">
+              校外账号
+            </span>
+          </div>
+          <p class="page-subtitle">已开放题库云端保存、云端 IDE、每日一题与公开题单</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <Button v-if="LEARN_LOCAL" size="sm" @click="go('/learn')">
+            <Terminal class="mr-1.5 h-3.5 w-3.5" />
+            进入题库
+          </Button>
+          <Button v-if="LEARN_LOCAL" size="sm" variant="outline" @click="go('/ide')">
+            <SquareTerminal class="mr-1.5 h-3.5 w-3.5" />
+            云端 IDE
+          </Button>
+          <Button size="sm" variant="ghost" @click="go('/me')">个人设置</Button>
+        </div>
+      </div>
+
+      <Card v-if="LEARN_LOCAL && externalStats">
+        <CardContent class="grid grid-cols-2 divide-x divide-border/50 p-0 sm:grid-cols-3">
+          <div class="px-5 py-4">
+            <p class="text-xs text-muted-foreground">题库已通过</p>
+            <p class="mt-1.5 font-mono text-2xl font-semibold tabular-nums">
+              {{ externalStats.solved }}
+              <span class="text-sm font-normal text-muted-foreground">/ {{ externalStats.total }}</span>
+            </p>
+          </div>
+          <div class="px-5 py-4">
+            <p class="text-xs text-muted-foreground">云端提交记录</p>
+            <p class="mt-1.5 font-mono text-2xl font-semibold tabular-nums">{{ externalStats.runs }}</p>
+          </div>
+          <div class="col-span-2 flex items-center justify-between border-t border-border/50 px-5 py-4 sm:col-span-1 sm:border-t-0">
+            <div>
+              <p class="text-xs text-muted-foreground">账号范围</p>
+              <p class="mt-1 text-xs text-muted-foreground">基础学习与公开功能</p>
+            </div>
+            <a href="/learn" class="text-xs font-medium text-foreground underline-offset-4 hover:underline">
+              去刷题 →
+            </a>
           </div>
         </CardContent>
       </Card>
+
+      <DailyProblem compact />
+
+      <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <a href="/problems" class="surface-card surface-action group p-4">
+          <div class="flex items-center justify-between">
+            <ListChecks class="h-4 w-4 text-primary" />
+            <ArrowRight class="h-3.5 w-3.5 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+          </div>
+          <p class="mt-2.5 text-sm font-medium">专题题单</p>
+          <p class="mt-0.5 text-xs text-muted-foreground">查看公开题单与本地题库进度</p>
+        </a>
+        <a href="/honors" class="surface-card surface-action group p-4">
+          <div class="flex items-center justify-between">
+            <Award class="h-4 w-4 text-primary" />
+            <ArrowRight class="h-3.5 w-3.5 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+          </div>
+          <p class="mt-2.5 text-sm font-medium">荣誉殿堂</p>
+          <p class="mt-0.5 text-xs text-muted-foreground">历届算法竞赛获奖记录</p>
+        </a>
+        <a href="/blog" class="surface-card surface-action group p-4">
+          <div class="flex items-center justify-between">
+            <BookOpen class="h-4 w-4 text-primary" />
+            <ArrowRight class="h-3.5 w-3.5 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+          </div>
+          <p class="mt-2.5 text-sm font-medium">博客与公告</p>
+          <p class="mt-0.5 text-xs text-muted-foreground">学习文章与题解分享</p>
+        </a>
+        <a href="/nav" class="surface-card surface-action group p-4">
+          <div class="flex items-center justify-between">
+            <Compass class="h-4 w-4 text-primary" />
+            <ArrowRight class="h-3.5 w-3.5 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+          </div>
+          <p class="mt-2.5 text-sm font-medium">导航与资源</p>
+          <p class="mt-0.5 text-xs text-muted-foreground">常用 OJ 平台与算法资料</p>
+        </a>
+      </div>
     </template>
 
-    <template v-else>
+    <template v-else-if="isCampusMember">
       <Alert v-if="error" variant="destructive" class="flex flex-wrap items-center justify-between gap-2">
         <span class="flex items-center gap-2 text-sm">
           <AlertCircle class="h-4 w-4 shrink-0" />
