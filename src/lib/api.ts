@@ -1484,5 +1484,7 @@ export const signupAdminApi = {
   entries: (id: number) => api.get<SignupEntry[]>(`/admin/signups/${id}/entries`),
   removeEntry: (signupId: number, entryId: number) =>
     api.delete(`/admin/signups/${signupId}/entries/${entryId}`),
+  export: (id: number) =>
+    request<Blob>(`/admin/signups/${id}/export`, {}, 'blob'),
   exportUrl: (id: number) => `/api/admin/signups/${id}/export`,
 }

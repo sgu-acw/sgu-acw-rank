@@ -214,6 +214,24 @@ async function removeEntry(e: SignupEntry) {
   catch (err) { error.value = message(err) }
   finally { busy.value = false }
 }
+async function exportXlsx() {
+  if (blocked.value || detailLoading.value || !activeId.value || !entries.value.length) return
+  const id = activeId.value
+  busy.value = true; error.value = ''; notice.value = ''
+  try {
+    const blob = await signupAdminApi.export(id)
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `signup-${id}.xlsx`
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    setTimeout(() => URL.revokeObjectURL(url), 1000)
+    notice.value = '报名名单已导出'
+  } catch (err) { error.value = message(err) }
+  finally { busy.value = false }
+}
 function statusLabel(s: SignupSummary) {
   return s.status === 'open' ? '报名中' : s.status === 'upcoming' ? '未开始' : '已截止'
 }
@@ -329,7 +347,7 @@ onUnmounted(() => { disposed = true; ++requestId; window.removeEventListener('be
               <CardHeader class="flex flex-row flex-wrap items-center gap-2 space-y-0">
                 <CardTitle class="mr-auto text-sm">{{ statusLabel(detail) }} · {{ detail.entry_count }} 人报名</CardTitle>
                 <Button variant="outline" :disabled="blocked" @click="startEdit">编辑报名</Button>
-                <Button variant="outline" :disabled="blocked || detailLoading || !entries.length" @click="() => window.open(signupAdminApi.exportUrl(activeId!), '_blank')"><Download class="mr-2 h-4 w-4" />导出 XLSX</Button>
+                <Button variant="outline" :disabled="blocked || detailLoading || !entries.length" @click="exportXlsx"><Download class="mr-2 h-4 w-4" />导出 XLSX</Button>
               </CardHeader>
               <CardContent class="p-0">
                 <p v-if="detailLoading" class="flex items-center gap-2 p-6 text-sm text-muted-foreground"><Loader2 class="h-4 w-4 animate-spin" />正在读取名单…</p>
