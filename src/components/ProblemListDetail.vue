@@ -15,13 +15,16 @@ import {
   ChevronRight,
   FolderOpen,
   Loader2,
+  Search,
 } from 'lucide-vue-next'
 import ProblemRow from './ProblemRow.vue'
 import { Alert } from './ui/alert'
 import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
+import { Input } from './ui/input'
 import {
   ApiError,
+  platformLabel,
   problemListApi,
   type ProblemListDetail,
   type ProblemListRank,
@@ -57,28 +60,64 @@ const isCollection = computed(() => data.value?.kind === 'collection')
 
 const showProgress = computed(() => !!user.value)
 
+/** 题单内题目筛选：关键词 + 完成状态 + 平台。 */
+const filterQuery = ref('')
+const filterStatus = ref<'all' | 'todo' | 'done'>('all')
+const filterPlatform = ref<string>('all')
+
+const availablePlatforms = computed(() => {
+  const seen = new Set<string>()
+  for (const p of data.value?.problems ?? []) seen.add(p.platform)
+  return [...seen]
+})
+
+const filteredProblems = computed(() => {
+  const list = data.value?.problems ?? []
+  const q = filterQuery.value.trim().toLowerCase()
+  return list.filter((p) => {
+    if (filterPlatform.value !== 'all' && p.platform !== filterPlatform.value) return false
+    if (showProgress.value) {
+      if (filterStatus.value === 'done' && !p.done) return false
+      if (filterStatus.value === 'todo' && p.done) return false
+    }
+    if (!q) return true
+    return (
+      p.key.toLowerCase().includes(q) ||
+      p.name.toLowerCase().includes(q) ||
+      p.note.toLowerCase().includes(q) ||
+      p.tags.some((t) => t.toLowerCase().includes(q))
+    )
+  })
+})
+
 function percent(done: number, total: number): number {
   if (total <= 0) return 0
   return Math.round((done / total) * 100)
 }
 
+let loadSeq = 0
 async function load() {
+  const seq = ++loadSeq
   loading.value = true
   error.value = ''
   try {
-    data.value = await problemListApi.get(listId.value)
+    const detail = await problemListApi.get(listId.value)
+    if (seq !== loadSeq) return
+    data.value = detail
     // 排行单独拉，失败不影响题目列表。
-    if (data.value.kind === 'list') {
+    if (detail.kind === 'list') {
       rankLoading.value = true
       try {
-        rank.value = await problemListApi.rank(listId.value)
+        const rankRes = await problemListApi.rank(listId.value)
+        if (seq === loadSeq) rank.value = rankRes
       } catch {
-        rank.value = null
+        if (seq === loadSeq) rank.value = null
       } finally {
-        rankLoading.value = false
+        if (seq === loadSeq) rankLoading.value = false
       }
     }
   } catch (err) {
+    if (seq !== loadSeq) return
     // 404 和「网络坏了」是两回事：前者是这个题单没有，后者是等一下就好。
     if (err instanceof ApiError && err.status === 404) {
       notFound.value = true
@@ -86,7 +125,7 @@ async function load() {
       error.value = err instanceof ApiError ? err.message : '加载失败，请稍后重试'
     }
   } finally {
-    loading.value = false
+    if (seq === loadSeq) loading.value = false
   }
 }
 
@@ -107,7 +146,7 @@ const backTarget = computed(() => {
   return { href: '/problems', label: '题单' }
 })
 
-onMounted(async () => {
+onMounted(() => {
   const raw = new URLSearchParams(window.location.search).get('id')
   const parsed = Number(raw)
   if (!raw || !Number.isFinite(parsed)) {
@@ -117,8 +156,7 @@ onMounted(async () => {
   }
   listId.value = parsed
 
-  await ensureLoaded()
-  await load()
+  void Promise.all([ensureLoaded(), load()])
 })
 </script>
 
@@ -316,14 +354,73 @@ onMounted(async () => {
         顶掉，「合集」时反而多出一句「还没有题目」。
       -->
       <Card v-if="!isCollection">
+        <div
+          v-if="data.problems.length > 0"
+          class="flex flex-wrap items-center gap-2 border-b border-border/40 px-3 py-2.5 sm:px-4"
+        >
+          <div class="relative min-w-[10rem] flex-1">
+            <Search class="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              v-model="filterQuery"
+              aria-label="筛选题目"
+              placeholder="搜题号、题名、标签或备注…"
+              class="h-8 pl-8 text-xs"
+            />
+          </div>
+
+          <div
+            v-if="showProgress"
+            class="inline-flex rounded-md border border-border/50 bg-muted/40 p-0.5 text-xs"
+            role="tablist"
+            aria-label="按完成状态筛选"
+          >
+            <button
+              v-for="tab in [
+                { key: 'all' as const, label: '全部' },
+                { key: 'todo' as const, label: '未做' },
+                { key: 'done' as const, label: '已做' },
+              ]"
+              :key="tab.key"
+              type="button"
+              role="tab"
+              :aria-selected="filterStatus === tab.key"
+              class="rounded px-2 py-1 font-medium transition-colors"
+              :class="
+                filterStatus === tab.key
+                  ? 'bg-card text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              "
+              @click="filterStatus = tab.key"
+            >
+              {{ tab.label }}
+            </button>
+          </div>
+
+          <select
+            v-if="availablePlatforms.length > 1"
+            v-model="filterPlatform"
+            aria-label="按平台筛选"
+            class="h-8 rounded-md border border-border/60 bg-background px-2 text-xs text-foreground"
+          >
+            <option value="all">全部平台</option>
+            <option v-for="plat in availablePlatforms" :key="plat" :value="plat">
+              {{ platformLabel(plat) }}
+            </option>
+          </select>
+        </div>
+
         <CardContent class="p-0">
           <p v-if="!data.problems.length" class="p-6 text-center text-sm text-muted-foreground">
             这个题单里还没有题目
           </p>
 
+          <p v-else-if="!filteredProblems.length" class="p-6 text-center text-sm text-muted-foreground">
+            当前筛选条件下没有匹配的题目
+          </p>
+
           <div v-else class="divide-y divide-border/40">
             <ProblemRow
-              v-for="problem in data.problems"
+              v-for="problem in filteredProblems"
               :key="problem.id"
               :problem="problem"
               :show-progress="showProgress"

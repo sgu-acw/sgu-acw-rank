@@ -12,7 +12,7 @@
  * 有没有内容来显示状态。
  */
 import { computed, ref } from 'vue'
-import { BookOpen, ChevronDown, Code2, Lightbulb, Loader2, Lock } from 'lucide-vue-next'
+import { BookOpen, Check, ChevronDown, Code2, Copy, Lightbulb, Loader2, Lock } from 'lucide-vue-next'
 import { renderInline, renderMarkdown } from '../lib/markdown'
 import type { EditorialView } from '../lib/api'
 
@@ -31,6 +31,20 @@ const showBody = ref(false)
 const showCode = ref(false)
 /** 当前看哪个语言的代码。 */
 const lang = ref<'cpp20' | 'py3' | 'java17'>('cpp20')
+const copiedCode = ref(false)
+
+async function copyCurrentCode() {
+  if (!currentCode.value) return
+  try {
+    await navigator.clipboard.writeText(currentCode.value)
+    copiedCode.value = true
+    window.setTimeout(() => {
+      copiedCode.value = false
+    }, 2000)
+  } catch {
+    /* 剪贴板权限受限时忽略 */
+  }
+}
 
 const bodyHtml = computed(() => renderMarkdown(props.editorial.body))
 
@@ -180,7 +194,7 @@ const publishLabel = computed(() => {
         </button>
 
         <template v-if="showCode">
-          <div class="mt-1.5 flex gap-1">
+          <div class="mt-1.5 flex flex-wrap items-center gap-1">
             <button
               v-for="item in LANGS"
               :key="item.key"
@@ -194,6 +208,16 @@ const publishLabel = computed(() => {
               @click="lang = item.key"
             >
               {{ item.label }}
+            </button>
+            <button
+              v-if="currentCode"
+              type="button"
+              class="ml-auto inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+              @click="copyCurrentCode"
+            >
+              <Check v-if="copiedCode" class="h-3.5 w-3.5 text-emerald-600" />
+              <Copy v-else class="h-3.5 w-3.5" />
+              {{ copiedCode ? '已复制' : '复制代码' }}
             </button>
           </div>
 

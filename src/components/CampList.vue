@@ -2,11 +2,10 @@
 /**
  * 集训列表。
  *
- * 所有集训都列出来——进行中的在前，还没开始的标出来，已结束的沉底。
- * 未登录也能看列表；详情页里才决定要不要给看题目。
+ * 所有集训按状态优先排序：进行中 > 未开始 > 已结束，支持按状态标签快速切换。
  */
 import { computed, onMounted, ref } from 'vue'
-import { CalendarClock, ChevronRight, Loader2, Trophy, Users } from 'lucide-vue-next'
+import { CalendarClock, ChevronRight, Trophy, Users } from 'lucide-vue-next'
 import { Card } from './ui/card'
 import { ApiError, campApi, type CampSummary } from '../lib/api'
 import { useAuth } from '../lib/auth'
@@ -16,15 +15,30 @@ const { ensureLoaded } = useAuth()
 const camps = ref<CampSummary[]>([])
 const loading = ref(true)
 const error = ref('')
+const statusFilter = ref<'all' | 'ongoing' | 'upcoming' | 'ended'>('all')
 
-/** 进行中的在前，未开始的次之，已结束的沉底。同档按开始时间倒序。 */
+const STATUS_TABS = [
+  { key: 'all' as const, label: '全部' },
+  { key: 'ongoing' as const, label: '进行中' },
+  { key: 'upcoming' as const, label: '未开始' },
+  { key: 'ended' as const, label: '已结束' },
+]
+
 const sorted = computed(() => {
-  const bucket = (c: CampSummary) =>
-    c.ended ? 2 : c.started ? 0 : 1
+  const bucket = (c: CampSummary) => (c.ended ? 2 : c.started ? 0 : 1)
   return [...camps.value].sort((a, b) => {
     const d = bucket(a) - bucket(b)
     if (d !== 0) return d
     return Date.parse(b.start_at) - Date.parse(a.start_at)
+  })
+})
+
+const filteredCamps = computed(() => {
+  if (statusFilter.value === 'all') return sorted.value
+  return sorted.value.filter((c) => {
+    if (statusFilter.value === 'ongoing') return c.started && !c.ended
+    if (statusFilter.value === 'upcoming') return !c.started && !c.ended
+    return c.ended
   })
 })
 
@@ -52,8 +66,9 @@ function go(path: string) {
   import('astro:transitions/client').then(({ navigate }) => navigate(path))
 }
 
-onMounted(async () => {
-  await ensureLoaded()
+async function load() {
+  loading.value = true
+  error.value = ''
   try {
     camps.value = await campApi.list()
   } catch (err) {
@@ -61,18 +76,44 @@ onMounted(async () => {
   } finally {
     loading.value = false
   }
+}
+
+onMounted(() => {
+  void Promise.all([ensureLoaded(), load()])
 })
 </script>
 
 <template>
   <div class="mx-auto w-full max-w-3xl space-y-4">
-    <div class="flex items-center justify-between">
-      <h1 class="text-lg font-semibold">集训</h1>
+    <div class="flex flex-wrap items-center justify-between gap-2">
+      <h1 class="text-lg font-semibold tracking-tight">集训</h1>
+      <div
+        v-if="!loading && sorted.length > 0"
+        class="inline-flex rounded-lg border border-border/50 bg-muted/40 p-0.5 text-xs"
+        role="tablist"
+        aria-label="按状态筛选集训"
+      >
+        <button
+          v-for="tab in STATUS_TABS"
+          :key="tab.key"
+          type="button"
+          role="tab"
+          :aria-selected="statusFilter === tab.key"
+          class="rounded-md px-2.5 py-1 font-medium transition-colors"
+          :class="
+            statusFilter === tab.key
+              ? 'bg-card text-foreground shadow-sm'
+              : 'text-muted-foreground hover:text-foreground'
+          "
+          @click="statusFilter = tab.key"
+        >
+          {{ tab.label }}
+        </button>
+      </div>
     </div>
 
-    <div v-if="loading" class="flex items-center gap-2 py-10 text-sm text-muted-foreground">
-      <Loader2 class="h-4 w-4 animate-spin" />
-      正在读取…
+    <div v-if="loading" class="space-y-2.5">
+      <div v-for="i in 3" :key="i" class="h-18 animate-pulse rounded-xl border border-border/40 bg-card/60" />
     </div>
 
     <p v-else-if="error" class="py-10 text-sm text-destructive">{{ error }}</p>
@@ -85,7 +126,14 @@ onMounted(async () => {
       <p class="text-sm">还没有集训</p>
     </div>
 
-    <Card v-for="camp in sorted" :key="camp.id" class="overflow-hidden">
+    <div
+      v-else-if="!filteredCamps.length"
+      class="rounded-lg border border-border/50 bg-card py-10 text-center text-sm text-muted-foreground"
+    >
+      当前筛选下没有集训
+    </div>
+
+    <Card v-for="camp in filteredCamps" v-else :key="camp.id" class="overflow-hidden">
       <button
         type="button"
         class="surface-action flex w-full items-center gap-3 px-4 py-3 text-left"

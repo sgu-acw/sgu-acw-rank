@@ -23,7 +23,7 @@ import {
   Lightbulb,
   Loader2,
   Pencil,
-
+  Shuffle,
   Trash2,
 } from 'lucide-vue-next'
 import ActionNotice from './ui/ActionNotice.vue'
@@ -37,11 +37,13 @@ import { renderInline, renderMarkdown } from '../lib/markdown'
 import {
   ApiError,
   adminApi,
+  dailyApi,
   type AdminEditorial,
   type MissingEditorial,
 } from '../lib/api'
 
 const loading = ref(true)
+const redrawing = ref(false)
 const error = ref('')
 const notice = ref('')
 
@@ -230,12 +232,38 @@ watch(filterQuery, () => {
   searchTimer = window.setTimeout(load, 300)
 })
 
+async function redrawToday() {
+  if (redrawing.value) return
+  if (!(await confirmAction('重抽今天的每日一题？会替换全站今天抽到的题目，正在做旧题的成员会受到影响。', '重抽今日题目'))) {
+    return
+  }
+  redrawing.value = true
+  error.value = ''
+  try {
+    await dailyApi.redraw()
+    flash('已重抽今天的每日一题')
+    await load()
+  } catch (err) {
+    error.value = err instanceof ApiError ? err.message : '重抽失败'
+  } finally {
+    redrawing.value = false
+  }
+}
+
 onMounted(load)
 </script>
 
 <template>
   <div class="mx-auto w-full max-w-6xl space-y-4">
     <AdminWorkspaceNav active="editorials">
+      <Button size="sm" variant="outline" :disabled="redrawing || loading" @click="redrawToday">
+        <component
+          :is="redrawing ? Loader2 : Shuffle"
+          class="mr-1.5 h-3.5 w-3.5"
+          :class="redrawing && 'animate-spin'"
+        />
+        重抽今日题目
+      </Button>
       <RefreshButton :busy="loading || saving" @click="load" />
     </AdminWorkspaceNav>
 

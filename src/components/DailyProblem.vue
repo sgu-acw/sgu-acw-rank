@@ -8,8 +8,8 @@
  *
  * 题目全站统一：抽签只由日期决定，与「谁在看」无关。
  */
-import { computed, onMounted, ref } from 'vue'
-import { BookOpen, Check, ExternalLink, Loader2, RefreshCw, Shuffle } from 'lucide-vue-next'
+import { onMounted, ref } from 'vue'
+import { BookOpen, Check, ExternalLink, Loader2, RefreshCw, Users } from 'lucide-vue-next'
 import { Alert } from './ui/alert'
 import { Button } from './ui/button'
 import { Card, CardContent } from './ui/card'
@@ -30,7 +30,6 @@ const { user, ensureLoaded } = useAuth()
 const board = ref<DailyProblemBoard | null>(null)
 const loading = ref(true)
 const error = ref('')
-const redrawing = ref(false)
 
 /** 题号 → 题解。和后端返回的题目按 key 对应。 */
 const editorials = ref<Record<string, EditorialView>>({})
@@ -41,13 +40,6 @@ function editorialFor(key: string): EditorialView | null {
   return editorials.value[key] ?? null
 }
 
-/**
- * 题解入口要不要显示。
- *
- * 只有已公布的才显示。八点之前题解已经生成好了（草稿），但那是个半成品，
- * 对成员来说等于「没有」——显示一个点进去写着「正在生成」的入口，比不显示
- * 更让人困惑。生成失败同理，那是给管理员看的，不该扰民。
- */
 function hasEditorial(key: string): boolean {
   return editorialFor(key)?.available === true
 }
@@ -56,37 +48,27 @@ function toggleEditorial(key: string) {
   openEditorial.value = openEditorial.value === key ? null : key
 }
 
-const isAdmin = computed(() => user.value?.role === 'admin' || user.value?.role === 'root')
-
 async function load(): Promise<void> {
   loading.value = true
   error.value = ''
-  try {
-    // 两个请求一起发，串行的话题解要等题目加载完才开始。
-    const [boardResult, editorialResult] = await Promise.all([
-      dailyApi.get(),
-      dailyApi.editorials(),
-    ])
-    board.value = boardResult
-    editorials.value = Object.fromEntries(
-      editorialResult.problems.map((item) => [item.key, item]),
-    )
-  } catch (exc) {
+  const [boardRes, editorialRes] = await Promise.allSettled([
+    dailyApi.get(),
+    dailyApi.editorials(),
+  ])
+  if (boardRes.status === 'fulfilled') {
+    board.value = boardRes.value
+  } else {
+    const exc = boardRes.reason
     error.value = exc instanceof ApiError ? exc.message : '加载失败'
-  } finally {
-    loading.value = false
   }
-}
-
-async function redraw(): Promise<void> {
-  redrawing.value = true
-  try {
-    board.value = await dailyApi.redraw()
-  } catch (exc) {
-    error.value = exc instanceof ApiError ? exc.message : '重抽失败'
-  } finally {
-    redrawing.value = false
+  if (editorialRes.status === 'fulfilled') {
+    editorials.value = Object.fromEntries(
+      editorialRes.value.problems.map((item) => [item.key, item]),
+    )
+  } else {
+    editorials.value = {}
   }
+  loading.value = false
 }
 
 onMounted(() => {
@@ -139,30 +121,6 @@ function membersSolved(entry: DailyProblemEntry): string {
       </div>
 
       <div class="flex shrink-0 items-center gap-1.5">
-        <!--
-          重抽是管理员功能，标出来。
-          不标的话管理员会以为是普通操作，随手点了就把全站的题换掉——
-          而其他人还在做原来那套。
-        -->
-        <Button
-          v-if="!props.compact && isAdmin && board"
-          variant="ghost"
-          size="sm"
-          :disabled="redrawing"
-          @click="redraw"
-        >
-          <component
-            :is="redrawing ? Loader2 : Shuffle"
-            class="mr-1 h-3.5 w-3.5"
-            :class="redrawing && 'animate-spin'"
-          />
-          重抽
-          <span
-            class="ml-1 rounded border border-border px-1 py-px text-[10px] font-normal text-muted-foreground"
-          >
-            管理员
-          </span>
-        </Button>
         <Button v-if="!props.compact" variant="ghost" size="sm" :disabled="loading" @click="load">
           <RefreshCw class="mr-1 h-3.5 w-3.5" :class="loading && 'animate-spin'" />
           刷新
@@ -288,5 +246,23 @@ function membersSolved(entry: DailyProblemEntry): string {
         <Editorial :key="openEditorial" :editorial="editorialFor(openEditorial)!" />
       </CardContent>
     </Card>
+
+    <!-- 今日已签到成员（完整页展示） -->
+    <div
+      v-if="!props.compact && board && board.checked_in_today_names?.length"
+      class="flex flex-wrap items-center gap-1.5 rounded-lg border border-border/50 bg-card/60 px-3.5 py-2.5 text-xs text-muted-foreground"
+    >
+      <span class="inline-flex items-center gap-1 font-medium text-foreground">
+        <Users class="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-500" />
+        今日已签到（{{ board.checked_in_today_names.length }}）：
+      </span>
+      <span
+        v-for="name in board.checked_in_today_names"
+        :key="name"
+        class="rounded-md bg-muted/70 px-2 py-0.5 text-foreground"
+      >
+        {{ name }}
+      </span>
+    </div>
   </div>
 </template>

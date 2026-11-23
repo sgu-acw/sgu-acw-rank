@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import {
+  Award,
   Bell,
+  FileText,
   Home,
   User,
   Activity,
@@ -39,7 +41,7 @@ const currentPath = ref('')
 const mounted = ref(false)
 
 // 侧边栏底部的登录入口。未登录时显示「登录」，已登录时显示姓名并链到个人中心。
-const { user, isAdmin, ensureLoaded } = useAuth()
+const { user, isAdmin, canPost, ensureLoaded } = useAuth()
 
 const navGroups = [
   {
@@ -63,7 +65,7 @@ const navGroups = [
   {
     label: '工作坊',
     items: [
-      { title: '荣誉殿堂', route: '/honors', icon: Trophy },
+      { title: '荣誉殿堂', route: '/honors', icon: Award },
       { title: '工作坊状态', route: '/status', icon: Activity },
       { title: '线下赛报名', route: '/signups', icon: ClipboardList },
       { title: '博客', route: '/blog', icon: BookOpen },
@@ -95,10 +97,23 @@ function isAdminRoute(): boolean {
 }
 
 function isActive(route: string): boolean {
-  if (route === '/') return currentPath.value === '/'
-  if (route === '/problems' && (currentPath.value.startsWith('/problems/admin') || currentPath.value.startsWith('/problems/edit'))) return false
-  if (route === '/camps' && currentPath.value.startsWith('/camps/admin')) return false
-  return currentPath.value === route || currentPath.value.startsWith(`${route}/`)
+  const path = currentPath.value
+  if (route === '/') return path === '/'
+  if (route === '/problems') {
+    if (path.startsWith('/problems/admin') || path.startsWith('/problems/edit')) return false
+    return path === '/problems' || path.startsWith('/problems/')
+  }
+  if (route === '/camps') {
+    if (path.startsWith('/camps/admin')) return false
+    return path === '/camps' || path.startsWith('/camps/') || path === '/camp' || path.startsWith('/camp/')
+  }
+  if (route === '/signups') {
+    return path === '/signups' || path.startsWith('/signups/') || path === '/signup' || path.startsWith('/signup/')
+  }
+  if (route === '/blog') {
+    return path === '/blog' || path.startsWith('/blog/') || path === '/post' || path.startsWith('/post/')
+  }
+  return path === route || path.startsWith(`${route}/`)
 }
 
 </script>
@@ -145,7 +160,26 @@ function isActive(route: string): boolean {
           <Settings class="h-4 w-4 shrink-0" />
           管理工作台
         </a>
-        <a v-if="user && isAdmin" href="/notifications" :aria-current="isActive('/notifications') ? 'page' : undefined" class="flex min-h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium text-muted-foreground hover:bg-accent/70 hover:text-foreground"><Bell class="h-4 w-4 shrink-0" />管理员站内信</a>
+        <a
+          v-if="user && isAdmin"
+          href="/notifications"
+          :aria-current="isActive('/notifications') ? 'page' : undefined"
+          class="flex min-h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors duration-150 ease-[var(--ease-out)] active:scale-[0.99]"
+          :class="isActive('/notifications') ? 'bg-accent text-accent-foreground' : 'text-muted-foreground hover:bg-accent/70 hover:text-foreground'"
+        >
+          <Bell class="h-4 w-4 shrink-0" />
+          管理员站内信
+        </a>
+        <a
+          v-else-if="user && canPost"
+          href="/posts/admin"
+          :aria-current="isActive('/posts/admin') ? 'page' : undefined"
+          class="flex min-h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors duration-150 ease-[var(--ease-out)] active:scale-[0.99]"
+          :class="isActive('/posts/admin') ? 'bg-accent text-accent-foreground' : 'text-muted-foreground hover:bg-accent/70 hover:text-foreground'"
+        >
+          <FileText class="h-4 w-4 shrink-0" />
+          文章管理
+        </a>
         <a
           v-if="user"
           href="/me"

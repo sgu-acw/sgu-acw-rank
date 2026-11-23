@@ -6,13 +6,15 @@
  * 开关控制。两边的显示部分完全一样——题名、题号、平台、难度、标签——
  * 分开写迟早会长歪。
  */
-import { Check, ExternalLink, Pencil, Trash2, X } from 'lucide-vue-next'
+import { computed } from 'vue'
+import { ArrowRight, Check, ExternalLink, Pencil, Trash2, X } from 'lucide-vue-next'
 import { difficultyLabel } from '../lib/format'
 import { Input } from './ui/input'
 import { Button } from './ui/button'
+import IconButton from './ui/IconButton.vue'
 import { LEARN_PLATFORM, platformLabel, type ProblemEntry } from '../lib/api'
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     problem: ProblemEntry
     /** 显示完成状态。未登录时关掉——进度是个人数据。 */
@@ -31,6 +33,11 @@ withDefaults(
     editingNote: false,
     noteDraft: '',
   },
+)
+
+const isInternal = computed(() => props.problem.platform === LEARN_PLATFORM)
+const targetHref = computed(() =>
+  isInternal.value && props.from ? `${props.problem.url}&from=${props.from}` : props.problem.url,
 )
 
 const emit = defineEmits<{
@@ -66,9 +73,9 @@ const emit = defineEmits<{
     <div class="min-w-0 flex-1">
       <div class="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
         <a
-          :href="problem.platform === LEARN_PLATFORM && from ? `${problem.url}&from=${from}` : problem.url"
-          target="_blank"
-          rel="noreferrer"
+          :href="targetHref"
+          :target="isInternal ? undefined : '_blank'"
+          :rel="isInternal ? undefined : 'noreferrer'"
           class="text-sm font-medium underline-offset-4 transition-colors hover:text-primary hover:underline"
           :class="problem.done && showProgress ? 'text-emerald-700 dark:text-emerald-400' : ''"
         >
@@ -132,23 +139,25 @@ const emit = defineEmits<{
       该用哪个。
     -->
     <div v-if="editable" class="flex shrink-0 items-center gap-0.5">
-      <Button variant="ghost" size="sm" title="改备注" @click="emit('editNote')">
+      <IconButton label="改备注" @click="emit('editNote')">
         <Pencil class="h-3.5 w-3.5" />
-      </Button>
-      <Button variant="ghost" size="sm" title="从题单移除" @click="emit('remove')">
+      </IconButton>
+      <IconButton label="从题单移除" destructive @click="emit('remove')">
         <Trash2 class="h-3.5 w-3.5" />
-      </Button>
+      </IconButton>
     </div>
 
     <a
       v-else
-      :href="problem.platform === LEARN_PLATFORM && from ? `${problem.url}&from=${from}` : problem.url"
-      target="_blank"
-      rel="noreferrer"
-      class="shrink-0 rounded p-1.5 text-muted-foreground/40 transition-colors hover:bg-muted hover:text-foreground"
-      title="去平台上做这道题"
+      :href="targetHref"
+      :target="isInternal ? undefined : '_blank'"
+      :rel="isInternal ? undefined : 'noreferrer'"
+      class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-muted-foreground/50 transition-colors hover:bg-muted hover:text-foreground"
+      :title="isInternal ? '打开站内题目' : '去平台上做这道题'"
+      :aria-label="isInternal ? '打开站内题目' : '去平台上做这道题'"
     >
-      <ExternalLink class="h-3.5 w-3.5" />
+      <ArrowRight v-if="isInternal" class="h-3.5 w-3.5" />
+      <ExternalLink v-else class="h-3.5 w-3.5" />
     </a>
   </div>
 </template>

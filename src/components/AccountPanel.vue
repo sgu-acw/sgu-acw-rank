@@ -5,23 +5,66 @@
  * 页面本身是公开的（静态站无法在服务端拦人），靠 /auth/me 的结果决定显示
  * 什么。未登录时提示去登录，而不是跳转，这样链接可以安全地分享。
  */
-import { computed, onMounted } from 'vue'
-import { LogOut, Loader2 } from 'lucide-vue-next'
+import { computed, onMounted, ref } from 'vue'
+import { Check, LogOut, Loader2, Pencil, X } from 'lucide-vue-next'
+import { Alert } from './ui/alert'
 import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
+import { Input } from './ui/input'
+import ActionNotice from './ui/ActionNotice.vue'
 import HonorArchive from './HonorArchive.vue'
 import PushSettings from './PushSettings.vue'
 import SecuritySettings from './SecuritySettings.vue'
+import SessionManager from './SessionManager.vue'
 import { Separator } from './ui/separator'
 import AccountBindings from './AccountBindings.vue'
 import PasswordForm from './PasswordForm.vue'
+import { ApiError, authApi } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { formatEnrollYear } from '../lib/format'
 
-const { user, loading, ready, ensureLoaded, logout } = useAuth()
+const { user, loading, ready, ensureLoaded, logout, setUser } = useAuth()
+
+const editingName = ref(false)
+const draftName = ref('')
+const nameBusy = ref(false)
+const nameError = ref('')
+const nameNotice = ref('')
+
+function startEditName() {
+  if (!user.value) return
+  draftName.value = user.value.display_name
+  nameError.value = ''
+  editingName.value = true
+}
+
+function cancelEditName() {
+  editingName.value = false
+  nameError.value = ''
+}
+
+async function saveDisplayName() {
+  const next = draftName.value.trim()
+  if (!next || nameBusy.value) return
+  nameBusy.value = true
+  nameError.value = ''
+  try {
+    const updated = await authApi.updateMe({ display_name: next })
+    setUser(updated)
+    editingName.value = false
+    nameNotice.value = '姓名已更新'
+    window.setTimeout(() => {
+      if (nameNotice.value === '姓名已更新') nameNotice.value = ''
+    }, 3000)
+  } catch (err) {
+    nameError.value = err instanceof ApiError ? err.message : '更新失败'
+  } finally {
+    nameBusy.value = false
+  }
+}
 
 onMounted(() => {
-  ensureLoaded()
+  void ensureLoaded()
 })
 
 const levelName = computed(() => {
@@ -48,6 +91,14 @@ const roleName = computed(() => {
   }
 })
 
+const academicLabel = computed(() => {
+  const u = user.value
+  if (!u) return '—'
+  const parts = [u.college_name, u.major_name, u.class_label].filter(Boolean)
+  if (parts.length > 0) return parts.join(' · ')
+  return `${u.college_code} / ${u.major_code}`
+})
+
 async function handleLogout() {
   await logout()
   window.location.href = '/'
@@ -60,22 +111,16 @@ function go(path: string) {
 </script>
 
 <template>
-  <Card class="mx-auto w-full max-w-md">
-    <CardHeader>
+  <Card :class="ready && user ? 'w-full' : 'mx-auto w-full max-w-md'">
+    <CardHeader class="flex flex-row items-center justify-between gap-2 space-y-0">
       <CardTitle class="text-lg">个人中心</CardTitle>
+      <Button v-if="ready && user" variant="outline" size="sm" @click="handleLogout">
+        <LogOut class="mr-1.5 h-4 w-4" />
+        退出登录
+      </Button>
     </CardHeader>
 
     <CardContent>
-      <!--
-        三个分支的根元素都是普通块级 div，**不在这里放 flex**。
-        加载态要横向排列图标和文字，所以把 flex 收进内层 span。
-
-        原因：Vue 在 hydration 时会按位置复用节点，一旦根元素上有 flex，
-        那个 flex 容器会被拿给别的分支用，登录后的 dl 就成了 flex item
-        被挤成竖排（实测宽度只剩 48px）。加 key 不管用，试过。
-
-        所以让根元素保持「无副作用」的普通 div，布局放在内部。
-      -->
       <div v-if="loading || !ready" class="py-6 text-sm text-muted-foreground">
         <span class="flex items-center gap-2">
           <Loader2 class="h-4 w-4 animate-spin" />
@@ -84,7 +129,7 @@ function go(path: string) {
       </div>
 
       <div v-else-if="!user" class="space-y-4 py-2">
-        <p class="text-sm text-muted-foreground">你还没有登录</p>
+        <p class="text-sm text-muted-foreground">登录后可绑定 OJ 账号、参与集训与管理安全设置。</p>
         <div class="flex gap-2">
           <Button class="flex-1" @click="go('/login')">去登录</Button>
           <Button variant="outline" class="flex-1" @click="go('/register')">去注册</Button>
@@ -92,57 +137,81 @@ function go(path: string) {
       </div>
 
       <div v-else key="account" class="space-y-4">
-        <div>
-          <p class="text-xl font-semibold tracking-tight">{{ user.display_name }}</p>
-          <p class="font-mono text-xs text-muted-foreground">{{ user.student_id }}</p>
+        <ActionNotice :message="nameNotice" />
+        <Alert v-if="nameError" variant="destructive" class="text-sm">{{ nameError }}</Alert>
+
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <div class="min-w-0 flex-1">
+            <form
+              v-if="editingName"
+              class="flex flex-wrap items-center gap-2"
+              @submit.prevent="saveDisplayName"
+            >
+              <Input
+                v-model="draftName"
+                aria-label="显示名称"
+                placeholder="输入姓名"
+                maxlength="32"
+                class="min-h-10 max-w-xs"
+              />
+              <Button size="sm" type="submit" :disabled="nameBusy || !draftName.trim()">
+                <Loader2 v-if="nameBusy" class="mr-1 h-3.5 w-3.5 animate-spin" />
+                <Check v-else class="mr-1 h-3.5 w-3.5" />
+                保存
+              </Button>
+              <Button size="sm" type="button" variant="ghost" :disabled="nameBusy" @click="cancelEditName">
+                <X class="mr-1 h-3.5 w-3.5" />
+                取消
+              </Button>
+            </form>
+            <div v-else class="flex items-center gap-2">
+              <p class="truncate text-xl font-semibold tracking-tight">{{ user.display_name }}</p>
+              <Button size="sm" variant="ghost" class="h-8 px-2 text-xs text-muted-foreground" @click="startEditName">
+                <Pencil class="mr-1 h-3.5 w-3.5" />
+                改名
+              </Button>
+            </div>
+            <p class="mt-0.5 font-mono text-xs text-muted-foreground">{{ user.student_id }}</p>
+          </div>
+          <span class="rounded-md border border-border/60 bg-muted/40 px-2.5 py-1 text-xs font-medium text-muted-foreground">
+            {{ roleName }}
+          </span>
         </div>
 
         <Separator />
 
-        <dl class="space-y-2 text-sm">
-          <div class="flex justify-between">
-            <dt class="text-muted-foreground">入学年份</dt>
-            <dd>{{ formatEnrollYear(user.enroll_year) || '—' }}</dd>
+        <dl class="grid gap-3 text-sm sm:grid-cols-3">
+          <div class="rounded-md bg-muted/30 px-3 py-2">
+            <dt class="text-xs text-muted-foreground">入学年份</dt>
+            <dd class="mt-0.5 font-medium">{{ formatEnrollYear(user.enroll_year) || '—' }}</dd>
           </div>
-          <div class="flex justify-between">
-            <dt class="text-muted-foreground">培养层次</dt>
-            <dd>{{ levelName }}</dd>
+          <div class="rounded-md bg-muted/30 px-3 py-2">
+            <dt class="text-xs text-muted-foreground">培养层次</dt>
+            <dd class="mt-0.5 font-medium">{{ levelName }}</dd>
           </div>
-          <div class="flex justify-between">
-            <dt class="text-muted-foreground">学院码 / 专业号</dt>
-            <dd class="font-mono">{{ user.college_code }} / {{ user.major_code }}</dd>
-          </div>
-          <div class="flex justify-between">
-            <dt class="text-muted-foreground">身份</dt>
-            <dd>{{ roleName }}</dd>
+          <div class="rounded-md bg-muted/30 px-3 py-2">
+            <dt class="text-xs text-muted-foreground">院系 / 班级</dt>
+            <dd class="mt-0.5 truncate font-medium" :title="academicLabel">{{ academicLabel }}</dd>
           </div>
         </dl>
-
-        <Separator />
-
-        <Button variant="outline" class="w-full" @click="handleLogout">
-          <LogOut class="mr-2 h-4 w-4" />
-          退出登录
-        </Button>
       </div>
     </CardContent>
   </Card>
 
-  <div v-if="ready && user" class="mt-4 rounded-lg border bg-card p-4">
-    <HonorArchive :user-id="user.id" />
-  </div>
+  <div v-if="ready && user" class="mt-4 space-y-4">
+    <div class="rounded-lg border bg-card p-4">
+      <HonorArchive :user-id="user.id" />
+    </div>
 
-  <!-- 账号绑定只在已登录时显示，它需要会话。 -->
-  <div v-if="ready && user" class="mt-4">
+    <!-- 账号绑定只在已登录时显示，它需要会话。 -->
     <AccountBindings />
-  </div>
 
-  <div v-if="ready && user" class="mt-4">
     <SecuritySettings />
-    <PushSettings />
-  </div>
 
-  <div v-if="ready && user" class="mt-4">
+    <SessionManager />
+
+    <PushSettings />
+
     <PasswordForm />
   </div>
 </template>

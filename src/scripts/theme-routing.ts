@@ -46,6 +46,7 @@ function applyTo(doc: Document) {
   // 两个类都清掉再设，避免 dark 和 light 同时挂着时优先级打架。
   doc.documentElement.classList.remove('dark', 'light')
   doc.documentElement.classList.add(theme)
+  doc.getElementById('theme-color')?.setAttribute('content', theme === 'dark' ? '#111113' : '#ffffff')
 }
 
 /*

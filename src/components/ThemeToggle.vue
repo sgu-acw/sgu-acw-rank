@@ -54,10 +54,12 @@ function onSystemChange(event: { matches: boolean }) {
   // 跟随系统，不写 localStorage——那会变成「选择」，之后就再也不跟随了。
   if (localStorage.getItem('theme')) return
   isDark.value = event.matches
+  apply(event.matches)
 }
 
 onMounted(() => {
   isDark.value = detect()
+  apply(isDark.value)
   media = window.matchMedia('(prefers-color-scheme: dark)')
   media.addEventListener('change', onSystemChange)
 })
@@ -71,7 +73,8 @@ onUnmounted(() => {
   <button
     type="button"
     :aria-label="isDark ? '切换为浅色主题' : '切换为深色主题'"
-    class="inline-flex items-center justify-center rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+    :title="isDark ? '切换为浅色主题' : '切换为深色主题'"
+    class="inline-flex h-11 w-11 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
     @click="toggle"
   >
     <Sun v-if="isDark" class="h-5 w-5" />

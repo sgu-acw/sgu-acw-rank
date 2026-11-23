@@ -56,9 +56,14 @@ export interface User {
   level: number
   college_code: string
   major_code: string
+  college_name?: string | null
+  major_name?: string | null
+  class_label?: string | null
   class_no: number
   role: 'root' | 'admin' | 'member'
   status: 'active' | 'disabled'
+  /** 是否被授予站内文章写作权限（管理员天然拥有）。 */
+  can_post?: boolean
   /** 两步验证是否已开启。 */
   totp_enabled?: boolean
   created_at: string
@@ -135,6 +140,17 @@ export interface PasskeyEntry {
   last_used_at: string | null
 }
 
+export interface SessionEntry {
+  id: string
+  device_label: string
+  user_agent: string
+  ip: string
+  created_at: string
+  last_seen_at: string
+  expires_at: string
+  is_current: boolean
+}
+
 export const authApi = {
   /**
    * 当前登录状态。未登录时返回 `{ user: null }` 而不是抛错，所以页面加载时
@@ -196,6 +212,10 @@ export const authApi = {
       current_password: currentPassword,
       new_password: newPassword,
     }),
+
+  sessions: () => api.get<SessionEntry[]>('/auth/sessions'),
+  revokeSession: (sessionId: string) => api.delete<void>(`/auth/sessions/${encodeURIComponent(sessionId)}`),
+  revokeOtherSessions: () => api.post<{ revoked: number }>('/auth/sessions/revoke-others'),
 }
 
 export const usersApi = {
@@ -373,6 +393,9 @@ export interface DashboardAccount {
   verified: boolean
   rating: number | null
   max_rating: number | null
+  sync_flag?: 'privacy' | 'unverified' | null
+  consecutive_failures?: number
+  last_error?: string
 }
 
 export interface Dashboard {
@@ -380,6 +403,7 @@ export interface Dashboard {
   today: number
   week: number
   total: number
+  practice_streak?: number
   days: PracticeDay[]
   practice_rank: number | null
   practice_total: number
@@ -987,6 +1011,15 @@ export const problemListApi = {
 
   addProblem: (listId: number, payload: { platform: Platform | 'learn'; key: string; note?: string }) =>
     api.post<ProblemEntry>(`/problem-lists/${listId}/problems`, payload),
+
+  batchAddProblems: (
+    listId: number,
+    items: { platform: Platform | 'learn'; key: string; note?: string }[],
+  ) =>
+    api.post<{
+      added: ProblemEntry[]
+      skipped: { platform: string; key: string; detail: string }[]
+    }>(`/problem-lists/${listId}/problems/batch`, { items }),
 
   updateProblem: (listId: number, itemId: number, payload: { note?: string }) =>
     api.patch<ProblemEntry>(`/problem-lists/${listId}/problems/${itemId}`, payload),

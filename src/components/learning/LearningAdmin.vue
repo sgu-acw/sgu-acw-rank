@@ -169,6 +169,39 @@ async function publish() {
   } catch (e) { error.value = String(e) }
   finally { busy.value = '' }
 }
+
+async function unpublish() {
+  if (busy.value || !selected.value || selected.value.published_revision === null) return
+  const id = selected.value.id
+  if (!await confirmAction('下架这道题？下架后成员将无法在题库看到它，草稿和历史提交记录会保留。', '下架题目')) return
+  busy.value = 'unpublish'; error.value = ''; noticeVariant.value = 'info'
+  try {
+    const updated = await learningApi.unpublish(id)
+    const index = rows.value.findIndex(r => r.id === id)
+    if (index >= 0) rows.value[index] = updated
+    if (selected.value?.id === id) selected.value = updated
+    notice.value = '题目已下架，可随时修改后重新发布。'
+  } catch (e) { error.value = String(e) }
+  finally { busy.value = '' }
+}
+
+async function removeProblem() {
+  if (busy.value || !selected.value || selected.value.published_revision !== null) return
+  const id = selected.value.id
+  const title = selected.value.content.title
+  if (!await confirmAction(`永久删除草稿「${title}」？所有版本与提交记录会一并清除，不可恢复。`, '删除题目')) return
+  busy.value = 'delete'; error.value = ''; noticeVariant.value = 'info'
+  try {
+    await learningApi.remove(id)
+    rows.value = rows.value.filter(r => r.id !== id)
+    selected.value = null
+    form.value = null
+    showing.value = false
+    baseline.value = ''
+    notice.value = `已删除「${title}」。`
+  } catch (e) { error.value = String(e) }
+  finally { busy.value = '' }
+}
 function restore() { if (!busy.value && selected.value) setForm(selected.value) }
 function start() { if (isAdmin.value && !engine) { engine = new LearningEngine(); void refresh() } }
 function beforeUnload(event: BeforeUnloadEvent) { if (dirty.value) { event.preventDefault(); event.returnValue = '' } }
@@ -247,7 +280,30 @@ onUnmounted(() => { alive = false; serial++; controller?.abort(); engine?.dispos
               </div>
               <textarea :id="`reference-${env}`" v-model="refSources[env]" class="form-textarea min-h-40 w-full font-mono text-sm" :disabled="!!busy" />
             </div>
-            <div class="flex flex-wrap gap-2"><Button type="submit" variant="outline" :disabled="!!busy">验证全部测试点</Button><Button v-if="busy === 'validate'" variant="outline" @click="controller?.abort()">取消验证</Button><Button :disabled="!!busy || dirty || !canPublish || !selected" @click="publish">发布已保存版本</Button></div>
+            <div class="flex flex-wrap gap-2">
+              <Button type="submit" variant="outline" :disabled="!!busy">验证全部测试点</Button>
+              <Button v-if="busy === 'validate'" variant="outline" @click="controller?.abort()">取消验证</Button>
+              <Button :disabled="!!busy || dirty || !canPublish || !selected" @click="publish">发布已保存版本</Button>
+              <Button
+                v-if="selected && selected.published_revision !== null"
+                type="button"
+                variant="outline"
+                :disabled="!!busy"
+                @click="unpublish"
+              >
+                下架题目
+              </Button>
+              <Button
+                v-else-if="selected"
+                type="button"
+                variant="destructive"
+                :disabled="!!busy"
+                @click="removeProblem"
+              >
+                <Trash2 class="mr-1.5 h-4 w-4" />
+                删除草稿
+              </Button>
+            </div>
             <p v-if="progress" class="text-sm text-muted-foreground" role="status">{{ progress.phase }} · {{ progress.point }}/{{ progress.points }}</p>
             <div v-if="validationFresh" class="space-y-3">
               <div v-for="env in refLanguages" :key="env" class="space-y-2">

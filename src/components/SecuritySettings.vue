@@ -8,18 +8,19 @@
  * 删除直接删。注册时要求可发现凭据（resident key）——登录端不先问学号。
  */
 import { computed, onMounted, ref } from 'vue'
-import { CheckCircle2, Fingerprint, KeyRound, Loader2, Plus, Trash2 } from 'lucide-vue-next'
+import { Check, CheckCircle2, Copy, Fingerprint, KeyRound, Loader2, Plus, Trash2 } from 'lucide-vue-next'
 import { Alert } from './ui/alert'
 import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Input } from './ui/input'
 import ActionNotice from './ui/ActionNotice.vue'
+import IconButton from './ui/IconButton.vue'
 import { ApiError, authApi, type PasskeyEntry } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { confirmAction } from '../lib/confirm'
 import { createPasskey, passkeySupported } from '../lib/webauthn'
 
-const { user } = useAuth()
+const { user, patchUser } = useAuth()
 
 // ---------------------------------------------------------------- 两步验证
 
@@ -29,7 +30,21 @@ const totpCode = ref('')
 const totpDisable = ref(false)
 const totpBusy = ref(false)
 const totpError = ref('')
+const copiedSecret = ref(false)
 const notice = ref('')
+
+async function copySecret() {
+  if (!totpSetup.value) return
+  try {
+    await navigator.clipboard.writeText(totpSetup.value.secret)
+    copiedSecret.value = true
+    window.setTimeout(() => {
+      copiedSecret.value = false
+    }, 2000)
+  } catch {
+    /* 无剪贴板权限时忽略 */
+  }
+}
 
 async function beginTotp() {
   if (totpBusy.value) return
@@ -53,7 +68,7 @@ async function enableTotp() {
   totpError.value = ''
   try {
     await authApi.totpEnable(totpCode.value.trim())
-    if (user.value) user.value.totp_enabled = true
+    patchUser({ totp_enabled: true })
     totpSetup.value = null
     totpCode.value = ''
     notice.value = '两步验证已开启'
@@ -71,7 +86,7 @@ async function disableTotp() {
   totpError.value = ''
   try {
     await authApi.totpDisable(totpCode.value.trim())
-    if (user.value) user.value.totp_enabled = false
+    patchUser({ totp_enabled: false })
     totpDisable.value = false
     totpCode.value = ''
     notice.value = '两步验证已关闭'
@@ -176,30 +191,37 @@ onMounted(async () => {
         <Alert v-if="totpError" variant="destructive" class="text-sm">{{ totpError }}</Alert>
 
         <!-- 开启流程 -->
-        <div v-if="totpSetup" class="space-y-2.5 rounded-md border border-border/60 p-3">
-          <p class="text-xs text-muted-foreground">用认证器扫下面的码，或手输密钥</p>
+        <form v-if="totpSetup" class="space-y-2.5 rounded-md border border-border/60 p-3" @submit.prevent="enableTotp">
+          <p class="text-xs text-muted-foreground">用认证器扫下面的码，或复制密钥手动添加</p>
           <img :src="`data:image/svg+xml;charset=utf-8,${encodeURIComponent(totpSetup.qr)}`" alt="两步验证设置二维码" class="mx-auto h-48 w-48 rounded bg-white p-2" />
-          <p class="break-all text-center font-mono text-xs text-muted-foreground">{{ totpSetup.secret }}</p>
-          <Input v-model="totpCode" placeholder="认证器里的 6 位数字" inputmode="numeric" maxlength="8" class="min-h-11 font-mono tracking-widest" />
+          <div class="flex items-center justify-center gap-2">
+            <p class="break-all text-center font-mono text-xs text-muted-foreground">{{ totpSetup.secret }}</p>
+            <Button type="button" size="sm" variant="ghost" class="h-8 shrink-0 px-2 text-xs" @click="copySecret">
+              <Check v-if="copiedSecret" class="mr-1 h-3.5 w-3.5 text-emerald-600" />
+              <Copy v-else class="mr-1 h-3.5 w-3.5" />
+              {{ copiedSecret ? '已复制' : '复制' }}
+            </Button>
+          </div>
+          <Input v-model="totpCode" placeholder="认证器里的 6 位数字" inputmode="numeric" maxlength="12" autocomplete="one-time-code" class="min-h-11 font-mono tracking-widest" />
           <div class="flex gap-2">
-            <Button size="sm" :disabled="totpBusy || !totpCode.trim()" @click="enableTotp">
+            <Button type="submit" size="sm" :disabled="totpBusy || !totpCode.trim()">
               <Loader2 v-if="totpBusy" class="mr-1.5 h-3.5 w-3.5 animate-spin" />开启两步验证
             </Button>
-            <Button size="sm" variant="ghost" :disabled="totpBusy" @click="totpSetup = null">取消</Button>
+            <Button type="button" size="sm" variant="ghost" :disabled="totpBusy" @click="totpSetup = null">取消</Button>
           </div>
-        </div>
+        </form>
 
         <!-- 关闭流程 -->
-        <div v-else-if="totpDisable" class="space-y-2.5 rounded-md border border-border/60 p-3">
+        <form v-else-if="totpDisable" class="space-y-2.5 rounded-md border border-border/60 p-3" @submit.prevent="disableTotp">
           <p class="text-xs text-muted-foreground">关闭前要再验一次当前码</p>
-          <Input v-model="totpCode" placeholder="认证器里的 6 位数字" inputmode="numeric" maxlength="8" class="min-h-11 font-mono tracking-widest" />
+          <Input v-model="totpCode" placeholder="认证器里的 6 位数字" inputmode="numeric" maxlength="12" autocomplete="one-time-code" class="min-h-11 font-mono tracking-widest" />
           <div class="flex gap-2">
-            <Button size="sm" variant="destructive" :disabled="totpBusy || !totpCode.trim()" @click="disableTotp">
+            <Button type="submit" size="sm" variant="destructive" :disabled="totpBusy || !totpCode.trim()">
               <Loader2 v-if="totpBusy" class="mr-1.5 h-3.5 w-3.5 animate-spin" />关闭两步验证
             </Button>
-            <Button size="sm" variant="ghost" :disabled="totpBusy" @click="totpDisable = false">取消</Button>
+            <Button type="button" size="sm" variant="ghost" :disabled="totpBusy" @click="totpDisable = false">取消</Button>
           </div>
-        </div>
+        </form>
 
         <div v-else class="flex gap-2">
           <Button v-if="!totpEnabled" size="sm" variant="outline" :disabled="totpBusy" @click="beginTotp">
@@ -225,15 +247,15 @@ onMounted(async () => {
         <p v-if="!canPasskey" class="text-xs text-muted-foreground">这台浏览器不支持通行密钥</p>
         <Alert v-if="pkError" variant="destructive" class="text-sm">{{ pkError }}</Alert>
 
-        <div v-if="addingPasskey" class="space-y-2.5 rounded-md border border-border/60 p-3">
+        <form v-if="addingPasskey" class="space-y-2.5 rounded-md border border-border/60 p-3" @submit.prevent="addPasskey">
           <Input v-model="pkName" placeholder="给这台设备起个名（如「我的手机」）" maxlength="80" class="min-h-11" />
           <div class="flex gap-2">
-            <Button size="sm" :disabled="pkBusy" @click="addPasskey">
+            <Button type="submit" size="sm" :disabled="pkBusy">
               <Loader2 v-if="pkBusy" class="mr-1.5 h-3.5 w-3.5 animate-spin" />验证指纹 / 面容 / PIN
             </Button>
-            <Button size="sm" variant="ghost" :disabled="pkBusy" @click="addingPasskey = false">取消</Button>
+            <Button type="button" size="sm" variant="ghost" :disabled="pkBusy" @click="addingPasskey = false">取消</Button>
           </div>
-        </div>
+        </form>
 
         <p v-if="pkLoading" class="flex items-center gap-2 text-xs text-muted-foreground"><Loader2 class="h-3.5 w-3.5 animate-spin" />读取…</p>
         <template v-else>
@@ -245,9 +267,9 @@ onMounted(async () => {
                 绑定于 {{ fmtTime(p.created_at) }}<template v-if="p.last_used_at"> · 上次用 {{ fmtTime(p.last_used_at) }}</template>
               </p>
             </div>
-            <button class="rounded p-1.5 text-muted-foreground hover:text-destructive" title="删除" :disabled="pkBusy" @click="removePasskey(p)">
+            <IconButton label="删除通行密钥" destructive :disabled="pkBusy" @click="removePasskey(p)">
               <Trash2 class="h-4 w-4" />
-            </button>
+            </IconButton>
           </div>
           <p v-if="!passkeys.length" class="text-xs text-muted-foreground">还没有绑定任何设备</p>
         </template>

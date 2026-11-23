@@ -6,13 +6,17 @@
 import { onMounted, onUnmounted, ref } from 'vue'
 import {
   Activity,
+  Award,
   BarChart3,
+  Bell,
   BookOpen,
   CalendarCheck,
   ClipboardList,
   Compass,
+  FileText,
   Home,
   ListChecks,
+  LogIn,
   MoreHorizontal,
   Settings,
   Trophy,
@@ -25,7 +29,7 @@ import { LEARN_LOCAL } from '../lib/api'
 
 const currentPath = ref('')
 const moreOpen = ref(false)
-const { user, isAdmin, ensureLoaded } = useAuth()
+const { user, isAdmin, canPost, ensureLoaded } = useAuth()
 
 const tabs = [
   { title: '首页', route: '/', icon: Home },
@@ -39,8 +43,8 @@ const extraLinks = [
     { title: '题库', route: '/learn', icon: Terminal },
     { title: '云端 IDE', route: '/ide', icon: SquareTerminal },
   ] : []),
-  { title: '荣誉殿堂', route: '/honors', icon: Trophy },
   { title: '集训', route: '/camps', icon: Trophy },
+  { title: '荣誉殿堂', route: '/honors', icon: Award },
   { title: '工作坊状态', route: '/status', icon: Activity },
   { title: '线下赛报名', route: '/signups', icon: ClipboardList },
   { title: '博客', route: '/blog', icon: BookOpen },
@@ -50,12 +54,27 @@ const extraLinks = [
 
 function syncPath() {
   currentPath.value = window.location.pathname
+  moreOpen.value = false
 }
 
 function isActive(route: string): boolean {
-  if (route === '/') return currentPath.value === '/'
-  if (route === '/problems' && currentPath.value.startsWith('/problems/admin')) return false
-  return currentPath.value === route || currentPath.value.startsWith(`${route}/`)
+  const path = currentPath.value
+  if (route === '/') return path === '/'
+  if (route === '/problems') {
+    if (path.startsWith('/problems/admin') || path.startsWith('/problems/edit')) return false
+    return path === '/problems' || path.startsWith('/problems/')
+  }
+  if (route === '/camps') {
+    if (path.startsWith('/camps/admin')) return false
+    return path === '/camps' || path.startsWith('/camps/') || path === '/camp' || path.startsWith('/camp/')
+  }
+  if (route === '/signups') {
+    return path === '/signups' || path.startsWith('/signups/') || path === '/signup' || path.startsWith('/signup/')
+  }
+  if (route === '/blog') {
+    return path === '/blog' || path.startsWith('/blog/') || path === '/post' || path.startsWith('/post/')
+  }
+  return path === route || path.startsWith(`${route}/`)
 }
 
 const isAdminRoute = () =>
@@ -63,12 +82,23 @@ const isAdminRoute = () =>
   currentPath.value.startsWith('/problems/admin') ||
   currentPath.value.startsWith('/problems/edit') ||
   currentPath.value.startsWith('/camps/admin') ||
+  currentPath.value.startsWith('/posts/admin') ||
   currentPath.value.startsWith('/editorials/admin')
 
 const moreActive = () =>
-  ['/honors', '/camps', '/status', '/blog', '/nav', '/codeforces/profile', '/me'].some((route) =>
-    isActive(route),
-  ) || isAdminRoute()
+  [
+    '/learn',
+    '/ide',
+    '/honors',
+    '/camps',
+    '/status',
+    '/signups',
+    '/blog',
+    '/nav',
+    '/codeforces/profile',
+    '/me',
+    '/notifications',
+  ].some((route) => isActive(route)) || isAdminRoute()
 
 function closeOnEscape(event: KeyboardEvent) {
   if (event.key === 'Escape') moreOpen.value = false
@@ -132,20 +162,32 @@ onUnmounted(() => {
     <Transition name="mobile-menu">
       <div
         v-if="moreOpen"
-        class="absolute bottom-[calc(100%+0.65rem)] right-3 z-20 w-64 rounded-xl border border-border/60 bg-popover p-2 shadow-xl shadow-black/10"
+        class="absolute bottom-[calc(100%+0.65rem)] right-3 z-20 max-h-[70vh] w-64 overflow-y-auto rounded-xl border border-border/60 bg-popover p-2 shadow-xl shadow-black/10"
         role="menu"
         aria-label="更多页面"
       >
         <a
+          v-if="user"
           href="/me"
           role="menuitem"
           :aria-current="isActive('/me') ? 'page' : undefined"
-          class="flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm transition-colors hover:bg-accent"
-          :class="isActive('/me') ? 'text-foreground' : 'text-muted-foreground'"
+          class="flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors hover:bg-accent"
+          :class="isActive('/me') ? 'bg-accent/70 text-foreground' : 'text-foreground'"
           @click="moreOpen = false"
         >
-          <User class="h-4 w-4" />
-          我的
+          <User class="h-4 w-4 shrink-0" />
+          <span class="truncate">{{ user.display_name }}</span>
+          <span class="ml-auto text-xs text-muted-foreground">个人中心</span>
+        </a>
+        <a
+          v-else
+          href="/login"
+          role="menuitem"
+          class="flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+          @click="moreOpen = false"
+        >
+          <LogIn class="h-4 w-4 shrink-0" />
+          登录 / 注册
         </a>
         <div class="my-1 border-t border-border/50" />
         <a
@@ -155,23 +197,51 @@ onUnmounted(() => {
           role="menuitem"
           :aria-current="isActive(link.route) ? 'page' : undefined"
           class="flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm transition-colors hover:bg-accent"
-          :class="isActive(link.route) ? 'text-foreground' : 'text-muted-foreground'"
+          :class="isActive(link.route) ? 'bg-accent/60 font-medium text-foreground' : 'text-muted-foreground'"
           @click="moreOpen = false"
         >
-          <component :is="link.icon" class="h-4 w-4" />
+          <component :is="link.icon" class="h-4 w-4 shrink-0" />
           {{ link.title }}
         </a>
-        <a
-          v-if="user && isAdmin"
-          href="/admin"
-          role="menuitem"
-          :aria-current="isAdminRoute() ? 'page' : undefined"
-          class="flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-          @click="moreOpen = false"
-        >
-          <Settings class="h-4 w-4" />
-          管理工作台
-        </a>
+        <template v-if="user && isAdmin">
+          <div class="my-1 border-t border-border/50" />
+          <a
+            href="/admin"
+            role="menuitem"
+            :aria-current="isAdminRoute() ? 'page' : undefined"
+            class="flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm transition-colors hover:bg-accent hover:text-foreground"
+            :class="isAdminRoute() ? 'bg-accent/60 font-medium text-foreground' : 'text-muted-foreground'"
+            @click="moreOpen = false"
+          >
+            <Settings class="h-4 w-4 shrink-0" />
+            管理工作台
+          </a>
+          <a
+            href="/notifications"
+            role="menuitem"
+            :aria-current="isActive('/notifications') ? 'page' : undefined"
+            class="flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm transition-colors hover:bg-accent hover:text-foreground"
+            :class="isActive('/notifications') ? 'bg-accent/60 font-medium text-foreground' : 'text-muted-foreground'"
+            @click="moreOpen = false"
+          >
+            <Bell class="h-4 w-4 shrink-0" />
+            管理员站内信
+          </a>
+        </template>
+        <template v-else-if="user && canPost">
+          <div class="my-1 border-t border-border/50" />
+          <a
+            href="/posts/admin"
+            role="menuitem"
+            :aria-current="isActive('/posts/admin') ? 'page' : undefined"
+            class="flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm transition-colors hover:bg-accent hover:text-foreground"
+            :class="isActive('/posts/admin') ? 'bg-accent/60 font-medium text-foreground' : 'text-muted-foreground'"
+            @click="moreOpen = false"
+          >
+            <FileText class="h-4 w-4 shrink-0" />
+            文章管理
+          </a>
+        </template>
       </div>
     </Transition>
   </div>

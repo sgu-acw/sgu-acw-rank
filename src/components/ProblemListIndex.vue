@@ -2,16 +2,14 @@
 /**
  * 题单总览。
  *
- * 顶层同时列出合集和散装题单——题单既可以在合集里，也可以和合集平级，
- * 这是需求里明确要的。合集显示它下面所有题单的合计完成度。
- *
- * 未登录时不显示进度条：谁能过哪些题是个人数据，不该公开给所有人看。
+ * 顶层同时列出合集和散装题单，支持按关键词快速筛选。
+ * 未登录时不显示进度条：过题进度属于个人数据。
  */
 import { computed, onMounted, ref } from 'vue'
-import { AlertCircle, ChevronRight, FolderOpen, ListChecks, Loader2, Settings } from 'lucide-vue-next'
+import { AlertCircle, CheckCircle2, ChevronRight, FolderOpen, ListChecks, Search } from 'lucide-vue-next'
 import { Alert } from './ui/alert'
-import { Button } from './ui/button'
 import { Card, CardContent } from './ui/card'
+import { Input } from './ui/input'
 import { ApiError, problemListApi, type ProblemListSummary } from '../lib/api'
 import { useAuth } from '../lib/auth'
 
@@ -20,9 +18,19 @@ const { user, ensureLoaded } = useAuth()
 const lists = ref<ProblemListSummary[]>([])
 const loading = ref(true)
 const error = ref('')
+const query = ref('')
 
-/** 未登录时进度不可信，整块隐藏。 */
 const showProgress = computed(() => !!user.value)
+
+const filteredLists = computed(() => {
+  const q = query.value.trim().toLowerCase()
+  if (!q) return lists.value
+  return lists.value.filter(
+    (item) =>
+      item.title.toLowerCase().includes(q) ||
+      item.description.toLowerCase().includes(q),
+  )
+})
 
 async function load() {
   loading.value = true
@@ -45,31 +53,26 @@ function go(path: string) {
   import('astro:transitions/client').then(({ navigate }) => navigate(path))
 }
 
-onMounted(async () => {
-  await ensureLoaded()
-  await load()
+onMounted(() => {
+  void Promise.all([ensureLoaded(), load()])
 })
 </script>
 
 <template>
   <div class="space-y-4">
-    <div class="flex flex-wrap items-start justify-between gap-3">
+    <div class="flex flex-wrap items-center justify-between gap-3">
       <div>
         <h1 class="text-lg font-semibold tracking-tight">题单</h1>
       </div>
-      <!--
-        未登录时 user 是 null，``user?.role !== 'member'`` 会算成
-        ``undefined !== 'member'`` 也就是 true，按钮就露出来了。所以要
-        先判 user 存在。
-      -->
-      <Button
-        v-if="user && user.role !== 'member'"
-        size="sm"
-        @click="go('/problems/admin')"
-      >
-        <Settings class="mr-1 h-3.5 w-3.5" />
-        管理工作台
-      </Button>
+      <div v-if="!loading && lists.length > 3" class="relative w-full sm:w-64">
+        <Search class="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          v-model="query"
+          aria-label="筛选题单"
+          placeholder="搜索题单标题或说明…"
+          class="h-9 pl-8 text-sm"
+        />
+      </div>
     </div>
 
     <Alert v-if="error" variant="destructive" class="flex items-start gap-2">
@@ -77,9 +80,8 @@ onMounted(async () => {
       <span class="text-sm">{{ error }}</span>
     </Alert>
 
-    <div v-if="loading" class="flex items-center gap-2 py-10 text-sm text-muted-foreground">
-      <Loader2 class="h-4 w-4 animate-spin" />
-      正在读取…
+    <div v-if="loading" class="space-y-2">
+      <div v-for="i in 4" :key="i" class="h-16 animate-pulse rounded-lg border border-border/40 bg-card/60" />
     </div>
 
     <Card v-else-if="!lists.length">
@@ -88,21 +90,27 @@ onMounted(async () => {
       </CardContent>
     </Card>
 
+    <Card v-else-if="!filteredLists.length">
+      <CardContent class="py-10 text-center text-sm text-muted-foreground">
+        没有匹配的题单
+      </CardContent>
+    </Card>
+
     <div v-else class="space-y-2">
       <button
-        v-for="item in lists"
+        v-for="item in filteredLists"
         :key="item.id"
+        type="button"
         class="surface-action group flex w-full items-start gap-3 rounded-lg border border-border/50 bg-card px-4 py-3.5 text-left"
         @click="go(`/problems/view?id=${item.id}`)"
       >
-        <!-- 合集和题单用不同图标，一眼能分清 -->
         <component
           :is="item.kind === 'collection' ? FolderOpen : ListChecks"
           class="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground"
         />
 
         <div class="min-w-0 flex-1">
-          <div class="flex flex-wrap items-baseline gap-x-2">
+          <div class="flex flex-wrap items-center gap-x-2 gap-y-0.5">
             <span class="text-sm font-medium transition-colors group-hover:text-primary">{{ item.title }}</span>
             <span class="text-[11px] text-muted-foreground">
               <template v-if="item.kind === 'collection'">
@@ -110,16 +118,23 @@ onMounted(async () => {
               </template>
               <template v-else>{{ item.total_problems }} 题</template>
             </span>
+            <span
+              v-if="showProgress && item.total_problems > 0 && item.done_count >= item.total_problems"
+              class="inline-flex items-center gap-0.5 text-[11px] font-medium text-emerald-600 dark:text-emerald-500"
+            >
+              <CheckCircle2 class="h-3 w-3" />
+              已完成
+            </span>
           </div>
-          <p v-if="item.description" class="mt-0.5 truncate text-xs text-muted-foreground/70">
+          <p v-if="item.description" class="mt-0.5 truncate text-xs text-muted-foreground/75">
             {{ item.description }}
           </p>
 
-          <!-- 进度条。未登录不显示。 -->
           <div v-if="showProgress && item.total_problems > 0" class="mt-2 flex items-center gap-2">
-            <div class="h-1 flex-1 overflow-hidden rounded-full bg-muted">
+            <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
               <div
-                class="h-full rounded-full bg-primary transition-[width] duration-300 ease-[var(--ease-out)]"
+                class="h-full rounded-full transition-[width] duration-300 ease-[var(--ease-out)]"
+                :class="item.done_count >= item.total_problems ? 'bg-emerald-500' : 'bg-primary'"
                 :style="{ width: `${percent(item.done_count, item.total_problems)}%` }"
               />
             </div>

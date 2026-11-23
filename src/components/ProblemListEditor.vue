@@ -15,6 +15,7 @@ import Sortable from 'sortablejs'
 import {
   AlertCircle,
   GripVertical,
+  ListPlus,
   Loader2,
   Plus,
 } from 'lucide-vue-next'
@@ -26,7 +27,15 @@ import { Alert } from './ui/alert'
 import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Input } from './ui/input'
-import { ApiError, problemListApi, type ProblemEntry, type ProblemListDetail, type ProblemListSummary } from '../lib/api'
+import {
+  ApiError,
+  LEARN_LOCAL,
+  problemListApi,
+  type ProblemEntry,
+  type ProblemListDetail,
+  type ProblemListSummary,
+} from '../lib/api'
+import { parseBatchProblems, type BatchPlatform } from '../lib/batchProblems'
 
 const listId = ref(0)
 const data = ref<ProblemListDetail | null>(null)
@@ -43,6 +52,38 @@ const noteDraft = ref('')
 
 //: 加题表单是否展开。
 const showAdder = ref(false)
+//: 批量导入表单状态。
+const showBatch = ref(false)
+const batchPlatform = ref<BatchPlatform>('codeforces')
+const batchText = ref('')
+const batchBusy = ref(false)
+const batchResult = ref<{ added: number; skipped: { platform: string; key: string; detail: string }[] } | null>(null)
+
+const parsedBatchCount = computed(() => parseBatchProblems(batchText.value, batchPlatform.value).length)
+
+async function submitBatchImport() {
+  if (batchBusy.value) return
+  const items = parseBatchProblems(batchText.value, batchPlatform.value)
+  if (!items.length) return
+  batchBusy.value = true
+  error.value = ''
+  batchResult.value = null
+  try {
+    const res = await problemListApi.batchAddProblems(listId.value, items)
+    batchResult.value = { added: res.added.length, skipped: res.skipped }
+    if (res.added.length > 0) {
+      flash(`成功导入 ${res.added.length} 道题${res.skipped.length ? `，跳过 ${res.skipped.length} 条` : ''}`)
+      await load()
+    }
+    if (!res.skipped.length) {
+      batchText.value = ''
+    }
+  } catch (err) {
+    error.value = err instanceof ApiError ? err.message : '批量导入失败'
+  } finally {
+    batchBusy.value = false
+  }
+}
 
 const isCollection = computed(() => data.value?.kind === 'collection')
 
@@ -379,16 +420,77 @@ onBeforeUnmount(() => {
           会把右边的按钮推下去）；py-3 让上下 padding 对称（默认 p-6 只改
           pb-3 会变成上 24 下 12，内容偏下）。
         -->
-        <CardHeader class="flex flex-row items-center justify-between gap-2 space-y-0 py-3">
+        <CardHeader class="flex flex-row flex-wrap items-center justify-between gap-2 space-y-0 py-3">
           <CardTitle class="text-sm font-medium">题目（可拖动排序）</CardTitle>
-          <Button variant="outline" size="sm" @click="showAdder = !showAdder">
-            <Plus class="mr-1 h-3.5 w-3.5" />
-            加题
-          </Button>
+          <div class="flex items-center gap-1.5">
+            <Button
+              variant="outline"
+              size="sm"
+              @click="showBatch = !showBatch; if (showBatch) showAdder = false"
+            >
+              <ListPlus class="mr-1 h-3.5 w-3.5" />
+              批量导入
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              @click="showAdder = !showAdder; if (showAdder) showBatch = false"
+            >
+              <Plus class="mr-1 h-3.5 w-3.5" />
+              加题
+            </Button>
+          </div>
         </CardHeader>
 
         <CardContent v-if="showAdder" class="border-b border-border/40 pb-4">
           <ProblemAdder :list-id="listId" @added="load" />
+        </CardContent>
+
+        <CardContent v-if="showBatch" class="space-y-3 border-b border-border/40 pb-4">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <p class="text-xs text-muted-foreground">
+              每行一道题：可直接粘贴题号、平台+题号（如 <code class="font-mono">luogu P1001</code>）或完整题目链接，行尾可用 <code class="font-mono"># 备注</code>。
+            </p>
+            <select
+              v-model="batchPlatform"
+              aria-label="默认平台"
+              class="h-8 rounded-md border border-input bg-background px-2 text-xs"
+              :disabled="batchBusy"
+            >
+              <option value="codeforces">默认：Codeforces</option>
+              <option value="atcoder">默认：AtCoder</option>
+              <option value="luogu">默认：洛谷</option>
+              <option value="nowcoder">默认：牛客</option>
+              <option v-if="LEARN_LOCAL" value="learn">默认：工作坊题库</option>
+            </select>
+          </div>
+          <textarea
+            v-model="batchText"
+            rows="5"
+            placeholder="例如：&#10;1900C # 树形 DP&#10;luogu P1001&#10;https://atcoder.jp/contests/abc350/tasks/abc350_a"
+            class="form-textarea w-full font-mono text-xs"
+            :disabled="batchBusy"
+          />
+          <div class="flex flex-wrap items-center gap-2">
+            <Button size="sm" :disabled="batchBusy || parsedBatchCount === 0" @click="submitBatchImport">
+              <Loader2 v-if="batchBusy" class="mr-1.5 h-3.5 w-3.5 animate-spin" />
+              导入 {{ parsedBatchCount }} 道题
+            </Button>
+            <Button size="sm" variant="ghost" :disabled="batchBusy" @click="showBatch = false">收起</Button>
+          </div>
+          <div
+            v-if="batchResult && batchResult.skipped.length"
+            class="rounded-md border border-amber-500/30 bg-amber-500/5 p-3 text-xs"
+          >
+            <p class="font-medium text-amber-700 dark:text-amber-400">
+              已跳过 {{ batchResult.skipped.length }} 条：
+            </p>
+            <ul class="mt-1 space-y-0.5 text-muted-foreground">
+              <li v-for="(s, idx) in batchResult.skipped" :key="idx" class="font-mono">
+                {{ s.platform }} {{ s.key }} — {{ s.detail }}
+              </li>
+            </ul>
+          </div>
         </CardContent>
 
         <CardContent class="p-0">

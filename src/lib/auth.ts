@@ -89,12 +89,29 @@ export function useAuth() {
     }
   }
 
+  /** 以响应式的安全方式局部更新本地用户信息，避免组件直接改写 readonly(user)。 */
+  function patchUser(patch: Partial<User>): void {
+    if (!user.value) return
+    user.value = { ...user.value, ...patch }
+  }
+
+  function setUser(next: User | null): void {
+    user.value = next
+    ready.value = true
+  }
+
   return {
     user: readonly(user),
     loading: readonly(loading),
     ready: readonly(ready),
     isLoggedIn: computed(() => user.value !== null),
     isAdmin: computed(() => user.value?.role === 'root' || user.value?.role === 'admin'),
+    canPost: computed(
+      () =>
+        user.value?.role === 'root' ||
+        user.value?.role === 'admin' ||
+        Boolean(user.value?.can_post),
+    ),
     fetchMe,
     ensureLoaded,
     login,
@@ -102,5 +119,7 @@ export function useAuth() {
     loginWithPasskey,
     register,
     logout,
+    patchUser,
+    setUser,
   }
 }
