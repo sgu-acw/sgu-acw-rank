@@ -130,8 +130,21 @@ function switchChannel(next: 'campus' | 'external') {
   error.value = ''
 }
 
+const redirectTarget = ref(props.redirectTo)
+
+function resolveSafeNext(raw: string | null): string {
+  if (!raw) return props.redirectTo
+  const trimmed = raw.trim()
+  // 仅允许站内相对路径，拦截 //evil.com 或协议跳转，防止开放重定向。
+  if (trimmed.startsWith('/') && !trimmed.startsWith('//') && !trimmed.includes('\r') && !trimmed.includes('\n')) {
+    return trimmed
+  }
+  return props.redirectTo
+}
+
 onMounted(async () => {
   const params = new URLSearchParams(window.location.search)
+  redirectTarget.value = resolveSafeNext(params.get('next'))
   const code = params.get('code')
   const channel = params.get('channel')
   if (code) {
@@ -146,7 +159,7 @@ onMounted(async () => {
   try {
     await ensureLoaded()
     if (user.value) {
-      window.location.replace(props.redirectTo)
+      window.location.replace(redirectTarget.value)
       return
     }
   } finally {
@@ -170,7 +183,7 @@ async function submit() {
         submitting.value = false
         return
       }
-      window.location.href = props.redirectTo
+      window.location.href = redirectTarget.value
       return
     }
 
@@ -180,7 +193,7 @@ async function submit() {
         display_name: displayName.value.trim(),
         password: password.value,
       })
-      window.location.href = '/'
+      window.location.href = redirectTarget.value === props.redirectTo ? '/' : redirectTarget.value
       return
     }
 
@@ -190,7 +203,7 @@ async function submit() {
       display_name: displayName.value.trim(),
       password: password.value,
     })
-    window.location.href = props.redirectTo
+    window.location.href = redirectTarget.value
   } catch (err) {
     if (err instanceof ApiError) {
       error.value = err.message
@@ -207,7 +220,7 @@ async function submitTotp() {
   error.value = ''
   try {
     await finishTotpLogin(totpTicket.value, totpCode.value.trim())
-    window.location.href = props.redirectTo
+    window.location.href = redirectTarget.value
   } catch (err) {
     error.value = err instanceof ApiError ? err.message : '出了点问题，请稍后重试'
     submitting.value = false
@@ -226,7 +239,7 @@ async function usePasskey() {
     const { options } = await authApi.passkeyLoginBegin()
     const credential = await getPasskey(options)
     await loginWithPasskey(String((options as Record<string, unknown>).challenge), credential)
-    window.location.href = props.redirectTo
+    window.location.href = redirectTarget.value
   } catch (err) {
     error.value = err instanceof ApiError ? err.message : (err as Error).message || '出了点问题，请稍后重试'
     submitting.value = false

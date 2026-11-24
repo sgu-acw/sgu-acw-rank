@@ -1488,3 +1488,102 @@ export const signupAdminApi = {
     request<Blob>(`/admin/signups/${id}/export`, {}, 'blob'),
   exportUrl: (id: number) => `/api/admin/signups/${id}/export`,
 }
+
+// ---------------------------------------------------------------------------
+// OAuth 2.0 + PKCE 授权与客户端管理
+// ---------------------------------------------------------------------------
+
+export interface OAuthScopeDetail {
+  key: string
+  label: string
+  description: string
+}
+
+export interface OAuthAuthorizeInfo {
+  client: {
+    client_id: string
+    name: string
+    description: string
+    is_public: boolean
+    require_campus: boolean
+  }
+  redirect_uri: string
+  scopes: OAuthScopeDetail[]
+  authenticated: boolean
+  eligible: boolean
+  ineligible_reason: string | null
+  user_display_name: string | null
+  user_student_id: string | null
+  user_role: string | null
+}
+
+export interface OAuthAuthorizeParams {
+  client_id: string
+  redirect_uri: string
+  response_type?: string
+  scope?: string
+  state?: string
+  code_challenge?: string
+  code_challenge_method?: string
+}
+
+export interface OAuthClientRecord {
+  id: number
+  client_id: string
+  name: string
+  description: string
+  is_public: boolean
+  require_campus: boolean
+  redirect_uris: string[]
+  allowed_scopes: string[]
+  is_active: boolean
+  created_at: string
+}
+
+export interface OAuthClientWithSecret extends OAuthClientRecord {
+  client_secret: string | null
+}
+
+export interface OAuthClientCreatePayload {
+  name: string
+  description?: string
+  redirect_uris: string[]
+  allowed_scopes?: string[]
+  is_public?: boolean
+  require_campus?: boolean
+}
+
+export interface OAuthClientUpdatePayload {
+  name?: string
+  description?: string
+  redirect_uris?: string[]
+  allowed_scopes?: string[]
+  require_campus?: boolean
+  is_active?: boolean
+}
+
+export const oauthApi = {
+  authorizeInfo: (params: OAuthAuthorizeParams) => {
+    const qs = new URLSearchParams()
+    qs.set('client_id', params.client_id)
+    qs.set('redirect_uri', params.redirect_uri)
+    if (params.response_type) qs.set('response_type', params.response_type)
+    if (params.scope) qs.set('scope', params.scope)
+    if (params.code_challenge) qs.set('code_challenge', params.code_challenge)
+    if (params.code_challenge_method) qs.set('code_challenge_method', params.code_challenge_method)
+    return api.get<OAuthAuthorizeInfo>(`/oauth/authorize/info?${qs.toString()}`)
+  },
+  authorize: (payload: OAuthAuthorizeParams & { approve: boolean }) =>
+    api.post<{ redirect_url: string; expires_in: number | null }>('/oauth/authorize', payload),
+}
+
+export const oauthAdminApi = {
+  list: () => api.get<OAuthClientRecord[]>('/admin/oauth/clients'),
+  create: (payload: OAuthClientCreatePayload) =>
+    api.post<OAuthClientWithSecret>('/admin/oauth/clients', payload),
+  update: (id: number, payload: OAuthClientUpdatePayload) =>
+    api.patch<OAuthClientRecord>(`/admin/oauth/clients/${id}`, payload),
+  rotateSecret: (id: number) =>
+    api.post<OAuthClientWithSecret>(`/admin/oauth/clients/${id}/rotate-secret`),
+  remove: (id: number) => api.delete(`/admin/oauth/clients/${id}`),
+}

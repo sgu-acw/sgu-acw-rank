@@ -1,0 +1,10 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import OAuthAuthorize from '../../components/OAuthAuthorize.vue';
+---
+
+<BaseLayout title="算法竞赛工作坊 - 一键授权登录">
+  <div class="page-shell-auth py-6">
+    <OAuthAuthorize client:only="vue" />
+  </div>
+</BaseLayout>

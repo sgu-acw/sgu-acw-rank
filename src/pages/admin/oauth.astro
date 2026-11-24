@@ -1,0 +1,10 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import OAuthAdmin from '../../components/OAuthAdmin.vue';
+---
+
+<BaseLayout title="算法竞赛工作坊 - OAuth 应用管理">
+  <div class="mx-auto w-full max-w-6xl">
+    <OAuthAdmin client:only="vue" />
+  </div>
+</BaseLayout>
