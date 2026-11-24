@@ -39,9 +39,12 @@ const stats = ref<{
   user_count: number
   active_count: number
   admin_count: number
+  external_count?: number
+  pending_user_count?: number
+  pending_review_count?: number
   usable_invite_count: number
-  push_subscriber_count: number
-  push_device_count: number
+  push_subscriber_count?: number
+  push_device_count?: number
 } | null>(null)
 const academics = ref<AcademicOptions | null>(null)
 const academicMajors = computed(() => [
@@ -344,6 +347,7 @@ async function saveNote(target: AdminUser) {
     const updated = await adminApi.updateUser(target.id, payload)
     target.admin_note = updated.admin_note
     target.display_name = updated.display_name
+    target.former_names = updated.former_names
     target.can_post = updated.can_post
     target.college_name = updated.college_name
     target.major_name = updated.major_name
@@ -363,12 +367,16 @@ async function saveNote(target: AdminUser) {
 }
 
 async function toggleStatus(target: AdminUser) {
+  const wasPending = target.status === 'pending'
   const next = target.status === 'active' ? 'disabled' : 'active'
-  const verb = next === 'disabled' ? '停用' : '启用'
+  const verb = wasPending ? '审核通过并启用' : next === 'disabled' ? '停用' : '启用'
   if (!await confirmAction(`确定${verb} ${target.display_name}？`)) return
   try {
     const updated = await adminApi.updateUser(target.id, { status: next })
     target.status = updated.status
+    if (wasPending) {
+      stats.value = await adminApi.stats().catch(() => stats.value)
+    }
     flash(`已${verb}`)
   } catch (err) {
     error.value = err instanceof ApiError ? err.message : '操作失败'
@@ -435,6 +443,16 @@ onMounted(async () => {
 
     <template v-else>
       <AdminWorkspaceNav active="people" />
+      <a
+        v-if="(stats?.pending_review_count ?? 0) > 0"
+        href="/admin/reviews"
+        class="flex items-center justify-between gap-3 rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-2.5 text-sm text-amber-800 transition-colors hover:bg-amber-500/15 dark:text-amber-300"
+      >
+        <span>
+          当前有 <strong class="font-mono">{{ stats?.pending_review_count }}</strong> 条待审核申请（含注册或改名/资料修改）
+        </span>
+        <span class="shrink-0 font-medium">前往审核 →</span>
+      </a>
       <Alert v-if="error" variant="destructive" class="flex items-start gap-2">
         <AlertCircle class="h-4 w-4 shrink-0 translate-y-0.5" />
         <span class="text-sm">{{ error }}</span>
@@ -648,7 +666,7 @@ onMounted(async () => {
               <Search class="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground/60" />
               <Input
                 v-model="filters.q"
-                placeholder="搜学号、用户名或姓名"
+                placeholder="搜学号、用户名、姓名或曾用名"
                 class="h-9 pl-8 text-xs"
               />
             </div>
@@ -670,6 +688,7 @@ onMounted(async () => {
             >
               <option value="">全部状态</option>
               <option value="active">在用</option>
+              <option value="pending">待审核</option>
               <option value="disabled">已停用</option>
             </select>
 
@@ -800,8 +819,18 @@ onMounted(async () => {
                 >
                   {{ roleLabel(member.role) }}
                 </span>
-                <span v-if="member.status === 'disabled'" class="text-[10px] text-destructive">
+                <span v-if="member.status === 'pending'" class="rounded border border-amber-500/40 bg-amber-500/10 px-1.5 py-0.5 text-[10px] text-amber-700 dark:text-amber-400">
+                  待审核
+                </span>
+                <span v-else-if="member.status === 'disabled'" class="text-[10px] text-destructive">
                   已停用
+                </span>
+                <span
+                  v-if="member.former_names?.length"
+                  class="rounded border border-border/50 bg-muted/40 px-1.5 py-0.5 text-[10px] text-muted-foreground"
+                  :title="`历史曾用名：${member.former_names.join('、')}`"
+                >
+                  曾用名：{{ member.former_names.join('、') }}
                 </span>
 
                 <div class="ml-auto flex shrink-0 items-center gap-1">

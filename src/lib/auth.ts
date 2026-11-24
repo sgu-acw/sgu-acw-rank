@@ -75,7 +75,10 @@ export function useAuth() {
     password: string
   }): Promise<User> {
     const created = await authApi.register(payload)
-    user.value = created
+    // 注册默认进入待审核，后端不会下发登录会话；只有直接激活的账号才写入登录态。
+    if (created.status === 'active') {
+      user.value = created
+    }
     ready.value = true
     return created
   }
@@ -86,7 +89,9 @@ export function useAuth() {
     password: string
   }): Promise<User> {
     const created = await authApi.registerExternal(payload)
-    user.value = created
+    if (created.status === 'active') {
+      user.value = created
+    }
     ready.value = true
     return created
   }

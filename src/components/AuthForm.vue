@@ -7,7 +7,7 @@
  * - 校外人员：自定义用户名 + 昵称 + 密码（免邀请码，仅开放学习与公开功能）
  */
 import { computed, onMounted, ref } from 'vue'
-import { AlertCircle, Fingerprint, GraduationCap, Loader2, UserPlus } from 'lucide-vue-next'
+import { AlertCircle, CheckCircle2, Clock, Fingerprint, GraduationCap, Loader2, UserPlus } from 'lucide-vue-next'
 import { Alert } from './ui/alert'
 import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
@@ -61,6 +61,11 @@ const canPasskey = ref(false)
 const password = ref('')
 const displayName = ref('')
 const inviteCode = ref('')
+const pendingSubmission = ref<{
+  studentId: string
+  displayName: string
+  isExternal: boolean
+} | null>(null)
 
 const isExternalRegister = computed(
   () => mode.value === 'register' && registerChannel.value === 'external',
@@ -123,10 +128,22 @@ const blockedReason = computed(() => {
 function switchMode(next: 'login' | 'register') {
   mode.value = next
   error.value = ''
+  pendingSubmission.value = null
 }
 
 function switchChannel(next: 'campus' | 'external') {
   registerChannel.value = next
+  error.value = ''
+  pendingSubmission.value = null
+}
+
+function goToLoginAfterPending() {
+  if (pendingSubmission.value) {
+    identifier.value = pendingSubmission.value.studentId
+  }
+  password.value = ''
+  pendingSubmission.value = null
+  mode.value = 'login'
   error.value = ''
 }
 
@@ -188,22 +205,42 @@ async function submit() {
     }
 
     if (registerChannel.value === 'external') {
-      await registerExternal({
+      const created = await registerExternal({
         username: normalizeExternalUsername(externalUsername.value),
         display_name: displayName.value.trim(),
         password: password.value,
       })
-      window.location.href = redirectTarget.value === props.redirectTo ? '/' : redirectTarget.value
+      if (created.status === 'active') {
+        window.location.href = redirectTarget.value === props.redirectTo ? '/' : redirectTarget.value
+        return
+      }
+      pendingSubmission.value = {
+        studentId: created.student_id,
+        displayName: created.display_name,
+        isExternal: true,
+      }
+      password.value = ''
+      submitting.value = false
       return
     }
 
-    await register({
+    const created = await register({
       invite_code: inviteCode.value.trim().toUpperCase(),
       student_id: normalizeStudentId(identifier.value),
       display_name: displayName.value.trim(),
       password: password.value,
     })
-    window.location.href = redirectTarget.value
+    if (created.status === 'active') {
+      window.location.href = redirectTarget.value
+      return
+    }
+    pendingSubmission.value = {
+      studentId: created.student_id,
+      displayName: created.display_name,
+      isExternal: false,
+    }
+    password.value = ''
+    submitting.value = false
   } catch (err) {
     if (err instanceof ApiError) {
       error.value = err.message
@@ -277,7 +314,7 @@ async function usePasskey() {
 
       <!-- 注册通道切换：校内成员 vs 校外人员 -->
       <div
-        v-if="mode === 'register' && !totpTicket"
+        v-if="mode === 'register' && !totpTicket && !pendingSubmission"
         class="grid grid-cols-2 gap-2 pt-1"
         role="radiogroup"
         aria-label="选择注册身份"
@@ -319,8 +356,55 @@ async function usePasskey() {
         <span class="text-sm">{{ error }}</span>
       </Alert>
 
+      <!-- 注册已提交，等待管理员审核 -->
+      <div v-if="pendingSubmission" class="space-y-4 py-2">
+        <div class="flex items-start gap-3 rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3.5">
+          <CheckCircle2 class="mt-0.5 h-5 w-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+          <div class="space-y-1 text-sm">
+            <p class="font-medium text-foreground">注册申请已提交，等待管理员审核</p>
+            <p class="text-xs leading-relaxed text-muted-foreground">
+              管理员审核通过后即可使用你刚才设置的密码登录。
+              <template v-if="!pendingSubmission.isExternal">
+                若因信息填错被驳回，邀请码名额会自动退回，核对后可重新提交。
+              </template>
+              <template v-else>
+                审核通过前暂不可登录，请耐心等待。
+              </template>
+            </p>
+          </div>
+        </div>
+
+        <dl class="grid grid-cols-2 gap-2 rounded-lg border border-border/50 bg-muted/30 p-3 text-xs">
+          <div>
+            <dt class="text-muted-foreground">{{ pendingSubmission.isExternal ? '用户名' : '学号' }}</dt>
+            <dd class="mt-0.5 font-mono font-medium text-foreground">{{ pendingSubmission.studentId }}</dd>
+          </div>
+          <div>
+            <dt class="text-muted-foreground">{{ pendingSubmission.isExternal ? '昵称' : '姓名' }}</dt>
+            <dd class="mt-0.5 font-medium text-foreground">{{ pendingSubmission.displayName }}</dd>
+          </div>
+        </dl>
+
+        <div class="flex items-center gap-2 text-xs text-muted-foreground">
+          <Clock class="h-3.5 w-3.5 shrink-0" />
+          <span>如需加急审核，请联系工作坊管理员。</span>
+        </div>
+
+        <div class="flex flex-col gap-2 sm:flex-row">
+          <Button type="button" class="flex-1" @click="goToLoginAfterPending">
+            前往登录
+          </Button>
+          <a
+            href="/"
+            class="inline-flex h-10 flex-1 items-center justify-center rounded-md border border-input bg-background px-4 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
+          >
+            返回首页
+          </a>
+        </div>
+      </div>
+
       <!-- 第二步：两步验证码 -->
-      <form v-if="totpTicket" class="space-y-4" @submit.prevent="submitTotp">
+      <form v-else-if="totpTicket" class="space-y-4" @submit.prevent="submitTotp">
         <div class="space-y-1.5">
           <label for="totp-code" class="text-sm font-medium">两步验证码</label>
           <Input
@@ -438,14 +522,21 @@ async function usePasskey() {
           />
         </div>
 
+        <p
+          v-if="mode === 'register'"
+          class="text-xs leading-relaxed text-muted-foreground"
+        >
+          提交后需等待管理员审核通过方可登录，请如实填写信息。
+        </p>
+
         <Button type="submit" class="w-full" :disabled="!canSubmit">
           <Loader2 v-if="submitting" class="mr-2 h-4 w-4 animate-spin" />
           {{
             mode === 'login'
               ? '登录'
               : isExternalRegister
-                ? '创建校外账号'
-                : '注册并登录'
+                ? '提交校外注册申请'
+                : '提交注册申请'
           }}
         </Button>
 

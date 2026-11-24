@@ -226,7 +226,28 @@ onMounted(load)
         <div class="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-muted-foreground">
           <span>最后登录：{{ ago(data.last_login_at) }}</span>
           <span>注册于：{{ dateOnly(data.created_at) }}</span>
-          <span>账号状态：{{ data.status === 'disabled' ? '已停用' : '在用' }}</span>
+          <span>
+            账号状态：{{
+              data.status === 'disabled'
+                ? '已停用'
+                : data.status === 'pending'
+                  ? '待审核'
+                  : '在用'
+            }}
+          </span>
+        </div>
+
+        <div v-if="data.former_names?.length">
+          <p class="text-[11px] text-muted-foreground">曾用名</p>
+          <div class="mt-1 flex flex-wrap gap-1.5">
+            <span
+              v-for="oldName in data.former_names"
+              :key="oldName"
+              class="rounded border border-border/60 bg-muted/40 px-2 py-0.5 text-xs text-foreground"
+            >
+              {{ oldName }}
+            </span>
+          </div>
         </div>
 
         <div>

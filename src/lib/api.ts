@@ -61,7 +61,7 @@ export interface User {
   class_label?: string | null
   class_no: number
   role: 'root' | 'admin' | 'member' | 'external'
-  status: 'active' | 'disabled'
+  status: 'active' | 'disabled' | 'pending'
   /** 是否被授予站内文章写作权限（管理员天然拥有）。 */
   can_post?: boolean
   /** 两步验证是否已开启。 */
@@ -223,6 +223,21 @@ export const authApi = {
   sessions: () => api.get<SessionEntry[]>('/auth/sessions'),
   revokeSession: (sessionId: string) => api.delete<void>(`/auth/sessions/${encodeURIComponent(sessionId)}`),
   revokeOtherSessions: () => api.post<{ revoked: number }>('/auth/sessions/revoke-others'),
+
+  /** 登录成员拉取学院与专业候选列表，供个人资料修改申请表单使用。 */
+  academics: () => api.get<AcademicOptions>('/auth/academics'),
+  /** 查看自己提交过的改名/学籍资料修改申请。 */
+  changeRequests: () => api.get<ReviewRequestRecord[]>('/auth/me/change-requests'),
+  /** 提交改名或更改学籍资料申请，需经管理员审核。 */
+  submitChangeRequest: (payload: {
+    display_name?: string
+    college_override?: string
+    major_override?: string
+    class_no?: number
+    reason?: string
+  }) => api.post<ReviewRequestRecord>('/auth/me/change-requests', payload),
+  /** 撤回自己尚未审核的资料修改申请。 */
+  cancelChangeRequest: (requestId: number) => api.delete<void>(`/auth/me/change-requests/${requestId}`),
 }
 
 export const usersApi = {
@@ -534,11 +549,13 @@ export interface AdminUser {
   major_code: string
   class_no: number
   role: 'root' | 'admin' | 'member' | 'external'
-  status: 'active' | 'disabled'
+  status: 'active' | 'disabled' | 'pending'
   created_at: string
   last_login_at: string | null
   /** 仅管理员可见可改。 */
   admin_note: string
+  /** 历史曾用名，改名时自动归档。 */
+  former_names: string[]
   /** 成员能不能发文章。管理员天然能，这个开关只管普通成员。 */
   can_post: boolean
   /** 学院名与专业名。可能被管理员改过，所以不一定跟码对得上。 */
@@ -546,6 +563,39 @@ export interface AdminUser {
   major_name: string | null
   /** 绑定的平台账号。列表页直接显示，不用点进详情。 */
   accounts: AdminAccountBrief[]
+}
+
+export type ReviewKind = 'registration' | 'profile_change'
+export type ReviewStatus = 'pending' | 'approved' | 'rejected' | 'cancelled'
+
+export interface ReviewRequestRecord {
+  id: number
+  kind: ReviewKind
+  status: ReviewStatus
+  user_id: number | null
+  student_id: string
+  current_display_name: string
+  role: string
+  invite_code: string | null
+  before: Record<string, unknown>
+  after: Record<string, unknown>
+  reason: string
+  review_note: string
+  reviewed_by: number | null
+  reviewer_name: string | null
+  reviewer_student_id: string | null
+  created_at: string
+  reviewed_at: string | null
+}
+
+export interface AdminReviewPage {
+  items: ReviewRequestRecord[]
+  total: number
+  pending_count: number
+  pending_registration_count: number
+  pending_profile_change_count: number
+  page: number
+  page_size: number
 }
 
 export interface AdminUserPage {
@@ -614,8 +664,30 @@ export const adminApi = {
       active_count: number
       admin_count: number
       external_count?: number
+      pending_user_count?: number
+      pending_review_count?: number
       usable_invite_count: number
+      push_subscriber_count?: number
+      push_device_count?: number
     }>('/admin/stats'),
+
+  reviews: (
+    query: { status?: string; kind?: string; q?: string; page?: number; page_size?: number } = {},
+  ) => {
+    const params = new URLSearchParams()
+    for (const [key, value] of Object.entries(query)) {
+      if (value === undefined || value === null || value === '') continue
+      params.set(key, String(value))
+    }
+    const suffix = params.toString()
+    return api.get<AdminReviewPage>(`/admin/reviews${suffix ? `?${suffix}` : ''}`)
+  },
+
+  approveReview: (requestId: number, reviewNote = '') =>
+    api.post<ReviewRequestRecord>(`/admin/reviews/${requestId}/approve`, { review_note: reviewNote }),
+
+  rejectReview: (requestId: number, reviewNote = '') =>
+    api.post<ReviewRequestRecord>(`/admin/reviews/${requestId}/reject`, { review_note: reviewNote }),
 
   users: (query: AdminUserQuery = {}) => {
     const params = new URLSearchParams()
@@ -1109,6 +1181,7 @@ export interface AdminMemberDetail {
   status: string
 
   admin_note: string
+  former_names: string[]
   last_login_at: string | null
   created_at: string
 

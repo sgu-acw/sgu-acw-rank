@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Input } from './ui/input'
 import ActionNotice from './ui/ActionNotice.vue'
 import HonorArchive from './HonorArchive.vue'
+import ProfileChangeCard from './ProfileChangeCard.vue'
 import PushSettings from './PushSettings.vue'
 import SecuritySettings from './SecuritySettings.vue'
 import SessionManager from './SessionManager.vue'
@@ -23,7 +24,15 @@ import { ApiError, authApi } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { formatEnrollYear } from '../lib/format'
 
-const { user, isExternal, isCampusMember, loading, ready, ensureLoaded, logout, setUser } = useAuth()
+const { user, isExternal, isCampusMember, isAdmin, loading, ready, ensureLoaded, logout, setUser } = useAuth()
+
+const profileChangeRef = ref<InstanceType<typeof ProfileChangeCard> | null>(null)
+const profileChangeEl = ref<HTMLElement | null>(null)
+
+function openProfileChange() {
+  profileChangeRef.value?.openForm()
+  profileChangeEl.value?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+}
 
 const editingName = ref(false)
 const draftName = ref('')
@@ -147,7 +156,7 @@ function go(path: string) {
         <div class="flex flex-wrap items-start justify-between gap-3">
           <div class="min-w-0 flex-1">
             <form
-              v-if="editingName"
+              v-if="editingName && isAdmin"
               class="flex flex-wrap items-center gap-2"
               @submit.prevent="saveDisplayName"
             >
@@ -170,9 +179,25 @@ function go(path: string) {
             </form>
             <div v-else class="flex items-center gap-2">
               <p class="truncate text-xl font-semibold tracking-tight">{{ user.display_name }}</p>
-              <Button size="sm" variant="ghost" class="h-8 px-2 text-xs text-muted-foreground" @click="startEditName">
+              <Button
+                v-if="isAdmin"
+                size="sm"
+                variant="ghost"
+                class="h-8 px-2 text-xs text-muted-foreground"
+                @click="startEditName"
+              >
                 <Pencil class="mr-1 h-3.5 w-3.5" />
                 改名
+              </Button>
+              <Button
+                v-else
+                size="sm"
+                variant="ghost"
+                class="h-8 px-2 text-xs text-muted-foreground"
+                @click="openProfileChange"
+              >
+                <Pencil class="mr-1 h-3.5 w-3.5" />
+                {{ isExternal ? '申请改名' : '申请修改资料' }}
               </Button>
             </div>
             <p class="mt-0.5 font-mono text-xs text-muted-foreground">{{ user.student_id }}</p>
@@ -207,6 +232,10 @@ function go(path: string) {
   </Card>
 
   <div v-if="ready && user" class="mt-4 space-y-4">
+    <div v-if="!isAdmin" ref="profileChangeEl">
+      <ProfileChangeCard ref="profileChangeRef" />
+    </div>
+
     <template v-if="isCampusMember">
       <div class="surface-card p-4">
         <HonorArchive :user-id="user.id" />

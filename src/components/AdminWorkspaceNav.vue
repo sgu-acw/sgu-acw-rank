@@ -6,15 +6,16 @@
  * 那两句和「管理工作台」说的是同一件事，只是把版面撑高。分区靠图标区分，
  * 文字只留最短的标签。
  */
-import { Activity, Award, BookOpen, ClipboardList, FileText, KeyRound, ListChecks, Terminal, Trophy, Users } from 'lucide-vue-next'
+import { Activity, Award, BookOpen, ClipboardList, FileText, KeyRound, ListChecks, ShieldCheck, Terminal, Trophy, Users } from 'lucide-vue-next'
 import { LEARN_LOCAL } from '../lib/api'
 
 defineProps<{
-  active: 'people' | 'problems' | 'learn' | 'editorials' | 'camps' | 'posts' | 'status' | 'signups' | 'honors' | 'oauth'
+  active: 'people' | 'reviews' | 'problems' | 'learn' | 'editorials' | 'camps' | 'posts' | 'status' | 'signups' | 'honors' | 'oauth'
 }>()
 
 const TABS = [
   { key: 'people', href: '/admin', label: '成员', icon: Users },
+  { key: 'reviews', href: '/admin/reviews', label: '审核', icon: ShieldCheck },
   { key: 'problems', href: '/problems/admin', label: '题单', icon: ListChecks },
   // 题库只在本地预览启用；生产构建里 /admin/learn 是 404。
   ...(LEARN_LOCAL ? [{ key: 'learn', href: '/admin/learn', label: '题库', icon: Terminal }] : []),
