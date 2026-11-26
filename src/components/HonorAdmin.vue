@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import MemberName from './MemberName.vue'
 import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { useAuth } from '../lib/auth'
 import { ApiError } from '../lib/api'
@@ -51,17 +52,19 @@ const importResult = ref<ImportResult | null>(null)
 const selectedAward = computed(() => awards.value.find((a) => a.id === active.value))
 const items = computed(() =>
   (section.value === 'users'
-    ? users.value.map((p) => ({ id: p.id, title: p.display_name, award: '', sub: `${p.student_id} · 曾用名：${p.former_names.join('、') || '无'}` }))
+    ? users.value.map((p) => ({ id: p.id, title: p.display_name, signature: p.signature, recipients: [], award: '', sub: `${p.student_id} · 曾用名：${p.former_names.join('、') || '无'}` }))
     : awards.value.filter((a) => a.status === reviewFilter.value).map((a) => ({
         id: a.id,
         title: a.event.title,
+        signature: undefined,
         award: a.award,
+        recipients: a.recipients,
         sub: a.recipients.map((p) => p.raw_name).join('、'),
       }))
   ).filter((r) => `${r.title} ${r.sub}`.includes(query.value.trim()))
 )
 function userLabel(p: HonorUser) {
-  return `${p.display_name} · ${p.student_id} · ${p.effective_study_start || '入学待核实'} 至 ${p.effective_study_end || '离校待核实'}${p.former_names.length ? ` · 曾用名 ${p.former_names.join('、')}` : ''}`
+  return `${p.display_name}${p.signature ? ` · ${p.signature}` : ''} · ${p.student_id} · ${p.effective_study_start || '入学待核实'} 至 ${p.effective_study_end || '离校待核实'}${p.former_names.length ? ` · 曾用名 ${p.former_names.join('、')}` : ''}`
 }
 function matchingHint(recipient: HonorRecipient, index: number) {
   const selected = review.user_ids[index]
@@ -308,8 +311,16 @@ onUnmounted(() => {
               <div class="flex items-start gap-2">
                 <HonorMedal v-if="item.award" :award="item.award" compact />
                 <div class="min-w-0">
-                  <span class="block break-words text-sm font-medium">{{ item.title }}</span>
-                  <span class="mt-1 block break-words text-sm text-muted-foreground">{{ item.sub }}</span>
+                  <span class="block break-words text-sm font-medium"><MemberName v-if="section === 'users'" :name="item.title" :signature="item.signature" /><template v-else>{{ item.title }}</template></span>
+                  <span class="mt-1 block break-words text-sm text-muted-foreground">
+                    <template v-if="section === 'awards'">
+                      <template v-for="(recipient, index) in item.recipients" :key="index">
+                        <template v-if="index">、</template>
+                        <MemberName :name="recipient.raw_name" :signature="recipient.signature" />
+                      </template>
+                    </template>
+                    <template v-else>{{ item.sub }}</template>
+                  </span>
                 </div>
               </div>
             </button>
@@ -386,7 +397,7 @@ onUnmounted(() => {
                   class="space-y-1"
                 >
                   <label :for="`honor-person-${index}`" class="block text-sm"
-                    >原始姓名：{{ recipient.raw_name }}</label
+                    >原始姓名：<MemberName :name="recipient.raw_name" :signature="recipient.signature" /></label
                   >
                   <select
                     :id="`honor-person-${index}`"
@@ -405,7 +416,7 @@ onUnmounted(() => {
                   <p class="break-words text-xs text-muted-foreground">{{ matchingHint(recipient, index) }}</p>
                   <ul v-if="recipient.candidates?.length" class="space-y-1 text-xs text-muted-foreground">
                     <li v-for="candidate in recipient.candidates" :key="candidate.user_id" class="break-words">
-                      {{ users.find((u) => u.id === candidate.user_id)?.display_name }} ·
+                      <MemberName :name="users.find((u) => u.id === candidate.user_id)?.display_name" :signature="users.find((u) => u.id === candidate.user_id)?.signature" /> ·
                       {{ users.find((u) => u.id === candidate.user_id)?.student_id }} ·
                       {{ candidate.matched_by === 'former_name' ? '曾用名匹配' : '姓名匹配' }} · {{ candidate.eligibility }}
                     </li>

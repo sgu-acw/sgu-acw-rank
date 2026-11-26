@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import MemberName from './MemberName.vue'
 import { computed, onUnmounted, ref, watch } from 'vue'
 import { ChevronRight, ExternalLink, Search, Trophy } from 'lucide-vue-next'
 import { ApiError } from '../lib/api'
@@ -167,7 +168,7 @@ onUnmounted(() => { sequence++ })
                     <h5>{{ row.team || honorCategory(row.event.category) || contestHeading(row.event) }}</h5>
                     <p v-if="row.team && honorCategory(row.event.category)">{{ honorCategory(row.event.category) }}</p>
                   </div>
-                  <div class="recipients min-w-0"><span v-for="(recipient, index) in row.recipients" :key="index">{{ recipient.name }}</span></div>
+                  <div class="recipients min-w-0"><span v-for="(recipient, index) in row.recipients" :key="index"><MemberName :name="recipient.name" :signature="recipient.signature" /></span></div>
                   <a :href="row.source_url" target="_blank" rel="noopener noreferrer" class="source-link"
                     :aria-label="`查看${row.team || honorCategory(row.event.category) || contestHeading(row.event)}${row.award}获奖来源`" title="查看获奖来源">
                     <ExternalLink class="h-4 w-4" aria-hidden="true" />

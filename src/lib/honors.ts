@@ -3,6 +3,7 @@ import { api } from './api'
 export interface HonorUser {
   id: number
   display_name: string
+  signature?: string
   student_id: string
   enroll_year: number
   former_names: string[]
@@ -19,6 +20,7 @@ export interface HonorCandidate {
 }
 export interface HonorRecipient {
   name: string
+  signature?: string
   user_id?: number | null
   raw_name?: string
   eligibility?: string

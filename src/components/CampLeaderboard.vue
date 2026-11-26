@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import MemberName from './MemberName.vue'
 import { computed, ref } from 'vue'
 import { CircleCheck, Minus, Search, Trophy } from 'lucide-vue-next'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
@@ -108,7 +109,7 @@ function clearFilters() {
             <tr v-for="entry in filtered" :key="entry.user_id" class="row-action">
               <td class="px-3 py-3 font-mono text-xs">{{ entry.rank }}</td>
               <td class="px-3 py-1">
-                <a :href="`/member?id=${entry.user_id}`" class="inline-flex min-h-11 items-center font-medium hover:underline">{{ entry.display_name }}</a>
+                <a :href="`/member?id=${entry.user_id}`" class="inline-flex min-h-11 items-center font-medium hover:underline"><MemberName :name="entry.display_name" :signature="entry.signature" /></a>
                 <span v-if="entry.class_label" class="ml-2 text-xs text-muted-foreground">{{ entry.class_label }}</span>
               </td>
               <td class="px-3 py-3 text-xs text-muted-foreground">{{ entry.enroll_year ? `${entry.enroll_year} 级` : '—' }}</td>

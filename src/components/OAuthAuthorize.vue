@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import MemberName from './MemberName.vue'
 import { onMounted, ref } from 'vue'
 import { AlertCircle, CheckCircle2, KeyRound, Loader2, ShieldCheck } from 'lucide-vue-next'
 import { ApiError, oauthApi, type OAuthAuthorizeInfo, type OAuthAuthorizeParams } from '../lib/api'
@@ -97,7 +98,7 @@ async function decide(approve: boolean) {
       <div class="rounded-lg border border-border/70 bg-muted/25 px-3.5 py-3 text-sm">
         <div class="text-xs text-muted-foreground">当前登录账号</div>
         <div class="mt-1 flex flex-wrap items-center gap-2 font-medium">
-          <span>{{ info.user_display_name }}</span>
+          <span><MemberName :name="info.user_display_name" :signature="info.user_signature" /></span>
           <span class="font-mono text-xs text-muted-foreground">{{ info.user_student_id }}</span>
         </div>
       </div>

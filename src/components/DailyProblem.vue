@@ -8,7 +8,8 @@
  *
  * 题目全站统一：抽签只由日期决定，与「谁在看」无关。
  */
-import { onMounted, ref } from 'vue'
+import MemberName from './MemberName.vue'
+import { computed, onMounted, ref } from 'vue'
 import { BookOpen, Check, ExternalLink, Loader2, RefreshCw, Users } from 'lucide-vue-next'
 import { Alert } from './ui/alert'
 import { Button } from './ui/button'
@@ -28,6 +29,10 @@ const props = withDefaults(defineProps<{ compact?: boolean }>(), { compact: fals
 const { isCampusMember, ensureLoaded } = useAuth()
 
 const board = ref<DailyProblemBoard | null>(null)
+const checkedInMembers = computed(() =>
+  board.value?.checked_in_today_members ?? (board.value?.checked_in_today_names ?? [])
+    .map((display_name, user_id) => ({ user_id, display_name, signature: '' })),
+)
 const loading = ref(true)
 const error = ref('')
 
@@ -246,19 +251,19 @@ function membersSolved(entry: DailyProblemEntry): string {
 
     <!-- 今日已签到成员（完整页且仅校内成员展示） -->
     <div
-      v-if="!props.compact && isCampusMember && board && board.checked_in_today_names?.length"
+      v-if="!props.compact && isCampusMember && checkedInMembers.length"
       class="flex flex-wrap items-center gap-1.5 rounded-xl border border-border/60 bg-card/60 px-3.5 py-2.5 text-xs text-muted-foreground"
     >
       <span class="inline-flex items-center gap-1 font-medium text-foreground">
         <Users class="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-500" />
-        今日已签到（{{ board.checked_in_today_names.length }}）：
+        今日已签到（{{ checkedInMembers.length }}）：
       </span>
       <span
-        v-for="name in board.checked_in_today_names"
-        :key="name"
+        v-for="member in checkedInMembers"
+        :key="member.user_id"
         class="rounded-md bg-muted/70 px-2 py-0.5 text-foreground"
       >
-        {{ name }}
+        <MemberName :name="member.display_name" :signature="member.signature" />
       </span>
     </div>
   </div>

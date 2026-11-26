@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import MemberName from './MemberName.vue'
 import { onUnmounted, reactive, ref, watch } from 'vue'
 import { honorsApi, type HonorUser } from '../lib/honors'
 import ActionNotice from './ui/ActionNotice.vue'
@@ -77,7 +78,7 @@ onUnmounted(() => { sequence++; emit('busyChange', false) })
     <p v-if="loading" class="text-sm text-muted-foreground" role="status">正在读取用户资料…</p>
     <RefreshButton v-else-if="!profile" :busy="loading" @click="load" />
     <form v-else class="space-y-4" @submit.prevent="save">
-      <p class="break-words text-sm">{{ profile.display_name }} · {{ profile.student_id }}</p>
+      <p class="break-words text-sm"><MemberName :name="profile.display_name" :signature="profile.signature" /> · {{ profile.student_id }}</p>
       <fieldset class="min-w-0 space-y-3" :disabled="busy">
         <label class="block space-y-1 text-sm">
           曾用名（用顿号分隔）

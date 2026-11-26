@@ -3,6 +3,7 @@
  * 移动端主导航：把高频训练动作放在拇指区，低频信息收进「更多」。
  * 桌面端仍用分组侧栏；移动端不尝试缩小那套导航。
  */
+import MemberName from './MemberName.vue'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import {
   Activity,
@@ -188,8 +189,8 @@ onUnmounted(() => {
           @click="moreOpen = false"
         >
           <User class="h-4 w-4 shrink-0" />
-          <span class="truncate">{{ user.display_name }}</span>
-          <span class="ml-auto text-xs text-muted-foreground">{{ isExternal ? '校外账号' : '个人中心' }}</span>
+          <span class="truncate"><MemberName :name="user.display_name" :signature="user.signature" /></span>
+          <span v-if="!user.signature" class="ml-auto text-xs text-muted-foreground">{{ isExternal ? '校外账号' : '个人中心' }}</span>
         </a>
         <a
           v-else

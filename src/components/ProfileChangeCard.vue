@@ -5,6 +5,7 @@
  * 成员与校外账号修改姓名或学籍信息（学院、专业、班级）统一提交管理员审核，
  * 审核通过后生效并自动留存曾用名。当前已有待审核申请时，展示进度并支持撤回。
  */
+import MemberName from './MemberName.vue'
 import { computed, onMounted, ref, watch } from 'vue'
 import { AlertCircle, CheckCircle2, Clock, FileEdit, Loader2, Undo2, XCircle } from 'lucide-vue-next'
 import ActionNotice from './ui/ActionNotice.vue'
@@ -446,7 +447,7 @@ function formatTime(iso: string | null): string {
                 </span>
                 <span class="text-muted-foreground">{{ formatTime(item.created_at) }}</span>
                 <span v-if="item.reviewer_name" class="ml-auto text-[11px] text-muted-foreground">
-                  审核人：{{ item.reviewer_name }}
+                  审核人：<MemberName :name="item.reviewer_name" :signature="item.reviewer_signature" />
                 </span>
               </div>
               <p class="text-foreground/90">

@@ -4,6 +4,7 @@
  *
  * slug 从路径 ``/post/{slug}`` 或兜底 ``?s=`` 取得，展示预计阅读时长并提供一键复制分享链接。
  */
+import MemberName from './MemberName.vue'
 import { computed, onMounted, ref } from 'vue'
 import { ArrowLeft, Check, Clock, Link2, Megaphone } from 'lucide-vue-next'
 import { Button } from './ui/button'
@@ -112,7 +113,7 @@ onMounted(async () => {
       </h1>
       <p class="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
         <span>{{ fmtDate(post.published_at) }}</span>
-        <template v-if="post.author_name"><span>· {{ post.author_name }}</span></template>
+        <template v-if="post.author_name"><span>· <MemberName :name="post.author_name" :signature="post.author_signature" /></span></template>
         <span class="inline-flex items-center gap-1">
           · <Clock class="h-3 w-3" />约 {{ readingMinutes }} 分钟阅读
         </span>

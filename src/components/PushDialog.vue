@@ -6,6 +6,7 @@
  * 改完直接发。受众分类：全体、管理员、年级、班级、某场集训的报名人、
  * 指定成员。班级和指定成员在前端解析成 user id 列表走 ``users:`` 群体。
  */
+import MemberName from './MemberName.vue'
 import { computed, onMounted, ref, watch } from 'vue'
 import {
   DialogContent,
@@ -275,7 +276,7 @@ async function send() {
                   >
                     <Check v-if="isPicked(u)" class="h-3 w-3" />
                   </span>
-                  <span class="truncate">{{ u.display_name }}</span>
+                  <span class="truncate"><MemberName :name="u.display_name" :signature="u.signature" /></span>
                   <span class="ml-auto shrink-0 text-xs text-muted-foreground">{{ u.class_label || u.student_id }}</span>
                 </button>
               </div>
@@ -289,7 +290,7 @@ async function send() {
                   title="点掉移除"
                   @click="togglePick(u)"
                 >
-                  {{ u.display_name }}
+                  <MemberName :name="u.display_name" :signature="u.signature" />
                 </button>
               </div>
             </div>

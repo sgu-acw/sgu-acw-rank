@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import MemberName from './MemberName.vue'
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { ArrowDown, ArrowLeft, ArrowUp, ChevronRight, Download, GripVertical, Loader2, Plus, Search, Trash2, Trophy, X } from 'lucide-vue-next'
 import Sortable from 'sortablejs'
@@ -672,11 +673,11 @@ onUnmounted(() => { disposed = true; ++requestId; sortable?.destroy(); window.re
               <CardHeader><CardTitle class="text-sm">报名名单 <span class="text-muted-foreground">{{ detail.registrations.length }}</span></CardTitle></CardHeader>
               <CardContent class="space-y-4">
                 <div class="divide-y divide-border/40">
-                  <div v-for="r in detail.registrations" :key="r.user_id" class="flex min-h-12 items-center gap-3"><span class="min-w-0 flex-1 truncate text-sm">{{ r.display_name }}</span><IconButton v-if="!locked" destructive :disabled="busy" :label="`移除报名成员 ${r.display_name}`" @click="removeMember(r.user_id, r.display_name)"><X class="h-4 w-4" /></IconButton></div>
+                  <div v-for="r in detail.registrations" :key="r.user_id" class="flex min-h-12 items-center gap-3"><span class="min-w-0 flex-1 truncate text-sm"><MemberName :name="r.display_name" :signature="r.signature" /></span><IconButton v-if="!locked" destructive :disabled="busy" :label="`移除报名成员 ${r.display_name}`" @click="removeMember(r.user_id, r.display_name)"><X class="h-4 w-4" /></IconButton></div>
                 </div>
                 <p v-if="!detail.registrations.length" class="text-sm text-muted-foreground">还没有成员报名。</p>
                 <form v-if="!locked" class="flex gap-2" @submit.prevent="searchMembers"><Input v-model="memberQuery" aria-label="搜索成员" placeholder="姓名或学号" class="min-h-11 min-w-0 flex-1" /><Button type="submit" variant="outline" :disabled="busy || !memberQuery.trim()"><Search class="mr-1 h-4 w-4" />搜索</Button></form>
-                <div v-if="!locked" class="divide-y divide-border/40"><div v-for="u in memberResults" :key="u.id" class="flex min-h-12 items-center gap-2"><span class="min-w-0 flex-1 text-sm">{{ u.display_name }} <span class="text-xs text-muted-foreground">{{ u.student_id }}</span></span><Button variant="outline" :disabled="busy || registeredIds.has(u.id)" @click="addMember(u.id)">{{ registeredIds.has(u.id) ? '已报名' : '加入集训' }}</Button></div></div>
+                <div v-if="!locked" class="divide-y divide-border/40"><div v-for="u in memberResults" :key="u.id" class="flex min-h-12 items-center gap-2"><span class="min-w-0 flex-1 text-sm"><MemberName :name="u.display_name" :signature="u.signature" /> <span class="text-xs text-muted-foreground">{{ u.student_id }}</span></span><Button variant="outline" :disabled="busy || registeredIds.has(u.id)" @click="addMember(u.id)">{{ registeredIds.has(u.id) ? '已报名' : '加入集训' }}</Button></div></div>
                 <p v-if="!locked" class="text-xs leading-relaxed text-muted-foreground">管理员可手动加入尚未绑定平台账号的成员；绑定并验证账号后才会同步成绩。</p>
               </CardContent>
             </Card>

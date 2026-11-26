@@ -8,6 +8,7 @@
  * 每道题显示题名、难度、标签、是否完成，点击跳转对应平台。
  * 未登录时不显示完成状态——进度是个人数据。
  */
+import MemberName from './MemberName.vue'
 import { computed, onMounted, ref } from 'vue'
 import {
   AlertCircle,
@@ -318,7 +319,7 @@ onMounted(async () => {
                     :href="`/member?id=${entry.user_id}`"
                     class="truncate text-sm font-medium underline-offset-4 transition-colors hover:text-primary hover:underline"
                   >
-                    {{ entry.display_name }}
+                    <MemberName :name="entry.display_name" :signature="entry.signature" />
                   </a>
                   <span v-if="entry.class_label" class="text-[11px] text-muted-foreground/70">
                     {{ entry.class_label }}

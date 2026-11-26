@@ -5,7 +5,8 @@
  * 页面本身是公开的（静态站无法在服务端拦人），靠 /auth/me 的结果决定显示
  * 什么。未登录时提示去登录，而不是跳转，这样链接可以安全地分享。
  */
-import { computed, onMounted, ref } from 'vue'
+import MemberName from './MemberName.vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { Check, LogOut, Loader2, Pencil, X } from 'lucide-vue-next'
 import { Alert } from './ui/alert'
 import { Button } from './ui/button'
@@ -24,7 +25,7 @@ import { ApiError, authApi } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { formatEnrollYear } from '../lib/format'
 
-const { user, isExternal, isCampusMember, isAdmin, loading, ready, ensureLoaded, logout, setUser } = useAuth()
+const { user, isExternal, isCampusMember, isAdmin, loading, ready, ensureLoaded, logout, setUser, patchUser } = useAuth()
 
 const profileChangeRef = ref<InstanceType<typeof ProfileChangeCard> | null>(null)
 const profileChangeEl = ref<HTMLElement | null>(null)
@@ -69,6 +70,38 @@ async function saveDisplayName() {
     nameError.value = err instanceof ApiError ? err.message : '更新失败'
   } finally {
     nameBusy.value = false
+  }
+}
+
+const signatureDraft = ref('')
+const signatureBusy = ref(false)
+const signatureError = ref('')
+const signatureNotice = ref('')
+const signatureLength = computed(() => Array.from(signatureDraft.value.trim()).length)
+const signatureChanged = computed(() => signatureDraft.value.trim() !== (user.value?.signature ?? ''))
+
+watch(() => user.value?.id, () => {
+  signatureDraft.value = user.value?.signature ?? ''
+  signatureError.value = ''
+  signatureNotice.value = ''
+}, { immediate: true })
+
+async function saveSignature() {
+  const userId = user.value?.id
+  if (userId == null || signatureBusy.value || !signatureChanged.value || signatureLength.value > 12) return
+  signatureBusy.value = true
+  signatureError.value = ''
+  signatureNotice.value = ''
+  try {
+    const updated = await authApi.updateMe({ signature: signatureDraft.value.trim() })
+    if (user.value?.id !== userId) return
+    patchUser({ signature: updated.signature })
+    signatureDraft.value = updated.signature ?? ''
+    signatureNotice.value = '个性签名已保存'
+  } catch (err) {
+    if (user.value?.id === userId) signatureError.value = err instanceof ApiError ? err.message : '保存失败'
+  } finally {
+    signatureBusy.value = false
   }
 }
 
@@ -177,8 +210,8 @@ function go(path: string) {
                 取消
               </Button>
             </form>
-            <div v-else class="flex items-center gap-2">
-              <p class="truncate text-xl font-semibold tracking-tight">{{ user.display_name }}</p>
+            <div v-else class="flex flex-wrap items-center gap-2">
+              <p class="min-w-0 max-w-full text-xl font-semibold tracking-tight"><MemberName :name="user.display_name" :signature="user.signature" /></p>
               <Button
                 v-if="isAdmin"
                 size="sm"
@@ -208,6 +241,33 @@ function go(path: string) {
         </div>
 
         <Separator />
+
+        <form v-if="user.signature !== undefined" class="min-w-0 space-y-2" @submit.prevent="saveSignature">
+          <label for="profile-signature" class="block text-sm font-medium">个性签名</label>
+          <p id="profile-signature-help" class="text-xs text-muted-foreground">
+            显示在站内姓名旁，最多 12 个字。留空可清除。
+          </p>
+          <div class="flex flex-wrap items-center gap-2">
+            <Input
+              id="profile-signature"
+              v-model="signatureDraft"
+              aria-describedby="profile-signature-help profile-signature-length"
+              :aria-invalid="signatureLength > 12"
+              :disabled="signatureBusy"
+              class="min-w-0 max-w-xs flex-1"
+            />
+            <span id="profile-signature-length" class="shrink-0 text-xs" :class="signatureLength > 12 ? 'text-destructive' : 'text-muted-foreground'">
+              {{ signatureLength }} / 12
+            </span>
+            <Button type="submit" :disabled="signatureBusy || !signatureChanged || signatureLength > 12">
+              {{ signatureBusy ? '保存中…' : '保存签名' }}
+            </Button>
+          </div>
+          <ActionNotice v-if="signatureError" variant="error" :message="signatureError" />
+          <ActionNotice v-else-if="signatureNotice" :message="signatureNotice" />
+        </form>
+
+        <Separator v-if="user.signature !== undefined" />
 
         <div v-if="isExternal" class="rounded-lg border border-border/50 bg-muted/30 px-3.5 py-2.5 text-xs leading-relaxed text-muted-foreground">
           当前为校外体验账号（登录用户名：<span class="font-mono text-foreground">{{ user.student_id }}</span>），已开放题库云端记录、云端 IDE、每日一题与公开题单；校内学籍、OJ 榜单与内部活动暂不开放。

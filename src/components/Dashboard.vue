@@ -5,6 +5,7 @@
  * 所有核心数字一次请求拿齐（/practice/dashboard），同时以非阻塞方式并行拉取
  * 近期进行中的集训和开放中的线下赛报名，方便成员一眼看到待办活动。
  */
+import MemberName from './MemberName.vue'
 import { computed, onMounted, ref } from 'vue'
 import {
   AlertCircle,
@@ -276,7 +277,7 @@ onMounted(async () => {
       <div class="page-header">
         <div class="min-w-0">
           <div class="flex flex-wrap items-center gap-2">
-            <h1 class="page-title">{{ user.display_name }}</h1>
+            <h1 class="page-title"><MemberName :name="user.display_name" :signature="user.signature" /></h1>
             <span class="rounded-md border border-border/60 bg-muted/50 px-2 py-0.5 text-xs font-medium text-muted-foreground">
               校外账号
             </span>
@@ -375,7 +376,7 @@ onMounted(async () => {
         <section class="min-w-0 space-y-4">
           <div class="flex flex-wrap items-center justify-between gap-2">
             <h1 class="text-xl font-semibold tracking-tight">
-              {{ user.display_name }}
+              <MemberName :name="user.display_name" :signature="user.signature" />
               <span v-if="formatEnrollYear(user.enroll_year)" class="ml-1.5 text-sm font-normal text-muted-foreground">
                 {{ formatEnrollYear(user.enroll_year) }}
               </span>

@@ -33,6 +33,7 @@ export class ApiError extends Error {
 export interface PublicUser {
   id: number
   display_name: string
+  signature?: string
   student_id: string
   enroll_year: number
   college_code: string
@@ -52,6 +53,7 @@ export interface User {
   id: number
   student_id: string
   display_name: string
+  signature?: string
   enroll_year: number
   level: number
   college_code: string
@@ -212,7 +214,7 @@ export const authApi = {
 
   logout: () => api.post<void>('/auth/logout'),
 
-  updateMe: (payload: { display_name?: string }) => api.patch<User>('/auth/me', payload),
+  updateMe: (payload: { display_name?: string; signature?: string }) => api.patch<User>('/auth/me', payload),
 
   changePassword: (currentPassword: string, newPassword: string) =>
     api.post<void>('/auth/password', {
@@ -373,6 +375,7 @@ export interface PracticeDay {
 export interface PracticeEntry {
   user_id: number
   display_name: string
+  signature?: string
   student_id: string
   enroll_year: number
   rank: number
@@ -444,6 +447,7 @@ export interface RefreshResult {
 export interface RatingEntry {
   user_id: number
   display_name: string
+  signature?: string
   student_id: string
   enroll_year: number
   rank: number
@@ -524,6 +528,7 @@ export interface Invite {
   created_by: number | null
   /** 创建者姓名与学号。码出了问题得知道找谁问。 */
   created_by_name: string | null
+  created_by_signature?: string
   created_by_student_id: string | null
   created_at: string
   is_usable: boolean
@@ -543,6 +548,7 @@ export interface AdminUser {
   id: number
   student_id: string
   display_name: string
+  signature?: string
   enroll_year: number
   level: number
   college_code: string
@@ -575,6 +581,7 @@ export interface ReviewRequestRecord {
   user_id: number | null
   student_id: string
   current_display_name: string
+  signature?: string
   role: string
   invite_code: string | null
   before: Record<string, unknown>
@@ -583,6 +590,7 @@ export interface ReviewRequestRecord {
   review_note: string
   reviewed_by: number | null
   reviewer_name: string | null
+  reviewer_signature?: string
   reviewer_student_id: string | null
   created_at: string
   reviewed_at: string | null
@@ -826,6 +834,7 @@ export interface ProblemListDetail extends ProblemListSummary {
 export interface ProblemListRankEntry {
   user_id: number
   display_name: string
+  signature?: string
   student_id: string
   enroll_year: number
   college_name: string | null
@@ -875,12 +884,14 @@ export interface DailyProblemBoard {
   checked_in_today: boolean
   /** 今天有谁签到了。 */
   checked_in_today_names: string[]
+  checked_in_today_members?: { user_id: number; display_name: string; signature?: string }[]
 }
 
 export interface CheckinEntry {
   rank: number
   user_id: number
   display_name: string
+  signature?: string
   student_id: string
   enroll_year: number
   class_label: string | null
@@ -977,6 +988,7 @@ export interface SolverEntry {
   rank: number
   user_id: number
   display_name: string
+  signature?: string
   student_id: string
   enroll_year: number
   class_label: string | null
@@ -1169,6 +1181,7 @@ export interface AdminAccountDetail {
 export interface AdminMemberDetail {
   id: number
   display_name: string
+  signature?: string
   student_id: string
   enroll_year: number
   level: number
@@ -1215,6 +1228,7 @@ export interface CampLeaderboardEntry {
   rank: number
   user_id: number
   display_name: string
+  signature?: string
   student_id: string
   enroll_year: number
   class_label: string | null
@@ -1296,7 +1310,7 @@ export interface CampAdminDetail extends CampSummary, CampResultStatus {
   visible_at: string | null
   visible_days: number | null
   problems: CampAdminProblem[]
-  registrations: { user_id: number; display_name: string; registered_at: string }[]
+  registrations: { user_id: number; display_name: string; signature?: string; registered_at: string }[]
   /** 最终榜单。管理员在管理页也要能看到谁过了什么。 */
   leaderboard: CampLeaderboardEntry[]
 }
@@ -1381,6 +1395,7 @@ export interface PostSummary {
   is_popup: boolean
   published_at: string
   author_name: string
+  author_signature?: string
 }
 
 /** 详情含正文。 */
@@ -1519,6 +1534,7 @@ export interface SignupEntry {
   id: number
   user_id: number
   display_name: string
+  signature?: string
   student_id: string
   class_label: string | null
   answers: Record<string, SignupAnswer>
@@ -1586,6 +1602,7 @@ export interface OAuthAuthorizeInfo {
   eligible: boolean
   ineligible_reason: string | null
   user_display_name: string | null
+  user_signature?: string
   user_student_id: string | null
   user_role: string | null
 }

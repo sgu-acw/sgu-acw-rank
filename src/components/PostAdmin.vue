@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import MemberName from './MemberName.vue'
 import { confirmAction } from '../lib/confirm'
 /**
  * 文章管理。
@@ -329,7 +330,7 @@ onUnmounted(() => { disposed = true; ++requestId; window.removeEventListener('be
                 {{ post.title }}
               </p>
               <p class="text-[11px] text-muted-foreground">
-                {{ post.author_name || '—' }}
+                <MemberName :name="post.author_name || '—'" :signature="post.author_signature" />
                 <span v-if="!post.published"> · 已下架</span>
               </p>
             </div>

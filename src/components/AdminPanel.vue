@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import MemberName from './MemberName.vue'
 import { confirmAction } from '../lib/confirm'
 /**
  * 管理页：邀请码、成员管理、管理员备注。
@@ -617,7 +618,7 @@ onMounted(async () => {
                 姓名可能重名，所以带上学号——名单里两个人同名的概率不低。
               -->
               <span v-if="invite.created_by_name" class="shrink-0 text-xs text-muted-foreground/70">
-                {{ invite.created_by_name }}
+                <MemberName :name="invite.created_by_name" :signature="invite.created_by_signature" />
                 <span class="font-mono text-[10px]">{{ invite.created_by_student_id }}</span>
                 创建
               </span>
@@ -804,7 +805,7 @@ onMounted(async () => {
           <div v-else class="divide-y divide-border/40">
             <div v-for="member in members" :key="member.id" class="space-y-2 px-4 py-3 transition-colors hover:bg-muted/25">
               <div class="flex flex-wrap items-center gap-2">
-                <span class="text-sm font-medium">{{ member.display_name }}</span>
+                <span class="text-sm font-medium"><MemberName :name="member.display_name" :signature="member.signature" /></span>
                 <span class="font-mono text-xs text-muted-foreground">{{ member.student_id }}</span>
                 <span
                   v-if="formatEnrollYear(member.enroll_year)"

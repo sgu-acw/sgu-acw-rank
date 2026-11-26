@@ -5,6 +5,7 @@
  * 文章存在后端数据库，列表按 sort_order 排——公告置顶靠大 sort_order。
  * 提供 RSS 订阅链接和站内关键词筛选。
  */
+import MemberName from './MemberName.vue'
 import { computed, onMounted, ref } from 'vue'
 import { Megaphone, Rss, Search } from 'lucide-vue-next'
 import { Input } from './ui/input'
@@ -130,7 +131,7 @@ onMounted(() => {
           </p>
           <span class="mt-3 inline-flex items-center gap-1.5 text-xs text-muted-foreground/70">
             {{ fmtDate(post.published_at) }}
-            <template v-if="post.author_name">· {{ post.author_name }}</template>
+            <template v-if="post.author_name">· <MemberName :name="post.author_name" :signature="post.author_signature" /></template>
           </span>
         </article>
       </a>

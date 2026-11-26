@@ -8,6 +8,7 @@
  * 弹窗那条路径会传 ``entry`` 进来——榜单里已经有这个人的姓名、学院、每日
  * 明细了，没必要再拉一遍整个榜单。只有直接开页面时才需要自己取。
  */
+import MemberName from './MemberName.vue'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { AlertCircle, ExternalLink, Loader2 } from 'lucide-vue-next'
 import HonorArchive from './HonorArchive.vue'
@@ -126,7 +127,7 @@ onMounted(() => ensureLoaded())
 
     <template v-else-if="member">
       <div class="flex flex-wrap items-baseline gap-2">
-        <span class="text-lg font-semibold tracking-tight">{{ member.display_name }}</span>
+        <span class="text-lg font-semibold tracking-tight"><MemberName :name="member.display_name" :signature="member.signature" /></span>
         <span class="font-mono text-xs text-muted-foreground">{{ member.student_id }}</span>
         <span v-if="formatEnrollYear(member.enroll_year)" class="text-xs text-muted-foreground">
           {{ formatEnrollYear(member.enroll_year) }}

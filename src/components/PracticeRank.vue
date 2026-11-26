@@ -12,6 +12,7 @@
  *
  * 数据由后端定时同步平台得来，页面只读。
  */
+import MemberName from './MemberName.vue'
 import { computed, onMounted, ref, watch } from 'vue'
 import { AlertCircle, ChevronDown, Filter, Loader2, RefreshCw, X } from 'lucide-vue-next'
 import { Alert } from './ui/alert'
@@ -596,7 +597,7 @@ onMounted(async () => {
                   :title="`查看 ${entry.display_name} 的资料`"
                   @click="dialogEntry = entry"
                 >
-                  {{ entry.display_name }}
+                  <MemberName :name="entry.display_name" :signature="entry.signature" />
                 </button>
                 <span
                   v-if="formatEnrollYear(entry.enroll_year)"
@@ -733,7 +734,7 @@ onMounted(async () => {
                   :title="`查看 ${entry.display_name} 的资料`"
                   @click="go(`/member?id=${entry.user_id}`)"
                 >
-                  {{ entry.display_name }}
+                  <MemberName :name="entry.display_name" :signature="entry.signature" />
                 </button>
                 <span
                   v-if="formatEnrollYear(entry.enroll_year)"
@@ -870,7 +871,7 @@ onMounted(async () => {
                   :title="`查看 ${entry.display_name} 的资料`"
                   @click="go(`/member?id=${entry.user_id}`)"
                 >
-                  {{ entry.display_name }}
+                  <MemberName :name="entry.display_name" :signature="entry.signature" />
                 </button>
                 <span
                   v-if="formatEnrollYear(entry.enroll_year)"
@@ -948,7 +949,7 @@ onMounted(async () => {
                   :title="`查看 ${entry.display_name} 的资料`"
                   @click="go(`/member?id=${entry.user_id}`)"
                 >
-                  {{ entry.display_name }}
+                  <MemberName :name="entry.display_name" :signature="entry.signature" />
                 </button>
                 <span
                   v-if="formatEnrollYear(entry.enroll_year)"

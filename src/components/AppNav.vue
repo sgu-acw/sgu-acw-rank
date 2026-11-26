@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import MemberName from './MemberName.vue'
 import { computed, ref, onMounted, onUnmounted } from 'vue'
 import {
   Award,
@@ -219,7 +220,7 @@ function isActive(route: string): boolean {
           :class="isActive('/me') ? 'bg-accent text-accent-foreground' : 'text-muted-foreground hover:bg-accent/70 hover:text-foreground'"
         >
           <User class="h-4 w-4 shrink-0" />
-          <span class="truncate">{{ user.display_name }}</span>
+          <span class="truncate"><MemberName :name="user.display_name" :signature="user.signature" /></span>
           <span
             v-if="isExternal"
             class="ml-auto shrink-0 rounded border border-border/60 bg-muted/60 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground"

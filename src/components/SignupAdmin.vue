@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import MemberName from './MemberName.vue'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { ArrowDown, ArrowLeft, ArrowUp, Download, Loader2, Plus, Trash2, X } from 'lucide-vue-next'
 import { adminApi, ApiError, PLATFORM_META, signupAdminApi, type Platform, type SignupEntry, type SignupFieldDef, type SignupPayload, type SignupSummary } from '../lib/api'
@@ -363,7 +364,7 @@ onUnmounted(() => { disposed = true; ++requestId; window.removeEventListener('be
 </thead>
                     <tbody class="divide-y divide-border/40">
 <tr v-for="e in entries" :key="e.id" class="row-action">
-                      <td class="px-3 py-2 font-medium">{{ e.display_name }}</td><td class="px-3 py-2 font-mono text-xs">{{ e.student_id }}</td><td class="px-3 py-2 text-xs text-muted-foreground">{{ e.class_label || '—' }}</td>
+                      <td class="px-3 py-2 font-medium"><MemberName :name="e.display_name" :signature="e.signature" /></td><td class="px-3 py-2 font-mono text-xs">{{ e.student_id }}</td><td class="px-3 py-2 text-xs text-muted-foreground">{{ e.class_label || '—' }}</td>
                       <td v-for="f in detail.fields" :key="f.key" class="px-3 py-2 text-xs">{{ f.type === 'checkbox' ? (e.answers[f.key] ? '是' : '否') : Array.isArray(e.answers[f.key]) ? (e.answers[f.key] as string[]).join('、') || '—' : (e.answers[f.key] || '—') }}</td>
                       <td class="px-3 py-2 text-xs text-muted-foreground">{{ new Date(e.created_at).toLocaleString('zh-CN', { hour12: false }) }}</td>
                       <td class="px-3 py-2"><IconButton :label="`撤销 ${e.display_name} 的报名`" destructive :disabled="blocked" @click="removeEntry(e)"><Trash2 class="h-4 w-4" /></IconButton></td>

@@ -2,6 +2,7 @@
 /**
  * 管理员审核工作台：统一处理新用户注册审核与成员改名/资料修改申请。
  */
+import MemberName from './MemberName.vue'
 import { computed, onMounted, ref, watch } from 'vue'
 import {
   AlertCircle,
@@ -408,10 +409,10 @@ onMounted(async () => {
                   :href="`/member?id=${item.user_id}`"
                   class="text-sm font-semibold underline-offset-4 hover:underline"
                 >
-                  {{ item.current_display_name }}
+                  <MemberName :name="item.current_display_name" :signature="item.signature" />
                 </a>
                 <span v-else class="text-sm font-semibold">
-                  {{ item.current_display_name }}
+                  <MemberName :name="item.current_display_name" :signature="item.signature" />
                 </span>
                 <span class="font-mono text-xs text-muted-foreground">{{ item.student_id }}</span>
 
@@ -492,7 +493,7 @@ onMounted(async () => {
               <!-- 已处理结果 -->
               <div v-else class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
                 <span v-if="item.reviewer_name">
-                  处理人：{{ item.reviewer_name }}
+                  处理人：<MemberName :name="item.reviewer_name" :signature="item.reviewer_signature" />
                   <span v-if="item.reviewer_student_id" class="font-mono">({{ item.reviewer_student_id }})</span>
                 </span>
                 <span v-if="item.reviewed_at">处理时间：{{ formatTime(item.reviewed_at) }}</span>
