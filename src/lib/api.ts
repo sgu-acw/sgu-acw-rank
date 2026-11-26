@@ -182,6 +182,8 @@ export const authApi = {
       poll_token: pollToken,
     }),
   qrLoginApprove: (token: string) => api.post<{ status: 'approved' }>('/auth/qr-login/approve', { token }),
+  qrLoginInfo: (token: string) =>
+    api.post<{ application: string | null; scopes?: string[] }>('/auth/qr-login/info', { token }),
 
   /** 两步验证第二步：票据 + 验证码 → 会话。 */
   loginTotp: (ticket: string, code: string) =>
