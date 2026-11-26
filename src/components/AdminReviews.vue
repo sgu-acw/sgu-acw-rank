@@ -34,7 +34,7 @@ import {
 import { useAuth } from '../lib/auth'
 import { confirmAction } from '../lib/confirm'
 
-const { isAdmin, ensureLoaded } = useAuth()
+const { user, isAdmin, ensureLoaded } = useAuth()
 
 const loading = ref(true)
 const refreshing = ref(false)
@@ -127,7 +127,7 @@ function goPage(next: number) {
 }
 
 async function approve(item: ReviewRequestRecord) {
-  if (actingId.value !== null) return
+  if (actingId.value !== null || item.user_id === user.value?.id) return
   actingId.value = item.id
   error.value = ''
   try {
@@ -148,12 +148,13 @@ async function approve(item: ReviewRequestRecord) {
 }
 
 async function reject(item: ReviewRequestRecord) {
-  if (actingId.value !== null) return
+  if (actingId.value !== null || item.user_id === user.value?.id) return
   const hint =
     item.kind === 'registration'
       ? `确定驳回「${item.current_display_name}（${item.student_id}）」的注册申请？\n\n待审占位账号将被删除，若使用了邀请码其名额会自动退回。`
       : `确定驳回「${item.current_display_name}（${item.student_id}）」的资料修改申请？原资料将保持不变。`
-  if (!await confirmAction(hint)) return
+  if (!await confirmAction(hint) || actingId.value !== null || item.user_id === user.value?.id) return
+  if (!pageData.value?.items.some((row) => row.id === item.id && row.status === 'pending')) return
 
   actingId.value = item.id
   error.value = ''
@@ -470,7 +471,7 @@ onMounted(async () => {
                 <div class="flex shrink-0 items-center gap-2">
                   <Button
                     size="sm"
-                    :disabled="actingId !== null"
+                    :disabled="actingId !== null || item.user_id === user?.id"
                     @click="approve(item)"
                   >
                     <Loader2 v-if="actingId === item.id" class="mr-1 h-3.5 w-3.5 animate-spin" />
@@ -481,12 +482,13 @@ onMounted(async () => {
                     size="sm"
                     variant="outline"
                     class="border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
-                    :disabled="actingId !== null"
+                    :disabled="actingId !== null || item.user_id === user?.id"
                     @click="reject(item)"
                   >
                     <X class="mr-1 h-3.5 w-3.5" />
                     驳回
                   </Button>
+                  <span v-if="item.user_id === user?.id" class="text-xs text-muted-foreground">请由其他管理员处理</span>
                 </div>
               </div>
 

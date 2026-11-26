@@ -723,6 +723,7 @@ export const adminApi = {
       status?: string
       admin_note?: string
       display_name?: string
+      signature?: string
       /** 空串表示恢复成按学号查表。 */
       college_override?: string
       major_override?: string

@@ -1,14 +1,13 @@
 <script setup lang="ts">
 /**
- * 个人中心。目前只展示从学号解析出来的信息，并提供退出登录。
+ * 个人中心。查看个人资料、修改签名和管理账号安全。
  *
  * 页面本身是公开的（静态站无法在服务端拦人），靠 /auth/me 的结果决定显示
  * 什么。未登录时提示去登录，而不是跳转，这样链接可以安全地分享。
  */
 import MemberName from './MemberName.vue'
-import { computed, onMounted, ref, watch } from 'vue'
-import { Check, LogOut, Loader2, Pencil, X } from 'lucide-vue-next'
-import { Alert } from './ui/alert'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import { LogOut, Loader2, Pencil } from 'lucide-vue-next'
 import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Input } from './ui/input'
@@ -25,7 +24,7 @@ import { ApiError, authApi } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { formatEnrollYear } from '../lib/format'
 
-const { user, isExternal, isCampusMember, isAdmin, loading, ready, ensureLoaded, logout, setUser, patchUser } = useAuth()
+const { user, isExternal, isCampusMember, loading, ready, ensureLoaded, logout, patchUser } = useAuth()
 
 const profileChangeRef = ref<InstanceType<typeof ProfileChangeCard> | null>(null)
 const profileChangeEl = ref<HTMLElement | null>(null)
@@ -35,44 +34,8 @@ function openProfileChange() {
   profileChangeEl.value?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
 }
 
-const editingName = ref(false)
-const draftName = ref('')
-const nameBusy = ref(false)
-const nameError = ref('')
-const nameNotice = ref('')
-
-function startEditName() {
-  if (!user.value) return
-  draftName.value = user.value.display_name
-  nameError.value = ''
-  editingName.value = true
-}
-
-function cancelEditName() {
-  editingName.value = false
-  nameError.value = ''
-}
-
-async function saveDisplayName() {
-  const next = draftName.value.trim()
-  if (!next || nameBusy.value) return
-  nameBusy.value = true
-  nameError.value = ''
-  try {
-    const updated = await authApi.updateMe({ display_name: next })
-    setUser(updated)
-    editingName.value = false
-    nameNotice.value = '姓名已更新'
-    window.setTimeout(() => {
-      if (nameNotice.value === '姓名已更新') nameNotice.value = ''
-    }, 3000)
-  } catch (err) {
-    nameError.value = err instanceof ApiError ? err.message : '更新失败'
-  } finally {
-    nameBusy.value = false
-  }
-}
-
+const editingSignature = ref(false)
+const signatureButton = ref<InstanceType<typeof Button> | null>(null)
 const signatureDraft = ref('')
 const signatureBusy = ref(false)
 const signatureError = ref('')
@@ -81,10 +44,30 @@ const signatureLength = computed(() => Array.from(signatureDraft.value.trim()).l
 const signatureChanged = computed(() => signatureDraft.value.trim() !== (user.value?.signature ?? ''))
 
 watch(() => user.value?.id, () => {
+  editingSignature.value = false
   signatureDraft.value = user.value?.signature ?? ''
   signatureError.value = ''
   signatureNotice.value = ''
 }, { immediate: true })
+
+async function openSignature() {
+  if (!user.value || signatureBusy.value) return
+  if (!editingSignature.value) {
+    signatureDraft.value = user.value.signature ?? ''
+    signatureError.value = ''
+    signatureNotice.value = ''
+    editingSignature.value = true
+  }
+  await nextTick()
+  document.getElementById('profile-signature')?.focus()
+}
+
+async function closeSignature() {
+  editingSignature.value = false
+  signatureError.value = ''
+  await nextTick()
+  signatureButton.value?.$el.focus()
+}
 
 async function saveSignature() {
   const userId = user.value?.id
@@ -98,6 +81,8 @@ async function saveSignature() {
     patchUser({ signature: updated.signature })
     signatureDraft.value = updated.signature ?? ''
     signatureNotice.value = '个性签名已保存'
+    signatureBusy.value = false
+    await closeSignature()
   } catch (err) {
     if (user.value?.id === userId) signatureError.value = err instanceof ApiError ? err.message : '保存失败'
   } finally {
@@ -183,56 +168,11 @@ function go(path: string) {
       </div>
 
       <div v-else key="account" class="space-y-4">
-        <ActionNotice :message="nameNotice" />
-        <Alert v-if="nameError" variant="destructive" class="text-sm">{{ nameError }}</Alert>
-
         <div class="flex flex-wrap items-start justify-between gap-3">
           <div class="min-w-0 flex-1">
-            <form
-              v-if="editingName && isAdmin"
-              class="flex flex-wrap items-center gap-2"
-              @submit.prevent="saveDisplayName"
-            >
-              <Input
-                v-model="draftName"
-                aria-label="显示名称"
-                placeholder="输入姓名"
-                maxlength="32"
-                class="min-h-10 max-w-xs"
-              />
-              <Button size="sm" type="submit" :disabled="nameBusy || !draftName.trim()">
-                <Loader2 v-if="nameBusy" class="mr-1 h-3.5 w-3.5 animate-spin" />
-                <Check v-else class="mr-1 h-3.5 w-3.5" />
-                保存
-              </Button>
-              <Button size="sm" type="button" variant="ghost" :disabled="nameBusy" @click="cancelEditName">
-                <X class="mr-1 h-3.5 w-3.5" />
-                取消
-              </Button>
-            </form>
-            <div v-else class="flex flex-wrap items-center gap-2">
-              <p class="min-w-0 max-w-full text-xl font-semibold tracking-tight"><MemberName :name="user.display_name" :signature="user.signature" /></p>
-              <Button
-                v-if="isAdmin"
-                size="sm"
-                variant="ghost"
-                class="h-8 px-2 text-xs text-muted-foreground"
-                @click="startEditName"
-              >
-                <Pencil class="mr-1 h-3.5 w-3.5" />
-                改名
-              </Button>
-              <Button
-                v-else
-                size="sm"
-                variant="ghost"
-                class="h-8 px-2 text-xs text-muted-foreground"
-                @click="openProfileChange"
-              >
-                <Pencil class="mr-1 h-3.5 w-3.5" />
-                {{ isExternal ? '申请改名' : '申请修改资料' }}
-              </Button>
-            </div>
+            <p class="min-w-0 text-xl font-semibold tracking-tight">
+              <MemberName :name="user.display_name" :signature="user.signature" />
+            </p>
             <p class="mt-0.5 font-mono text-xs text-muted-foreground">{{ user.student_id }}</p>
           </div>
           <span class="rounded-md border border-border/60 bg-muted/40 px-2.5 py-1 text-xs font-medium text-muted-foreground">
@@ -240,34 +180,27 @@ function go(path: string) {
           </span>
         </div>
 
+        <div class="flex flex-wrap items-center gap-2">
+          <Button variant="ghost" class="text-muted-foreground" @click="openProfileChange">
+            <Pencil class="mr-1 h-3.5 w-3.5" />
+            申请改名
+          </Button>
+          <Button
+            v-if="user.signature !== undefined"
+            ref="signatureButton"
+            variant="ghost"
+            class="text-muted-foreground"
+            :aria-expanded="editingSignature"
+            :disabled="signatureBusy"
+            @click="openSignature"
+          >
+            <Pencil class="mr-1 h-3.5 w-3.5" />
+            改签名
+          </Button>
+        </div>
+        <ActionNotice :message="signatureNotice" />
+
         <Separator />
-
-        <form v-if="user.signature !== undefined" class="min-w-0 space-y-2" @submit.prevent="saveSignature">
-          <label for="profile-signature" class="block text-sm font-medium">个性签名</label>
-          <p id="profile-signature-help" class="text-xs text-muted-foreground">
-            显示在站内姓名旁，最多 12 个字。留空可清除。
-          </p>
-          <div class="flex flex-wrap items-center gap-2">
-            <Input
-              id="profile-signature"
-              v-model="signatureDraft"
-              aria-describedby="profile-signature-help profile-signature-length"
-              :aria-invalid="signatureLength > 12"
-              :disabled="signatureBusy"
-              class="min-w-0 max-w-xs flex-1"
-            />
-            <span id="profile-signature-length" class="shrink-0 text-xs" :class="signatureLength > 12 ? 'text-destructive' : 'text-muted-foreground'">
-              {{ signatureLength }} / 12
-            </span>
-            <Button type="submit" :disabled="signatureBusy || !signatureChanged || signatureLength > 12">
-              {{ signatureBusy ? '保存中…' : '保存签名' }}
-            </Button>
-          </div>
-          <ActionNotice v-if="signatureError" variant="error" :message="signatureError" />
-          <ActionNotice v-else-if="signatureNotice" :message="signatureNotice" />
-        </form>
-
-        <Separator v-if="user.signature !== undefined" />
 
         <div v-if="isExternal" class="rounded-lg border border-border/50 bg-muted/30 px-3.5 py-2.5 text-xs leading-relaxed text-muted-foreground">
           当前为校外体验账号（登录用户名：<span class="font-mono text-foreground">{{ user.student_id }}</span>），已开放题库云端记录、云端 IDE、每日一题与公开题单；校内学籍、OJ 榜单与内部活动暂不开放。
@@ -292,9 +225,43 @@ function go(path: string) {
   </Card>
 
   <div v-if="ready && user" class="mt-4 space-y-4">
-    <div v-if="!isAdmin" ref="profileChangeEl">
+    <div ref="profileChangeEl">
       <ProfileChangeCard ref="profileChangeRef" />
     </div>
+
+    <Card v-if="editingSignature">
+      <CardHeader class="pb-3">
+        <CardTitle class="text-base">修改个性签名</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form class="min-w-0 space-y-3" @submit.prevent="saveSignature">
+          <label for="profile-signature" class="sr-only">个性签名</label>
+          <p id="profile-signature-help" class="text-xs text-muted-foreground">
+            最多 12 个字，留空可清除。
+          </p>
+          <div class="flex items-center gap-2">
+            <Input
+              id="profile-signature"
+              v-model="signatureDraft"
+              aria-describedby="profile-signature-help profile-signature-length"
+              :aria-invalid="signatureLength > 12"
+              :disabled="signatureBusy"
+              class="min-w-0 max-w-xs flex-1"
+            />
+            <span id="profile-signature-length" class="shrink-0 text-xs" :class="signatureLength > 12 ? 'text-destructive' : 'text-muted-foreground'">
+              {{ signatureLength }} / 12
+            </span>
+          </div>
+          <ActionNotice :message="signatureError" variant="error" />
+          <div class="flex gap-2">
+            <Button type="submit" :disabled="signatureBusy || !signatureChanged || signatureLength > 12">
+              {{ signatureBusy ? '保存中…' : '保存签名' }}
+            </Button>
+            <Button type="button" variant="outline" :disabled="signatureBusy" @click="closeSignature">取消</Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
 
     <template v-if="isCampusMember">
       <div class="surface-card p-4">

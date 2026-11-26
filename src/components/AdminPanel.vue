@@ -28,7 +28,7 @@ import {
 import { useAuth } from '../lib/auth'
 import { formatEnrollYear } from '../lib/format'
 
-const { user, ensureLoaded, isAdmin } = useAuth()
+const { user, ensureLoaded, isAdmin, patchUser } = useAuth()
 
 const loading = ref(true)
 const error = ref('')
@@ -92,6 +92,10 @@ const editingMemberId = ref<number | null>(null)
 const editingNote = ref<Record<number, string>>({})
 const editingCanPost = ref<Record<number, boolean>>({})
 const editingName = ref<Record<number, string>>({})
+const editingSignature = ref<Record<number, string>>({})
+const editingSignatureLength = computed(() =>
+  Array.from(editingSignature.value[editingMemberId.value ?? 0]?.trim() ?? '').length,
+)
 //: 学院名/专业名的人工覆盖。空串表示恢复成按学号查表。
 const editingCollege = ref<Record<number, string>>({})
 const editingMajor = ref<Record<number, string>>({})
@@ -301,8 +305,10 @@ const copyCode = (code: string) => copyText(code, code)
 const copyLink = (code: string) => copyText(inviteLink(code), `link:${code}`)
 
 function startEditMember(target: AdminUser) {
+  if (savingNote.value !== null) return
   editingMemberId.value = target.id
   editingName.value[target.id] = target.display_name
+  editingSignature.value[target.id] = target.signature ?? ''
   editingNote.value[target.id] = target.admin_note ?? ''
   editingCanPost.value[target.id] = target.can_post ?? false
   editingCollege.value[target.id] = target.college_name ?? ''
@@ -311,8 +317,10 @@ function startEditMember(target: AdminUser) {
 }
 
 function cancelEditMember(target: AdminUser) {
+  if (savingNote.value !== null) return
   delete editingNote.value[target.id]
   delete editingName.value[target.id]
+  delete editingSignature.value[target.id]
   delete editingCollege.value[target.id]
   delete editingMajor.value[target.id]
   delete editingClassNo.value[target.id]
@@ -320,9 +328,12 @@ function cancelEditMember(target: AdminUser) {
 }
 
 async function saveNote(target: AdminUser) {
+  if (savingNote.value !== null || editingMemberId.value !== target.id || editingSignatureLength.value > 12) return
+  error.value = ''
   const payload: {
     admin_note?: string
     display_name?: string
+    signature?: string
     college_override?: string
     major_override?: string
     can_post?: boolean
@@ -330,7 +341,12 @@ async function saveNote(target: AdminUser) {
   } = {}
   if (editingNote.value[target.id] !== undefined) payload.admin_note = editingNote.value[target.id]
   if (editingCanPost.value[target.id] !== undefined) payload.can_post = editingCanPost.value[target.id]
-  if (editingName.value[target.id] !== undefined) payload.display_name = editingName.value[target.id]
+  const name = editingName.value[target.id]
+  if (target.id !== user.value?.id && name !== undefined && name !== target.display_name) {
+    payload.display_name = name
+  }
+  const signature = editingSignature.value[target.id]?.trim()
+  if (signature !== undefined && signature !== (target.signature ?? '')) payload.signature = signature
   if (editingCollege.value[target.id] !== undefined) {
     payload.college_override = editingCollege.value[target.id]
   }
@@ -346,8 +362,14 @@ async function saveNote(target: AdminUser) {
   savingNote.value = target.id
   try {
     const updated = await adminApi.updateUser(target.id, payload)
+    if (payload.signature !== undefined && updated.signature !== payload.signature) {
+      error.value = '个性签名暂未保存，请稍后重试'
+      return
+    }
     target.admin_note = updated.admin_note
     target.display_name = updated.display_name
+    target.signature = updated.signature
+    if (target.id === user.value?.id) patchUser({ signature: updated.signature })
     target.former_names = updated.former_names
     target.can_post = updated.can_post
     target.college_name = updated.college_name
@@ -355,6 +377,7 @@ async function saveNote(target: AdminUser) {
     target.class_no = updated.class_no
     delete editingNote.value[target.id]
     delete editingName.value[target.id]
+    delete editingSignature.value[target.id]
     delete editingCollege.value[target.id]
     delete editingMajor.value[target.id]
     delete editingClassNo.value[target.id]
@@ -838,6 +861,7 @@ onMounted(async () => {
                   <Button
                     variant="outline"
                     size="sm"
+                    :disabled="savingNote !== null"
                     @click="editingMemberId === member.id ? cancelEditMember(member) : startEditMember(member)"
                   >
                     <Pencil class="mr-1.5 h-3.5 w-3.5" />
@@ -926,13 +950,26 @@ onMounted(async () => {
 
               <div v-if="editingMemberId === member.id" class="admin-section-content space-y-3 rounded-lg border border-border/50 bg-muted/20 p-3">
                 <div class="grid gap-2 sm:grid-cols-2">
-                  <label class="space-y-1 text-xs font-medium text-muted-foreground">
+                  <label v-if="member.id !== user?.id" class="space-y-1 text-xs font-medium text-muted-foreground">
                     姓名
                     <Input
                       :model-value="editingName[member.id] ?? member.display_name"
                       class="h-9 text-sm text-foreground"
                       @update:model-value="(v: string) => (editingName[member.id] = v)"
                     />
+                  </label>
+                  <label class="space-y-1 text-xs font-medium text-muted-foreground">
+                    个性签名
+                    <Input
+                      v-model="editingSignature[member.id]"
+                      placeholder="最多 12 个字，留空清除"
+                      class="text-sm text-foreground"
+                      :aria-invalid="editingSignatureLength > 12"
+                      :disabled="savingNote !== null"
+                    />
+                    <span class="block" :class="{ 'text-destructive': editingSignatureLength > 12 }">
+                      {{ editingSignatureLength }} / 12
+                    </span>
                   </label>
                   <label class="space-y-1 text-xs font-medium text-muted-foreground">
                     管理员备注
@@ -1000,11 +1037,11 @@ onMounted(async () => {
                   </label>
                 </div>
                 <div class="flex justify-end gap-2">
-                  <Button variant="ghost" size="sm" @click="cancelEditMember(member)">
+                  <Button variant="ghost" size="sm" :disabled="savingNote !== null" @click="cancelEditMember(member)">
                     <X class="mr-1 h-3.5 w-3.5" />
                     取消
                   </Button>
-                  <Button size="sm" :disabled="savingNote === member.id" @click="saveNote(member)">
+                  <Button size="sm" :disabled="savingNote !== null || editingSignatureLength > 12" @click="saveNote(member)">
                     <Loader2 v-if="savingNote === member.id" class="mr-1 h-3.5 w-3.5 animate-spin" />
                     保存修改
                   </Button>

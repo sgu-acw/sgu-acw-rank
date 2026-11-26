@@ -30,7 +30,7 @@ const props = withDefaults(
   { defaultOpen: false },
 )
 
-const { user, isExternal, isAdmin } = useAuth()
+const { user, isExternal } = useAuth()
 
 const loading = ref(true)
 const submitting = ref(false)
@@ -72,6 +72,7 @@ function resetDraftFromUser() {
 }
 
 function openForm() {
+  if (formOpen.value || pendingRequest.value) return
   resetDraftFromUser()
   error.value = ''
   formOpen.value = true
@@ -263,10 +264,7 @@ function formatTime(iso: string | null): string {
           {{ isExternal ? '昵称修改申请' : '个人资料与改名申请' }}
         </CardTitle>
         <p class="text-xs text-muted-foreground">
-          <template v-if="isAdmin">
-            管理员可在顶部直接改名；此处仅展示历史提交记录。
-          </template>
-          <template v-else-if="isExternal">
+          <template v-if="isExternal">
             修改昵称需提交管理员审核，通过后自动更新并留存曾用名记录。
           </template>
           <template v-else>
@@ -275,7 +273,7 @@ function formatTime(iso: string | null): string {
         </p>
       </div>
       <Button
-        v-if="!isAdmin && !pendingRequest && !formOpen"
+        v-if="!pendingRequest && !formOpen"
         size="sm"
         variant="outline"
         @click="openForm"
@@ -338,7 +336,7 @@ function formatTime(iso: string | null): string {
 
         <!-- 资料修改表单 -->
         <form
-          v-else-if="!isAdmin && formOpen"
+          v-else-if="formOpen"
           class="space-y-3 rounded-lg border border-border/60 bg-muted/20 p-3.5"
           @submit.prevent="submitRequest"
         >
