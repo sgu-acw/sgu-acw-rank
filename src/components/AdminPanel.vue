@@ -25,7 +25,7 @@ import {
   type AdminUserPage,
   type Invite,
 } from '../lib/api'
-import { useAuth } from '../lib/auth'
+import { PROFILE_SIGNATURE_MAX_LENGTH, useAuth } from '../lib/auth'
 import { formatEnrollYear } from '../lib/format'
 
 const { user, ensureLoaded, isAdmin, patchUser } = useAuth()
@@ -328,7 +328,7 @@ function cancelEditMember(target: AdminUser) {
 }
 
 async function saveNote(target: AdminUser) {
-  if (savingNote.value !== null || editingMemberId.value !== target.id || editingSignatureLength.value > 12) return
+  if (savingNote.value !== null || editingMemberId.value !== target.id || editingSignatureLength.value > PROFILE_SIGNATURE_MAX_LENGTH) return
   error.value = ''
   const payload: {
     admin_note?: string
@@ -962,13 +962,13 @@ onMounted(async () => {
                     个性签名
                     <Input
                       v-model="editingSignature[member.id]"
-                      placeholder="最多 12 个字，留空清除"
+                      :placeholder="`最多 ${PROFILE_SIGNATURE_MAX_LENGTH} 个字，留空清除`"
                       class="text-sm text-foreground"
-                      :aria-invalid="editingSignatureLength > 12"
+                      :aria-invalid="editingSignatureLength > PROFILE_SIGNATURE_MAX_LENGTH"
                       :disabled="savingNote !== null"
                     />
-                    <span class="block" :class="{ 'text-destructive': editingSignatureLength > 12 }">
-                      {{ editingSignatureLength }} / 12
+                    <span class="block" :class="{ 'text-destructive': editingSignatureLength > PROFILE_SIGNATURE_MAX_LENGTH }">
+                      {{ editingSignatureLength }} / {{ PROFILE_SIGNATURE_MAX_LENGTH }}
                     </span>
                   </label>
                   <label class="space-y-1 text-xs font-medium text-muted-foreground">
@@ -1041,7 +1041,7 @@ onMounted(async () => {
                     <X class="mr-1 h-3.5 w-3.5" />
                     取消
                   </Button>
-                  <Button size="sm" :disabled="savingNote !== null || editingSignatureLength > 12" @click="saveNote(member)">
+                  <Button size="sm" :disabled="savingNote !== null || editingSignatureLength > PROFILE_SIGNATURE_MAX_LENGTH" @click="saveNote(member)">
                     <Loader2 v-if="savingNote === member.id" class="mr-1 h-3.5 w-3.5 animate-spin" />
                     保存修改
                   </Button>

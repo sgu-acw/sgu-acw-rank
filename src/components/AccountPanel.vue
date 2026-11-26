@@ -21,7 +21,7 @@ import { Separator } from './ui/separator'
 import AccountBindings from './AccountBindings.vue'
 import PasswordForm from './PasswordForm.vue'
 import { ApiError, authApi } from '../lib/api'
-import { useAuth } from '../lib/auth'
+import { PROFILE_SIGNATURE_MAX_LENGTH, useAuth } from '../lib/auth'
 import { formatEnrollYear } from '../lib/format'
 
 const { user, isExternal, isCampusMember, loading, ready, ensureLoaded, logout, patchUser } = useAuth()
@@ -71,7 +71,7 @@ async function closeSignature() {
 
 async function saveSignature() {
   const userId = user.value?.id
-  if (userId == null || signatureBusy.value || !signatureChanged.value || signatureLength.value > 12) return
+  if (userId == null || signatureBusy.value || !signatureChanged.value || signatureLength.value > PROFILE_SIGNATURE_MAX_LENGTH) return
   signatureBusy.value = true
   signatureError.value = ''
   signatureNotice.value = ''
@@ -237,24 +237,24 @@ function go(path: string) {
         <form class="min-w-0 space-y-3" @submit.prevent="saveSignature">
           <label for="profile-signature" class="sr-only">个性签名</label>
           <p id="profile-signature-help" class="text-xs text-muted-foreground">
-            最多 12 个字，留空可清除。
+            最多 {{ PROFILE_SIGNATURE_MAX_LENGTH }} 个字，留空可清除。
           </p>
           <div class="flex items-center gap-2">
             <Input
               id="profile-signature"
               v-model="signatureDraft"
               aria-describedby="profile-signature-help profile-signature-length"
-              :aria-invalid="signatureLength > 12"
+              :aria-invalid="signatureLength > PROFILE_SIGNATURE_MAX_LENGTH"
               :disabled="signatureBusy"
               class="min-w-0 max-w-xs flex-1"
             />
-            <span id="profile-signature-length" class="shrink-0 text-xs" :class="signatureLength > 12 ? 'text-destructive' : 'text-muted-foreground'">
-              {{ signatureLength }} / 12
+            <span id="profile-signature-length" class="shrink-0 text-xs" :class="signatureLength > PROFILE_SIGNATURE_MAX_LENGTH ? 'text-destructive' : 'text-muted-foreground'">
+              {{ signatureLength }} / {{ PROFILE_SIGNATURE_MAX_LENGTH }}
             </span>
           </div>
           <ActionNotice :message="signatureError" variant="error" />
           <div class="flex gap-2">
-            <Button type="submit" :disabled="signatureBusy || !signatureChanged || signatureLength > 12">
+            <Button type="submit" :disabled="signatureBusy || !signatureChanged || signatureLength > PROFILE_SIGNATURE_MAX_LENGTH">
               {{ signatureBusy ? '保存中…' : '保存签名' }}
             </Button>
             <Button type="button" variant="outline" :disabled="signatureBusy" @click="closeSignature">取消</Button>

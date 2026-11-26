@@ -8,6 +8,8 @@
 import { computed, readonly, ref } from 'vue'
 import { authApi, type User } from './api'
 
+export const PROFILE_SIGNATURE_MAX_LENGTH = 16
+
 const user = ref<User | null>(null)
 const loading = ref(false)
 const ready = ref(false)
