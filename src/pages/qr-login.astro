@@ -1,0 +1,10 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import QrLoginApproval from '../components/QrLoginApproval.vue';
+---
+
+<BaseLayout title="确认电脑登录 - 算法竞赛工作坊">
+  <div class="page-shell-auth py-4">
+    <QrLoginApproval client:only="vue" />
+  </div>
+</BaseLayout>

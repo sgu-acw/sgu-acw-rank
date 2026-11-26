@@ -6,8 +6,8 @@
  * - 校内成员：邀请码 + 学号 + 真实姓名 + 密码（开通全部校内功能）
  * - 校外人员：自定义用户名 + 昵称 + 密码（免邀请码，仅开放学习与公开功能）
  */
-import { computed, onMounted, ref } from 'vue'
-import { AlertCircle, CheckCircle2, Clock, Fingerprint, GraduationCap, Loader2, UserPlus } from 'lucide-vue-next'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { AlertCircle, CheckCircle2, Clock, Fingerprint, GraduationCap, Loader2, QrCode, UserPlus } from 'lucide-vue-next'
 import { Alert } from './ui/alert'
 import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
@@ -66,6 +66,12 @@ const pendingSubmission = ref<{
   displayName: string
   isExternal: boolean
 } | null>(null)
+const qrVisible = ref(false)
+const qrImage = ref('')
+const qrChallengeId = ref('')
+const qrPollToken = ref('')
+const qrMessage = ref('')
+let qrPollTimer: ReturnType<typeof setTimeout> | undefined
 
 const isExternalRegister = computed(
   () => mode.value === 'register' && registerChannel.value === 'external',
@@ -184,6 +190,42 @@ onMounted(async () => {
   }
   canPasskey.value = passkeySupported()
 })
+
+onBeforeUnmount(() => {
+  if (qrPollTimer) clearTimeout(qrPollTimer)
+})
+
+async function pollQrLogin() {
+  if (!qrChallengeId.value || !qrPollToken.value) return
+  try {
+    const result = await authApi.qrLoginPoll(qrChallengeId.value, qrPollToken.value)
+    if (result.status === 'authenticated') {
+      window.location.href = redirectTarget.value
+      return
+    }
+    qrPollTimer = setTimeout(() => void pollQrLogin(), 1500)
+  } catch (err) {
+    qrMessage.value = err instanceof ApiError && err.status === 410
+      ? '二维码已过期，请重新生成'
+      : err instanceof ApiError ? err.message : '连接中断，请重新生成二维码'
+  }
+}
+
+async function showQrLogin() {
+  qrVisible.value = true
+  qrImage.value = ''
+  qrMessage.value = ''
+  if (qrPollTimer) clearTimeout(qrPollTimer)
+  try {
+    const challenge = await authApi.qrLoginBegin()
+    qrChallengeId.value = challenge.challenge_id
+    qrPollToken.value = challenge.poll_token
+    qrImage.value = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(challenge.qr_svg)}`
+    void pollQrLogin()
+  } catch (err) {
+    qrMessage.value = err instanceof ApiError ? err.message : '二维码生成失败，请稍后重试'
+  }
+}
 
 async function submit() {
   if (!canSubmit.value) return
@@ -551,6 +593,29 @@ async function usePasskey() {
           <Fingerprint class="mr-2 h-4 w-4" />
           用通行密钥登录
         </Button>
+
+        <Button
+          v-if="mode === 'login'"
+          type="button"
+          variant="outline"
+          class="w-full"
+          :disabled="submitting"
+          @click="showQrLogin"
+        >
+          <QrCode class="mr-2 h-4 w-4" />
+          手机扫码登录
+        </Button>
+
+        <div v-if="mode === 'login' && qrVisible" class="space-y-3 rounded-md border border-border p-4 text-center">
+          <p class="text-sm font-medium">用已登录工作坊账号的手机扫码</p>
+          <img v-if="qrImage" :src="qrImage" alt="手机扫码登录二维码" class="mx-auto h-48 w-48" />
+          <p v-else-if="!qrMessage" class="text-sm text-muted-foreground" role="status">正在生成二维码…</p>
+          <p v-if="qrMessage" class="text-sm text-destructive" role="alert">{{ qrMessage }}</p>
+          <p class="text-xs text-muted-foreground">二维码两分钟内有效，扫码后需在手机上确认登录</p>
+          <Button v-if="qrMessage" type="button" variant="outline" class="w-full" @click="showQrLogin">
+            重新生成二维码
+          </Button>
+        </div>
 
         <p v-if="blockedReason" class="text-center text-xs text-muted-foreground">
           {{ blockedReason }}

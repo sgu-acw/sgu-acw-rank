@@ -172,6 +172,17 @@ export const authApi = {
       { student_id: studentId, password },
     ),
 
+  qrLoginBegin: () =>
+    api.post<{ challenge_id: string; poll_token: string; qr_svg: string; expires_at: string }>(
+      '/auth/qr-login/begin',
+    ),
+  qrLoginPoll: (challengeId: string, pollToken: string) =>
+    api.post<{ status: 'pending' | 'authenticated' }>('/auth/qr-login/poll', {
+      challenge_id: challengeId,
+      poll_token: pollToken,
+    }),
+  qrLoginApprove: (token: string) => api.post<{ status: 'approved' }>('/auth/qr-login/approve', { token }),
+
   /** 两步验证第二步：票据 + 验证码 → 会话。 */
   loginTotp: (ticket: string, code: string) =>
     api.post<{ totp_required: false; user: User }>('/auth/login/totp', { ticket, code }),
