@@ -189,6 +189,9 @@ onMounted(async () => {
     checking.value = false
   }
   canPasskey.value = passkeySupported()
+  if (mode.value === 'login' && params.get('method') === 'qr') {
+    void showQrLogin()
+  }
 })
 
 onBeforeUnmount(() => {

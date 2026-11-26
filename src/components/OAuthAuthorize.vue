@@ -40,7 +40,11 @@ onMounted(async () => {
     const res = await oauthApi.authorizeInfo(parsed)
     if (!res.authenticated) {
       const next = `${window.location.pathname}${window.location.search}`
-      window.location.replace(`/login?next=${encodeURIComponent(next)}`)
+      const loginQuery = new URLSearchParams({ next })
+      if (new URLSearchParams(window.location.search).get('login_method') === 'qr') {
+        loginQuery.set('method', 'qr')
+      }
+      window.location.replace(`/login?${loginQuery.toString()}`)
       return
     }
     info.value = res
