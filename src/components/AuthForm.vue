@@ -608,7 +608,9 @@ async function usePasskey() {
 
         <div v-if="mode === 'login' && qrVisible" class="space-y-3 rounded-md border border-border p-4 text-center">
           <p class="text-sm font-medium">用已登录工作坊账号的手机扫码</p>
-          <img v-if="qrImage" :src="qrImage" alt="手机扫码登录二维码" class="mx-auto h-48 w-48" />
+          <div v-if="qrImage" class="mx-auto inline-flex rounded-sm bg-white p-3">
+            <img :src="qrImage" alt="手机扫码登录二维码" class="h-48 w-48" />
+          </div>
           <p v-else-if="!qrMessage" class="text-sm text-muted-foreground" role="status">正在生成二维码…</p>
           <p v-if="qrMessage" class="text-sm text-destructive" role="alert">{{ qrMessage }}</p>
           <p class="text-xs text-muted-foreground">二维码两分钟内有效，扫码后需在手机上确认登录</p>

@@ -6,8 +6,10 @@
  * 什么。未登录时提示去登录，而不是跳转，这样链接可以安全地分享。
  */
 import MemberName from './MemberName.vue'
-import { computed, nextTick, onMounted, ref, watch } from 'vue'
-import { LogOut, Loader2, Pencil } from 'lucide-vue-next'
+import { computed, defineAsyncComponent, nextTick, onMounted, ref, watch } from 'vue'
+import { LogOut, Loader2, Pencil, ScanLine, X } from 'lucide-vue-next'
+import { DialogClose, DialogContent, DialogOverlay, DialogPortal, DialogRoot, DialogTitle, DialogTrigger } from 'radix-vue'
+import IconButton from './ui/IconButton.vue'
 import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Input } from './ui/input'
@@ -25,6 +27,7 @@ import { PROFILE_SIGNATURE_MAX_LENGTH, useAuth } from '../lib/auth'
 import { formatEnrollYear } from '../lib/format'
 
 const { user, isExternal, isCampusMember, loading, ready, ensureLoaded, logout, patchUser } = useAuth()
+const QrLoginScanner = defineAsyncComponent(() => import('./QrLoginScanner.vue'))
 
 const profileChangeRef = ref<InstanceType<typeof ProfileChangeCard> | null>(null)
 const profileChangeEl = ref<HTMLElement | null>(null)
@@ -181,6 +184,26 @@ function go(path: string) {
         </div>
 
         <div class="flex flex-wrap items-center gap-2">
+          <DialogRoot>
+            <DialogTrigger as-child>
+              <Button type="button" variant="outline" class="lg:hidden">
+                <ScanLine class="mr-1.5 h-4 w-4" />
+                扫码登录电脑
+              </Button>
+            </DialogTrigger>
+            <DialogPortal>
+              <DialogOverlay class="fixed inset-0 z-[100] bg-black/50" />
+              <DialogContent :aria-describedby="undefined" class="fixed left-1/2 top-1/2 z-[101] max-h-[85dvh] w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-xl border border-border bg-background p-4 shadow-xl">
+                <div class="mb-3 flex items-center justify-between gap-3">
+                  <DialogTitle class="text-base font-semibold">扫码登录电脑</DialogTitle>
+                  <DialogClose as-child>
+                    <IconButton label="关闭扫码器"><X class="h-5 w-5" /></IconButton>
+                  </DialogClose>
+                </div>
+                <QrLoginScanner />
+              </DialogContent>
+            </DialogPortal>
+          </DialogRoot>
           <Button variant="ghost" class="text-muted-foreground" @click="openProfileChange">
             <Pencil class="mr-1 h-3.5 w-3.5" />
             申请改名
